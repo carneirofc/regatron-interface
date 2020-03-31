@@ -24,6 +24,8 @@ int main(const int argc, const char* argv[]){
     int tcpPort;
     int regDevPort;
 
+    /** @todo: Include UNIX socket support. Set the socket address as the following: ///var/tmp/REGxx */
+
     if(argc == 3){
         try{
             tcpPort = std::stoi(argv[1]);
@@ -44,8 +46,8 @@ int main(const int argc, const char* argv[]){
 
     std::shared_ptr<Regatron::Comm> regatron = std::make_shared<Regatron::Comm>(regDevPort);
     std::shared_ptr<Regatron::Handler> handler = std::make_shared<Regatron::Handler>(regatron);
-    std::shared_ptr<Net::Server> server = std::make_shared<Net::Server>(handler);
-    server->listen(tcpPort);
+    std::shared_ptr<Net::Server> server = std::make_shared<Net::Server>(handler, tcpPort);
+    server->listen();
 
     return 0;
 }
