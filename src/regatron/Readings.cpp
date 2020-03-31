@@ -9,26 +9,65 @@ namespace Regatron {
       }
     }
 
-    
+    void Readings::readModuleErrorTree(){
+      selectModule();
+      if(TC4ReadErrorTree32(m_ModErrorTreeMon)!= DLL_SUCCESS){
+          throw std::runtime_error("failed to get module error tree");
+      }
+      if(TC4ReadWarningTree32(m_ModWarningTreeMon)!= DLL_SUCCESS){
+          throw std::runtime_error("failed to get module warn tree");
+      }
+    }
+
+    void Readings::readModule(){
+
+      selectModule();
+      if(TC4GetVoltageActSense(&m_ModActualOutVoltageMon) != DLL_SUCCESS){ 
+        throw std::runtime_error("failed to get module actual output voltage"); } 
+
+      if(TC4GetPowerActSense(&m_ModActualOutPowerMon) != DLL_SUCCESS){ 
+        throw std::runtime_error("failed to get module actual output power"); } 
+
+      if(TC4GetCurrentAct(&m_ModActualOutCurrentMon) != DLL_SUCCESS){ 
+        throw std::runtime_error("failed to get module actual output current"); }
+      
+      if(TC4GetResistanceAct(&m_ModActualResMon) != DLL_SUCCESS){
+        throw std::runtime_error("failed to get module actual resistence");
+      }
+
+      if(TC4StateActSystem(&m_ModState) != DLL_SUCCESS){
+        throw std::runtime_error("failed to get module state");
+      }
+    }
+
+    void Readings::readSystemErrorTree(){
+      selectSystem();
+      if(TC4ReadErrorTree32(m_SysErrorTreeMon)!= DLL_SUCCESS){
+          throw std::runtime_error("failed to get system error tree");
+      }
+      if(TC4ReadWarningTree32(m_SysWarningTreeMon)!= DLL_SUCCESS){
+          throw std::runtime_error("failed to get system warn tree");
+      }
+    }
+
     void Readings::readSystem(){
       selectSystem();
       if(TC4GetVoltageActSense(&m_SysActualOutVoltageMon) != DLL_SUCCESS){ 
-        throw std::runtime_error("failed to get system actual voltage"); } 
+        throw std::runtime_error("failed to get system actual output voltage"); } 
 
       if(TC4GetPowerActSense(&m_SysActualOutPowerMon) != DLL_SUCCESS){ 
-        throw std::runtime_error("failed to get system actual power"); } 
+        throw std::runtime_error("failed to get system actual output power"); } 
 
       if(TC4GetCurrentAct(&m_SysActualOutCurrentMon) != DLL_SUCCESS){ 
-        throw std::runtime_error("failed to get system actual current"); }
+        throw std::runtime_error("failed to get system actual output current"); }
       
       if(TC4GetResistanceAct(&m_SysActualResMon) != DLL_SUCCESS){
         throw std::runtime_error("failed to get system actual resistence");
       }
 
-      if(m_Q4Enable){
-        if(TC42GetQ4CurrentAct(&m_SysActualQ4CurrentMon) != DLL_SUCCESS){ 
-          throw std::runtime_error("failed to get system Q4 actual current"); }}
-
+      if(TC4StateActSystem(&m_SysState) != DLL_SUCCESS){
+        throw std::runtime_error("failed to get system state");
+      }
     }
 
     bool Readings::isMaster(){ return (m_moduleID == 0); }

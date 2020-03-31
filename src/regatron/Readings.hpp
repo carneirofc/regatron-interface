@@ -8,9 +8,17 @@ namespace Regatron {
   constexpr unsigned int SYS_VALUES = 64;
   constexpr unsigned int MOD_VALUES = 0;
 
+  enum State {
+    POWERUP = 2,
+    READY = 4,
+    RUN = 8,
+    WARNING = 10,
+    ERROR = 12,
+    STOP = 14
+  };
+
   class Readings{
     private:
-      bool m_Q4Enable = false;
     /** One time readings */
       // Additional
       int m_DCLinkPhysNom;             // [V]
@@ -50,6 +58,7 @@ namespace Regatron {
       double m_ModResistancePhysNom;  // [mOhm]
 
     /** Monitor readings */
+
       // Additional
       double m_DCLinkVoltageMon;      // [V]
       double m_PrimaryCurrentMon;     // [A] Tranformer primary current
@@ -60,20 +69,23 @@ namespace Regatron {
       // System
       struct T_ErrorTree32* m_SysErrorTreeMon;
       struct T_ErrorTree32* m_SysWarningTreeMon;
+      unsigned int m_SysState;        //
 
       double m_SysActualOutVoltageMon;
       double m_SysActualOutPowerMon;
       double m_SysActualOutCurrentMon;
-      double m_SysActualQ4CurrentMon;
       double m_SysActualResMon;
 
 
       // Module
       struct T_ErrorTree32* m_ModErrorTreeMon;
       struct T_ErrorTree32* m_ModWarningTreeMon;
-      double m_ModActualOutVoltage;
-      double m_ModActualOutPower;
-      double m_ModActualOutCurrent;
+      unsigned int m_ModState;
+
+      double m_ModActualOutVoltageMon;
+      double m_ModActualOutPowerMon;
+      double m_ModActualOutCurrentMon;
+      double m_ModActualResMon;
 
       // Generic
       double m_DCLingVoltageMon;
@@ -143,22 +155,27 @@ namespace Regatron {
         void readGeneric();
         /** Monitor System @throw: std::runtime_exception */
         void readSystem();
+        /** Monitor System 32 Error and Warning tree */
+        void readSystemErrorTree();
         /** Monitor Module @throw: std::runtime_exception */ 
         void readModule();
+        /** Monitor Module 32 Error and Warning tree */
+        void readModuleErrorTree();
 
 
-    void selectSystem(){
-      this->selectModule(SYS_VALUES);
-    }
-    void selectDevice(){
-      this->selectModule(MOD_VALUES);
-    }
+        void selectSystem(){
+          this->selectModule(SYS_VALUES);
+                }
+        void selectModule(){
+          this->selectModule(MOD_VALUES);
+        }
 
-    void selectModule(unsigned int module){
-      if(TC4SetModuleSelector(module) != DLL_SUCCESS){
-        throw std::runtime_error(fmt::format("failed to set module selector to {} (code {})", ((module==SYS_VALUES)?"system":"device"), module));
-      }
-    }
+        void selectModule(unsigned int module){
+          if(TC4SetModuleSelector(module) != DLL_SUCCESS){
+            throw std::runtime_error(
+                    fmt::format("failed to set module selector to {} (code {})",
+                        ((module==SYS_VALUES)?"system":"device"), module));}
+        }
   };
 
 }

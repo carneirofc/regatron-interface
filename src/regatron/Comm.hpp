@@ -59,11 +59,4 @@ namespace Regatron {
       void readTemps();
   };
 
-#define REG_STATE_POWER_UP 2
-#define REG_STATE_READY    4
-#define REG_STATE_RUN      8
-#define REG_STATE_WARNING  10
-#define REG_STATE_ERROR    12
-#define REG_STATE_STOP     14
-
 }
