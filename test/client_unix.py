@@ -9,10 +9,10 @@ messages = [
         'set current 200.0\n'
         ]
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
 # Connect the socket to the port where the server is listening
-server_address = ('localhost', 5000)
+server_address = '/var/tmp/reg-socket'
 s.connect(server_address)
 
 try:
@@ -26,5 +26,5 @@ try:
             print('< {}'.format(data))
             time.sleep(1)
 finally:
-print   print('closing socket')
-   s.close()
+    print('closing socket')
+    s.close()
