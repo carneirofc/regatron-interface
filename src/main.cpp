@@ -3,51 +3,74 @@
 //
 #include <memory>
 #include <stdexcept>
+#include <iostream>
+#include <csignal>
 
+#include "docopt/docopt.h"
 #include "log/Logger.hpp"
 #include "net/Server.hpp"
 #include "regatron/Handler.hpp"
 #include "regatron/Comm.hpp"
 
-void help(){
-    LOG_INFO(
-        "Regatron Interface\n"
-        "   params:\n"
-        "   - port:\n"
-        "   - regatron device num:\n"
-    );
+static const char USAGE[] =
+R"(Regatron Interface.
+Will start a TCP or an UNIX server and listen to commands.
+Only one client is supported at time. Use Regatron's serialiolib.
+Tries to connect to the device defined by the pattern /dev/ttyDxx,
+where xx is a zero padded integer defined by the <regatron_port> argument.
+<endpoint> may be a port or a file, according to the socket type (tcp|unix).
 
-}
+    Usage:
+      main (tcp|unix) <endpoint> <regatron_port>
+      main (-h | --help)
+      main --version
+
+    Options:
+      -h --help     Show this screen.
+      --version     Show version.
+)";
+
 
 int main(const int argc, const char* argv[]){
+    std::map<std::string, docopt::value> args
+        = docopt::docopt(USAGE,
+                         { argv + 1, argv + argc },
+                         true,                              // show help if requested
+                         "CONS - Regatron Interface v1.0"); // version string
+
     Utils::Logger::Init();
-    int tcpPort;
-    int regDevPort;
-
-    /** @todo: Include UNIX socket support. Set the socket address as the following: ///var/tmp/REGxx */
-
-    if(argc == 3){
-        try{
-            tcpPort = std::stoi(argv[1]);
-            regDevPort = std::stoi(argv[2]);
-
-        }catch(const std::invalid_argument& e){
-            LOG_CRITICAL("Invalid argument {}.", e.what());
-            exit(-1);
-        }catch(const std::logic_error& e){
-            LOG_CRITICAL("Ops... a logic error x_x'\n"
-            "Probably an illegal access due to wrong parameter checks.", e.what());
-            exit(-1);
-        }
-    }else{
-        help();
-        exit(-1);
+    for(auto const& arg : args) {
+        std::cout << arg.first << ": " << arg.second << std::endl;
     }
+    bool tcp = args.at("tcp").asBool();
+    int regDevPort = args.at("<regatron_port>").asLong();
+    int tcpPort = tcp ? args.at("<endpoint>").asLong() : -1;
+    const std::string unixEndpoint = args.at("<endpoint>").asString();
 
     std::shared_ptr<Regatron::Comm> regatron = std::make_shared<Regatron::Comm>(regDevPort);
     std::shared_ptr<Regatron::Handler> handler = std::make_shared<Regatron::Handler>(regatron);
-    std::shared_ptr<Net::Server> server = std::make_shared<Net::Server>(handler, tcpPort);
-    server->listen();
+    static std::shared_ptr<Net::Server> server = nullptr;
 
+    auto sighandler = +[](int signum)->void{
+        /** @fixme:
+         * The shutdown function is being called twice.
+         * Once by this and once at a try{} block inside Server::listen().
+         * */
+        LOG_WARN("Capture signal \"{}\", gracefully shutting down...", signum);
+        if(server != nullptr){
+            server->stop();
+            server->shutdown();
+        }
+        exit(SIGINT);
+    };
+    signal(SIGINT, sighandler);
+
+    if(tcp){
+        server = std::make_shared<Net::Server>(handler, tcpPort);
+    }else{
+        server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
+    }
+
+    server->listen();
     return 0;
 }
