@@ -1,3 +1,5 @@
+#pragma once
+
 #include "net/Handler.hpp"
 #include "regatron/Comm.hpp"
 
