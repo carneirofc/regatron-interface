@@ -12,7 +12,7 @@ messages = [
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect the socket to the port where the server is listening
-server_address = ('localhost', 5000)
+server_address = ('localhost', 5001)
 s.connect(server_address)
 
 try:
@@ -26,5 +26,5 @@ try:
             print('< {}'.format(data))
             time.sleep(1)
 finally:
-print   print('closing socket')
-   s.close()
+    print('closing socket')
+    s.close()
