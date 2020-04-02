@@ -1,0 +1,17 @@
+{
+  "includes": [
+    "-isystem/home/carneirofc/.conan/data/boost/1.71.0/conan/stable/package/add79cbed62f661e47419a0a397aec8f6d5102e0/include",
+    "-isystem/home/carneirofc/.conan/data/catch2/2.11.0/_/_/package/5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9/include",
+    "-isystem/home/carneirofc/.conan/data/docopt.cpp/0.6.2/_/_/package/f54287fc3dbd09590f968b580bebb565ea4a4b17/include",
+    "-isystem/home/carneirofc/.conan/data/spdlog/1.5.0/_/_/package/12c8590eca64ca13d7eac957bde897f3a31c0f6e/include",
+    "-isystem/home/carneirofc/.conan/data/zlib/1.2.11/conan/stable/package/6b7ff26bfd4c2cf2ccba522bfba2d2e7820e40da/include",
+    "-isystem/home/carneirofc/.conan/data/bzip2/1.0.8/conan/stable/package/ff2ff6bb41ed84283a6634bada252c37f13eb93c/include",
+    "-isystem/home/carneirofc/.conan/data/fmt/6.0.0/_/_/package/f54287fc3dbd09590f968b580bebb565ea4a4b17/include"
+  ],
+  "defines": [
+    "-DSPDLOG_COMPILED_LIB",
+    "-DSPDLOG_FMT_EXTERNAL",
+    "-D_GLIBCXX_USE_CXX11_ABI=1"
+  ],
+  "flags": []
+}
