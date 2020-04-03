@@ -1,21 +1,46 @@
 #pragma once
 
 #include "log/Logger.hpp"
-#include "serialiolib.h"
+#include "serialiolib.h" // NOLINT
+#include <sstream>
 
 namespace Regatron {
 
   constexpr unsigned int SYS_VALUES = 64;
   constexpr unsigned int MOD_VALUES = 0;
 
-  enum State {
-    POWERUP = 2,
-    READY = 4,
-    RUN = 8,
-    WARNING = 10,
-    ERROR = 12,
-    STOP = 14
-  };
+  namespace State {
+    constexpr unsigned int POWERUP = 2;
+    constexpr unsigned int READY = 4;
+    constexpr unsigned int RUN = 8;
+    constexpr unsigned int WARNING = 10;
+    constexpr unsigned int ERROR = 12;
+    constexpr unsigned int STOP = 14;
+  }
+
+  namespace ControlMode {
+	/**
+        0: no controller selected (output voltage is disabled)
+        1: constant voltage
+        2: constant current
+        4: constant power
+    */
+    constexpr unsigned int OUTPUT_VOLTAGE_OFF = 0;
+    constexpr unsigned int CONST_VOLTAGE = 0;
+    constexpr unsigned int CONST_CURRENT = 0;
+    constexpr unsigned int CONST_POWER = 0;
+  }
+
+  namespace RemoteCtrlInp {
+     /*
+        0: set active interface to analog
+        1: set active interface to HMI/HME
+        2: set active interface to RS232 (this API)
+        32767: no active interface will be selected
+     */
+
+  }
+
 
   class Readings{
     private:
@@ -57,9 +82,12 @@ namespace Regatron {
       double m_ModPowerPhysNom;       // [kW]
       double m_ModResistancePhysNom;  // [mOhm]
 
+    public:
     /** Monitor readings */
 
-      // Additional
+      // Generic ...
+      unsigned int m_ControlMode;     // namespace ControlMode
+      unsigned int m_RemoteCtrlInp;   // namespace Remote Ctrl Inp
       double m_DCLinkVoltageMon;      // [V]
       double m_PrimaryCurrentMon;     // [A] Tranformer primary current
       double m_IGBTTempMon;           // [°C] heat sink of IGBT
@@ -69,51 +97,50 @@ namespace Regatron {
       // System
       struct T_ErrorTree32* m_SysErrorTreeMon;
       struct T_ErrorTree32* m_SysWarningTreeMon;
-      unsigned int m_SysState;        //
-
+      unsigned int m_SysState;
       double m_SysActualOutVoltageMon;
       double m_SysActualOutPowerMon;
       double m_SysActualOutCurrentMon;
       double m_SysActualResMon;
 
-
       // Module
       struct T_ErrorTree32* m_ModErrorTreeMon;
       struct T_ErrorTree32* m_ModWarningTreeMon;
       unsigned int m_ModState;
-
       double m_ModActualOutVoltageMon;
       double m_ModActualOutPowerMon;
       double m_ModActualOutCurrentMon;
       double m_ModActualResMon;
 
-      // Generic
-      double m_DCLingVoltageMon;
-
-
       // -- Regatron Module
       unsigned int m_moduleID = 0;
 
-    public:
-        /** Getters and Setters */
-        unsigned int getModuleID(){ return m_moduleID; }
-        double getDCLinkVoltage(){ return m_DCLinkVoltageMon; }
-        double getPrimaryCurrent(){ return m_PrimaryCurrentMon; }
-        double getIGBTemp(){ return m_IGBTTempMon; }
-        double getRectifierTemp(){ return m_RectifierTempMon; }
-
-        /**
-         * Read and convert to physical value DCLinkVoltage
-         * @throw std::runtime_exception when dll fails
-        */
-        void readDCLinkVoltage(){
-          int DCLinkVoltStd;
-
-          if(TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS){
-            throw std::runtime_error("failed to read DCLink digital voltage.");
+      /** Represent an T_ErrorTree32 object as a vector "[0, .... 32]"*/
+      std::string toString(const T_ErrorTree32& errorTree){
+          std::ostringstream oss;
+          oss << "[" << errorTree.group << ",";
+          int index = 0;
+          for(const auto& error : errorTree.error){
+              oss << error;
+              index ++;
+              if(index < 32) oss << ",";
           }
-          m_DCLinkVoltageMon = (DCLinkVoltStd*m_DCLinkPhysNom)/4000.;
-        }
+          oss << "]";
+          return oss.str();
+      };
+
+       /**
+        * Read and convert to physical value DCLinkVoltage
+        * @throw std::runtime_exception when dll fails
+       */
+       void readDCLinkVoltage(){
+         int DCLinkVoltStd;
+
+         if(TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS){
+           throw std::runtime_error("failed to read DCLink digital voltage.");
+         }
+         m_DCLinkVoltageMon = (DCLinkVoltStd*m_DCLinkPhysNom)/4000.;
+       }
 
         void readPrimaryCurrent(){
           int primaryCurrent;
@@ -129,10 +156,10 @@ namespace Regatron {
          */
         void readTemperature(){
           int igbtTemp, rectTemp;
-          if(TC4GetTempDigital(&igbtTemp, &rectTemp) != DLL_SUCCESS){
+          if(!TC4GetTempDigital(&igbtTemp, &rectTemp)){
             throw std::runtime_error("failed to read IGBT and Rectifier temperature.");
           }
-          if(TC42GetTemperaturePCB(&m_PCBTempMon) != DLL_SUCCESS){
+          if(!TC42GetTemperaturePCB(&m_PCBTempMon)){
             throw std::runtime_error("failed to read PCB temperature.");
           }
           m_IGBTTempMon = (igbtTemp * m_TemperaturePhysNom)/4000.;
@@ -142,40 +169,47 @@ namespace Regatron {
         // @todo: Restrict read/write if master ...? Here or upper layer?
         bool isMaster();
 
-        /** One time reading - Additional @throw std::runtime_exception */
+        /** One time readings - @throw std::runtime_exception */
         void readAdditionalPhys();
-        /** One time reading - System @throw std::runtime_exception */
         void readSystemPhys();
-        /** One time reading - Module @throw std::runtime_exception */
         void readModulePhys();
-        /** One time reading - Module ID*/
         void readModuleID();
 
-        /** Monitor Generi @throw: std::runtime_exception */
+        /** Monitor Readings @throw: std::runtime_exception */
         void readGeneric();
-        /** Monitor System @throw: std::runtime_exception */
         void readSystem();
-        /** Monitor System 32 Error and Warning tree */
         void readSystemErrorTree();
-        /** Monitor Module @throw: std::runtime_exception */ 
         void readModule();
-        /** Monitor Module 32 Error and Warning tree */
         void readModuleErrorTree();
 
+        /** Set Module/System calls */
+        void selectSystem(){ this->selectModule(SYS_VALUES); }
+        void selectModule(){ this->selectModule(MOD_VALUES); }
 
-        void selectSystem(){
-          this->selectModule(SYS_VALUES);
-                }
-        void selectModule(){
-          this->selectModule(MOD_VALUES);
+        void storeParameters(){
+            if(!TC4StoreParameters())
+                throw std::runtime_error("failed to store parameters");
+        }
+
+        void clearErrors(){
+            if(!TC4ClearError())
+                throw std::runtime_error("failed to clear erors");
+        }
+
+        void readControlMode(){
+            if(!TC4GetControlMode(&m_ControlMode))
+                throw std::runtime_error("failed to read control mode");
+        }
+
+        void readRemoteControlInput(){
+            if(!TC4GetRemoteControlInput(&m_RemoteCtrlInp))
+                throw std::runtime_error("failed to read remote control input");
         }
 
         void selectModule(unsigned int module){
-          if(TC4SetModuleSelector(module) != DLL_SUCCESS){
-            throw std::runtime_error(
-                    fmt::format("failed to set module selector to {} (code {})",
+          if(!TC4SetModuleSelector(module))
+            throw std::runtime_error(fmt::format("failed to set module selector to {} (code {})",
                         ((module==SYS_VALUES)?"system":"device"), module));}
-        }
+        
   };
-
 }
