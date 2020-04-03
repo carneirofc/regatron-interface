@@ -1,12 +1,14 @@
 #include "Comm.hpp"
 
 #include <iostream>
-#include "serialiolib.h"
+#include "serialiolib.h" // NOLINT
 
 #include "fmt/format.h"
 #include "log/Logger.hpp"
 
 namespace Regatron {
+  constexpr unsigned int SEARCH_SLEEP_SEC = 1000*1000*2;
+
   Comm::Comm(int port):
           m_port(port), m_version(std::make_shared<Regatron::Version>()), m_readings(std::make_shared<Regatron::Readings>()) {
       this->m_version->readDllVersion();
@@ -15,9 +17,7 @@ namespace Regatron {
       getDllStatus();
   }
 
-  Comm::Comm(){
-    Comm(1);
-  }
+  Comm::Comm():Comm(1){}
 
   Comm::~Comm(){
       if(DllClose() != DLL_SUCCESS){
@@ -69,7 +69,7 @@ namespace Regatron {
       }
 
       //search device
-      usleep(1000*1000*2);//hack: while eth and rs232 at the same tc device: wait 2 sec
+      usleep(SEARCH_SLEEP_SEC);//hack: while eth and rs232 at the same tc device: wait 2 sec
       LOG_INFO("searching from {} to {}", fromPort , toPort);
 
       if(DllSearchDevice(fromPort, toPort, &m_portNrFound) !=  DLL_SUCCESS){
@@ -106,7 +106,7 @@ namespace Regatron {
     if(this->m_portNrFound != -1){
       LOG_INFO(fmt::format("module connect at {} is configured as {}, module ID {}.",
           this->m_portNrFound, ((m_readings->isMaster())?"master":"slave"),
-          m_readings->getModuleID()));
+          m_readings->m_moduleID));
     }
   }
 }
