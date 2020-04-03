@@ -1,13 +1,12 @@
 # Regatron interface
 Regatron interface using sockets and Regatron's TCIO API
 
-## Dependencies
+## [Notes](NOTES.md)
+General development notes and status.
 
-### [Conan](https://conan.io/)
-```
-$ python -m virtualenv venv
-$ source venv/bin/activate
-(venv) $  pip install conan
-```
+## [Dependencies](DEPENDENCIES.md)
+Software dependencies
 
-### [TCIO API](https://www.regatron.com/service/download/programming-interfaces/tcio-api.zip)
+## [Utils](UTILS.md)
+General practices and useful tips.
+
