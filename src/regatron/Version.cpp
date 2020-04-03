@@ -1,6 +1,6 @@
 #include "Version.hpp"
 
-#include "serialiolib.h"
+#include "serialiolib.h" // NOLINT
 #include <log/Logger.hpp>
 #include <fmt/format.h>
 
