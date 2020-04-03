@@ -14,6 +14,8 @@ conan_add_remote(NAME bincrafters URL
                  https://api.bintray.com/conan/bincrafters/public-conan)
 
 conan_cmake_run(
+  GENERATORS
+  ycm
   REQUIRES
   ${CONAN_EXTRA_REQUIRES}
   catch2/2.11.0
