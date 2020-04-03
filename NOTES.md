@@ -4,26 +4,26 @@ Version V3.86.00 24062019
 ## State of development
 
 ### One time
-|Generic|Status|
+|Reading|Status|
 |:----:|:----:|
-|DLL Version            | ok |
-|DSP Version            | ok |
-|peripherieDSP          | ok |
-|peripherieAuxiliaryDSP | ok |
-|modulatorAuxiliaryDSP  | ok |
-|bootloader             | ok |
+|Version Bootloader                 | ok |
+|Version DLL                        | ok |
+|Version DSP                        | ok |
+|Version ModulatorAuxiliaryDSP      | ok |
+|Version Peripherie DSP             | ok |
+|Version PeripherieAuxiliaryDSP     | ok |
 
  
 ### Monitor
-|Generic|Status|
+|Reading|Status|
 |:-----:|:----:|
-| Temp IGBT         | ok |
-| Temp Rect         | ok |
-| Temp PCB          | ok |
-| DCLink Volt       | ok |
-| Primary Current   | ok |
+| Current Transf. Primary   | ok |
+| Temp IGBT                 | ok |
+| Temp PCB                  | ok |
+| Temp Rect                 | ok |
+| Volt DCLink               | ok |
 
-|Sys/Mod Readings|
+|Reading|Status|
 |:----:|:----:|
 | Sys OutVoltage    | ok |
 | Sys OutPower      | ok |
