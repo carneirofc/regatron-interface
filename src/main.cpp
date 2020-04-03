@@ -1,18 +1,19 @@
 //
 // Created by carneirofc on 05/12/2019.
 //
+#include <csignal>
+#include <iostream>
+#include <map>
 #include <memory>
 #include <stdexcept>
-#include <iostream>
-#include <csignal>
 
 #include "docopt/docopt.h"
 #include "log/Logger.hpp"
 #include "net/Server.hpp"
-#include "regatron/Handler.hpp"
 #include "regatron/Comm.hpp"
+#include "regatron/Handler.hpp"
 
-static const char USAGE[] =
+static const char* USAGE =
 R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands.
 Only one client is supported at time. Use Regatron's serialiolib.
@@ -39,12 +40,10 @@ int main(const int argc, const char* argv[]){
                          "CONS - Regatron Interface v1.0"); // version string
 
     Utils::Logger::Init();
-    for(auto const& arg : args) {
-        std::cout << arg.first << ": " << arg.second << std::endl;
-    }
+
     bool tcp = args.at("tcp").asBool();
-    int regDevPort = args.at("<regatron_port>").asLong();
-    int tcpPort = tcp ? args.at("<endpoint>").asLong() : -1;
+    int regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
+    int tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
     const std::string unixEndpoint = args.at("<endpoint>").asString();
 
     std::shared_ptr<Regatron::Comm> regatron = std::make_shared<Regatron::Comm>(regDevPort);
@@ -52,7 +51,8 @@ int main(const int argc, const char* argv[]){
     static std::shared_ptr<Net::Server> server = nullptr;
 
     auto sighandler = +[](int signum)->void{
-        /** @fixme:
+        /**
+         * @fixme:
          * The shutdown function is being called twice.
          * Once by this and once at a try{} block inside Server::listen().
          * */
