@@ -32,15 +32,13 @@ option(ENABLE_TESTING "Enable Test Builds" OFF)
 
 # Very basic PCH example
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
-if (ENABLE_PCH)
-  # This sets a global PCH parameter, each project will build its own PCH, which
-  # is a good idea if any #define's change
-  target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
+if(ENABLE_PCH)
+    # This sets a global PCH parameter, each project will build its own PCH, which is a good idea if any #define's
+    # change
+    target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
 endif()
 
-
-# Set up some extra Conan dependencies based on our needs
-# before loading Conan
+# Set up some extra Conan dependencies based on our needs before loading Conan
 set(CONAN_EXTRA_REQUIRES "")
 set(CONAN_EXTRA_OPTIONS "")
 
@@ -50,20 +48,14 @@ include(cmake/Conan.cmake)
 run_conan()
 
 if(ENABLE_TESTING)
-  enable_testing()
-  message(
-    "Building Tests. Be sure to check out test/constexpr_tests for constexpr testing"
-  )
-  add_subdirectory(test)
+    enable_testing()
+    message("Building Tests. Be sure to check out test/constexpr_tests for constexpr testing")
+    add_subdirectory(test)
 endif()
 
 if(ENABLE_FUZZING)
-  message(
-    "Building Fuzz Tests, using fuzzing sanitizer https://www.llvm.org/docs/LibFuzzer.html"
-  )
-  add_subdirectory(fuzz_test)
+    message("Building Fuzz Tests, using fuzzing sanitizer https://www.llvm.org/docs/LibFuzzer.html")
+    add_subdirectory(fuzz_test)
 endif()
 
-
 add_subdirectory(src)
-
