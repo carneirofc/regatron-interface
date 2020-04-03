@@ -1,0 +1,2 @@
+cmake-format==0.6.9
+conan==1.23.0
