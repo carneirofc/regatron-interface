@@ -27,11 +27,10 @@ namespace Net{
         m_IOContext(std::make_shared<boost::asio::io_context>()),
         m_Socket(std::make_shared<boost::asio::generic::stream_protocol::socket>(*m_IOContext)),
         m_UNIXAcceptor(nullptr),
-        m_TCPAcceptor(nullptr)
+        m_TCPAcceptor(std::make_shared<boost::asio::ip::tcp::acceptor>
+                (*m_IOContext, boost::asio::ip::tcp::endpoint{boost::asio::ip::tcp::v4(), tcpPort}))
        {
-            m_TCPAcceptor = std::make_shared<boost::asio::ip::tcp::acceptor>
-                (*m_IOContext, boost::asio::ip::tcp::endpoint{boost::asio::ip::tcp::v4(), tcpPort});
-            LOG_INFO("Server listening at port \"{}\"", tcpPort);
+            LOG_INFO("Server at port \"{}\"", tcpPort);
         }
 
     const std::string Server::read(){
