@@ -39,9 +39,9 @@ int main(const int argc, const char *argv[]) {
 
     Utils::Logger::Init();
 
-    bool tcp = args.at("tcp").asBool();
-    int regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
-    int tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
+    bool tcp        = args.at("tcp").asBool();
+    int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
+    int  tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
     const std::string unixEndpoint = args.at("<endpoint>").asString();
 
     std::shared_ptr<Regatron::Comm> regatron =
