@@ -7,20 +7,34 @@
 
 namespace Regatron {
 
-    Handler::Handler(std::shared_ptr<Regatron::Comm> regatron):
-            m_regatron(std::move(regatron)),
+    Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm):
+            m_Regatron(std::move(regatronComm)),
             m_Matchers({
-                Match{"voltage", "%f", [](){ return "GET ACK\n"; }, [](float){ return "SET ACK\n"; }}
+                Match{
+                "voltage",
+                "%f", [this](){
+                    auto readings = this->m_Regatron->getReadings();
+                    return fmt::format("{} {}", ACK, readings->m_ModActualOutVoltageMon);
+                }, [this](float param){
+                    auto readings = this->m_Regatron->getReadings();
+                    readings->m_ModActualOutVoltageMon += param;
+                    LOG_INFO("SET voltage {} res={}", param, readings->m_ModActualOutVoltageMon);
+                    return ACK;
+                }}
             }){}
 
     const std::string Handler::handle(const std::string& message){
         try{
-            for(auto matcher: m_Matchers){
-                if(int commandType = matcher.shouldHandle(message)){
-                    return matcher.handle(message, commandType);
+            for(const auto& m: m_Matchers){
+                double param;
+                auto commandType = m.shouldHandle(message, param);
+                if(static_cast<int>(commandType) >= 0){
+                    return m.handle(message, commandType, param);
                 }
             }
-            return ACK;
+
+            // Default not found message
+            return NACK;
             
             LOG_WARN("No compatible action for {}!", message);
         } catch(const std::invalid_argument& e){
