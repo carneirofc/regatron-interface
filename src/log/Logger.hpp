@@ -1,18 +1,20 @@
 #pragma once
 
-#include <memory>
 #include "spdlog/spdlog.h"
+#include <memory>
 
-namespace Utils{
-    class Logger{
-    private:
-        static std::shared_ptr<spdlog::logger> defaultLogger;
+namespace Utils {
+class Logger {
+  private:
+    static std::shared_ptr<spdlog::logger> defaultLogger;
 
-    public:
-        static void Init();
-        inline static std::shared_ptr<spdlog::logger>& getLogger() { return defaultLogger; }
-    };
-}
+  public:
+    static void                                    Init();
+    inline static std::shared_ptr<spdlog::logger> &getLogger() {
+        return defaultLogger;
+    }
+};
+} // namespace Utils
 
 #define LOG_TRACE(...)    ::Utils::Logger::getLogger()->trace(__VA_ARGS__)
 #define LOG_INFO(...)     ::Utils::Logger::getLogger()->info(__VA_ARGS__)
