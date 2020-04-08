@@ -11,13 +11,13 @@ namespace Regatron {
 #define IBC_STATE_STOPPED  0x4000
 #define IBC_STATE_UPDATE   0x8000
 
-  class IBC {
-    private:
-      // -- IBC Board related
-      double m_invTemp = 0;
-      double m_transformerSecCurrent = 0;
-      unsigned short m_state = 0;
-      unsigned short m_firmwareVer = 0;
-  };
+class IBC {
+  private:
+    // -- IBC Board related
+    double         m_invTemp               = 0;
+    double         m_transformerSecCurrent = 0;
+    unsigned short m_state                 = 0;
+    unsigned short m_firmwareVer           = 0;
+};
 
-}
+} // namespace Regatron

@@ -38,6 +38,7 @@ int main(const int argc, const char *argv[]) {
                        "CONS - Regatron Interface v1.0"); // version string
 
     Utils::Logger::Init();
+    LOG_INFO("Hello, world! {}", true);
 
     bool tcp        = args.at("tcp").asBool();
     int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
@@ -56,7 +57,7 @@ int main(const int argc, const char *argv[]) {
          * The shutdown function is being called twice.
          * Once by this and once at a try{} block inside Server::listen().
          * */
-        LOG_WARN("Capture signal \"{}\", gracefully shutting down...", signum);
+        LOG_ERROR("Capture signal \"{}\", gracefully shutting down...", signum);
         if (server != nullptr) {
             server->stop();
             server->shutdown();
@@ -70,7 +71,6 @@ int main(const int argc, const char *argv[]) {
     } else {
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
-
     server->listen();
     return 0;
 }
