@@ -56,6 +56,7 @@ namespace Regatron {
       void readSystem();
       void readDevice();
       void readTemps();
+      auto getReadings(){ return m_readings; };
   };
 
 }
