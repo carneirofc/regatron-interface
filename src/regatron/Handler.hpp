@@ -55,60 +55,46 @@ namespace Regatron{
         auto toString() const{ return fmt::format("Match for base pattern \"{}\". set format \"{}\"", m_BasePattern, m_SetFormat); }
 
         /** throws: May throw something (std::invalid_argument)! */
-        auto handleSet(const char* message) const {
-            double data;
+        std::optional<double> handleSet(const char* message) const {
+            double data{0};
             int r = std::sscanf(message, m_SetPattern.c_str(), &data);
+            std::cout << "Pattern: "  << m_SetPattern.c_str()
+                << "\nMessage: "<< message
+                << "\nr: "<< r
+                << "\nsscanf: " << data 
+                << "\nDereference: " << &data << std::endl;
             return r == 1 ? std::optional<double>{data} : std::nullopt;
         }
 
-        /** Check if this object should handle the message and returns the command type */
-        CommandType shouldHandle(const std::string& message, double& param) const{
-            if(message.starts_with(GET)){
-                if(message == m_GetPattern){
-                    return CommandType::getCommand;
-                } else {
-                    return CommandType::unsupportedMessage;
-                }
-
-            } else if(message.starts_with(SET)){
-                if(handleSet(message.c_str(), param)){
-                    return CommandType::setCommand;
-                } else {
-                    return CommandType::unsupportedMessage;
-                }
-
-            }
-
-            return CommandType::invalidCommand;
-        }
-        
         /** Respond a message according to the command type.
          * @return: A response to the client.
          * @throws:
          * */
-        auto handle(const std::string& message, const CommandType commandType, double param) const {
-            //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-            std::string res;
+        std::optional<std::string> handle(const std::string& message) const {
+            CommandType commandType;
+
+            std::optional<double> param;
+        
+            if(message.starts_with(GET) && message == m_GetPattern){
+                commandType = CommandType::getCommand;
+
+            } else if(message.starts_with(SET) && (param = handleSet(message.c_str()))){
+                commandType = CommandType::setCommand;
+            }else {
+                commandType = CommandType::invalidCommand;
+            }
+
             switch(commandType){
-                default:
-                    LOG_ERROR("message {} is not valid for Match {}", message, toString());
-                    res = NACK;
-                    break;
+               default:
+                   LOG_ERROR("message {} is not valid for Match {}", message, toString());
+                   return {};
 
                 case CommandType::getCommand:
-                    res = m_GetHandleFunc();
-                    break;
+                    return {m_GetHandleFunc()};
 
                 case CommandType::setCommand:
-                    res = m_SetHandleFunc(param);
-                    break;
-            }
-            LOG_TRACE("message \"{}\", response \"{}\", commandType \"{}\"", message, res, static_cast<int>(commandType));
-            
-            //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-            //std::cout << "Time difference = " <<
-            //    std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-            return res;
+                    return {m_SetHandleFunc(param.value())};
+            }  
         }
         
     };

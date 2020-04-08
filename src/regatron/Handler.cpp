@@ -12,10 +12,10 @@ namespace Regatron {
             m_Matchers({
                 Match{
                 "voltage",
-                "%f", [this](){
+                "%lf", [this](){
                     auto readings = this->m_Regatron->getReadings();
                     return fmt::format("{} {}", ACK, readings->m_ModActualOutVoltageMon);
-                }, [this](float param){
+                }, [this](double param){
                     auto readings = this->m_Regatron->getReadings();
                     readings->m_ModActualOutVoltageMon += param;
                     LOG_INFO("SET voltage {} res={}", param, readings->m_ModActualOutVoltageMon);
@@ -26,10 +26,8 @@ namespace Regatron {
     const std::string Handler::handle(const std::string& message){
         try{
             for(const auto& m: m_Matchers){
-                double param;
-                auto commandType = m.shouldHandle(message, param);
-                if(static_cast<int>(commandType) >= 0){
-                    return m.handle(message, commandType, param);
+                if(auto response = m.handle(message)){
+                    return response.value();
                 }
             }
 
