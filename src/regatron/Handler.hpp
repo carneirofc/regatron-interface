@@ -2,91 +2,124 @@
 
 #include "net/Handler.hpp"
 #include "regatron/Comm.hpp"
+#include <chrono>
+#include <iostream>
+#include <optional>
 
-namespace Regatron{
-    constexpr const char* NACK = "NACK\n";
-    constexpr const char* ACK = "ACK\n";
+namespace Regatron {
+const std::string NACK{"NACK\n"};
+const std::string ACK{"ACK\n"};
 
-    /** 
-     * @todo: impplement an elegant dispatcher? 
-     * @todo: Migrate to a template class?
-     * ideas: Have an object checker list that will forward the message to the correct handler method.
+enum class CommandType : int {
+    unsupportedMessage = -10,
+    invalidCommand     = -1,
+    getCommand,
+    setCommand,
+    cmdCommand
+};
+
+/**
+ * @todo: impplement an elegant dispatcher?
+ * @todo: Migrate to a template class?
+ * ideas: Have an object checker list that will forward the message to the
+ * correct handler method.
+ * */
+class Match {
+  private:
+    static constexpr const char *GET = "get"; // Not parameterized
+    static constexpr const char *SET = "set"; // Parameterized
+
+    const std::string                        m_CommandString;
+    const std::string                        m_SetFormat;
+    const std::string                        m_GetPattern;
+    const std::string                        m_SetPattern;
+    const std::function<std::string()>       m_GetHandleFunc;
+    const std::function<std::string(double)> m_SetHandleFunc;
+
+    CommandType getCommandType(const std::string &message) {
+        if (message.starts_with(GET)) {
+            return CommandType::getCommand;
+        }
+        if (message.starts_with(SET)) {
+            return CommandType::setCommand;
+        }
+        return CommandType::invalidCommand;
+    }
+
+    Match(const std::string commandString, const std::string setFormat,
+          std::function<std::string()>       getHandle,
+          std::function<std::string(double)> setHandle)
+        : m_CommandString(commandString), m_SetFormat(setFormat),
+          m_GetPattern(fmt::format("{}\n", m_CommandString)),
+          m_SetPattern(fmt::format("{} {}\n", m_CommandString, m_SetFormat)),
+          m_GetHandleFunc(std::move(getHandle)),
+          m_SetHandleFunc(std::move(setHandle)) {}
+
+  public:
+    /** @note: get only constructor */
+    Match(const std::string            commandString,
+          std::function<std::string()> getHandle)
+        : Match(commandString, "%lf", getHandle, nullptr) {}
+
+    /** @note: set only constructor */
+    Match(const std::string                  commandString,
+          std::function<std::string(double)> setHandle)
+        : Match(commandString, "%lf", nullptr, setHandle) {}
+
+
+    auto toString() const {
+        return fmt::format("[Match](command\"{}\". set format \"{}\")",
+                           m_CommandString, m_SetFormat);
+    }
+
+    /** throws: May throw something (std::invalid_argument)! */
+    std::optional<double> handleSet(const char *message) const {
+        double data{0};
+        int    r = std::sscanf(message, m_SetPattern.c_str(), &data);
+        return r == 1 ? std::optional<double>{data} : std::nullopt;
+    }
+
+    /** Respond a message according to the command type.
+     * @return: A response to the client. following the pattern
+     * '{}{} {}\n' COMMAND (get/set), BasePattern, handle return
+     * @throws:
      * */
-    class Match {
-        private:
-        static constexpr const char* GET = "get ";
-        static constexpr const char* SET = "set ";
+    std::optional<std::string> handle(const std::string &message) const {
+        CommandType commandType;
 
-        static constexpr int unsupportedMessage = -10;
-        static constexpr int invalidCommand = -1;
-        static constexpr int getCommand = 0;
-        static constexpr int setCommand = 1;
+        std::optional<double> param;
 
-        const std::string m_BasePattern;
-        const std::string m_SetFormat;
-        const std::string m_GetPattern;
-        const std::string m_SetPattern;
-        const std::function<std::string()> m_GetHandleFunc;
-        const std::function<std::string(float)> m_SetHandleFunc;
+        if (m_GetHandleFunc != nullptr && message == m_GetPattern) {
+            commandType = CommandType::getCommand;
 
-        static auto getCommandType(const std::string& message){
-            if(message.starts_with(GET)){ return getCommand; }
-            if(message.starts_with(SET)){ return setCommand; }
-            return invalidCommand;
+        } else if (m_SetHandleFunc != nullptr &&
+                   (param = handleSet(message.c_str()))) {
+            commandType = CommandType::setCommand;
+        } else {
+            commandType = CommandType::invalidCommand;
         }
 
-        public:
-        Match(const std::string basePattern, const std::string setFormat,
-                std::function<std::string()> getHandle,
-                std::function<std::string(float)> setHandle)
-            :m_BasePattern(basePattern),
-            m_SetFormat(setFormat),
-            m_GetPattern(GET + m_BasePattern + "\n"),
-            m_SetPattern(SET + m_BasePattern + m_SetFormat + "\n"),
-            m_GetHandleFunc(getHandle),
-            m_SetHandleFunc(setHandle){}
+        switch (commandType) {
+        default:
+            return {};
 
-        auto toString(){ return fmt::format("Match for base pattern {}. Set format {}", m_BasePattern, m_SetFormat); }
+        case CommandType::getCommand:
+            return {fmt::format("{} {}\n", m_CommandString, m_GetHandleFunc())};
 
-        /** Check if this object should handle the message and returns the command type */
-        int shouldHandle(const std::string& message){
-            return true;
+        case CommandType::setCommand:
+            return {fmt::format("{} {}\n", m_CommandString,
+                                m_SetHandleFunc(param.value()))};
         }
-        
-        /** Respond a message according to the command type.
-         * @return: A response to the client.
-         * @throws:
-         * */
-        const std::string handle(const std::string& message, const int commandType){
-            switch(commandType){
-                default:
-                    break;
+    }
+};
 
-                case getCommand:
-                    break;
-                case setCommand:
-                      break;
-            }
+class Handler : public Net::Handler {
+  public:
+    Handler(std::shared_ptr<Regatron::Comm> regatronComm);
 
-            LOG_ERROR("message {} is not valid for Match {}", message, toString());
-            return NACK;
-        }
-
-        /** throws: May throw something (std::invalid_argument)! */
-        auto handleGet(const std::string& message, const float& res){
-            return (std::sscanf(message.c_str(), m_GetPattern.c_str(), &res) != 1);
-        }
-        
-    };
-
-    class Handler : public Net::Handler{
-        public:
-            Handler(std::shared_ptr<Regatron::Comm> regatron);
-        private:
-            std::shared_ptr<Regatron::Comm> m_regatron;
-            std::vector<Match> m_Matchers;
-
-            bool getParam(const std::string message, const char* beg_pattern, const char* complete_pattern, float* res);
-            const std::string handle(const std::string& message) override;
-    };
-}
+  private:
+    std::shared_ptr<Regatron::Comm> m_Regatron;
+    std::vector<Match>              m_Matchers;
+    const std::string               handle(const std::string &message) override;
+};
+} // namespace Regatron
