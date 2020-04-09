@@ -8,12 +8,12 @@ void Readings::readModuleID() {
     }
 }
 
-void Readings::readModuleErrorTree() {
+void Readings::readModuleErrorTree32() {
     selectModule();
-    if (TC4ReadErrorTree32(m_ModErrorTreeMon) != DLL_SUCCESS) {
+    if (TC4ReadErrorTree32(&m_ModErrorTree32Mon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get module error tree");
     }
-    if (TC4ReadWarningTree32(m_ModWarningTreeMon) != DLL_SUCCESS) {
+    if (TC4ReadWarningTree32(&m_ModWarningTree32Mon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get module warn tree");
     }
 }
@@ -42,12 +42,12 @@ void Readings::readModule() {
     }
 }
 
-void Readings::readSystemErrorTree() {
+void Readings::readSystemErrorTree32() {
     selectSystem();
-    if (TC4ReadErrorTree32(m_SysErrorTreeMon) != DLL_SUCCESS) {
+    if (TC4ReadErrorTree32(&m_SysErrorTree32Mon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get system error tree");
     }
-    if (TC4ReadWarningTree32(m_SysWarningTreeMon) != DLL_SUCCESS) {
+    if (TC4ReadWarningTree32(&m_SysWarningTree32Mon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get system warn tree");
     }
 }
