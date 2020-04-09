@@ -23,25 +23,25 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_Regatron(std::move(regatronComm)),
       m_Matchers({
           // Commands with no response
-          Match{"ModOutVoltage", GET_READING(m_ModActualOutVoltageMon)},
-          // Simple readings
-          Match{"ModOutVoltage", GET_READING(m_ModActualOutVoltageMon)},
-          Match{"ModOutCurrent", GET_READING(m_ModActualOutCurrentMon)},
-          Match{"ModOutPower", GET_READING(m_ModActualOutPowerMon)},
-          Match{"ModRes", GET_READING(m_ModActualResMon)},
-          Match{"ModState", GET_READING(m_ModState)},
 
-          Match{"SysOutVoltage", GET_READING(m_SysActualOutVoltageMon)},
-          Match{"SysOutCurrent", GET_READING(m_SysActualOutCurrentMon)},
-          Match{"SysOutPower", GET_READING(m_SysActualOutPowerMon)},
-          Match{"SysRes", GET_READING(m_SysActualResMon)},
-          Match{"SysState", GET_READING(m_ModState)},
+          // Simple readings
+          Match{"getModOutVoltage", GET_READING(m_ModActualOutVoltageMon)},
+          Match{"getModOutCurrent", GET_READING(m_ModActualOutCurrentMon)},
+          Match{"getModOutPower", GET_READING(m_ModActualOutPowerMon)},
+          Match{"getModRes", GET_READING(m_ModActualResMon)},
+          Match{"getModState", GET_READING(m_ModState)},
+
+          Match{"getSysOutVoltage", GET_READING(m_SysActualOutVoltageMon)},
+          Match{"getSysOutCurrent", GET_READING(m_SysActualOutCurrentMon)},
+          Match{"getSysOutPower", GET_READING(m_SysActualOutPowerMon)},
+          Match{"getSysRes", GET_READING(m_SysActualResMon)},
+          Match{"getSysState", GET_READING(m_ModState)},
 
           // T_ErrorTree32
-          Match{"ModWarnTree", GET_TREE_READING(m_ModWarningTree32Mon)},
-          Match{"ModErrTree", GET_TREE_READING(m_ModErrorTree32Mon)},
-          Match{"SysWarnTree", GET_TREE_READING(m_SysWarningTree32Mon)},
-          Match{"SysErrTree", GET_TREE_READING(m_SysErrorTree32Mon)},
+          Match{"getModWarnTree", GET_TREE_READING(m_ModWarningTree32Mon)},
+          Match{"getModErrTree", GET_TREE_READING(m_ModErrorTree32Mon)},
+          Match{"getSysWarnTree", GET_TREE_READING(m_SysWarningTree32Mon)},
+          Match{"getSysErrTree", GET_TREE_READING(m_SysErrorTree32Mon)},
           //
       }) {}
 

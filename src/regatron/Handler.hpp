@@ -26,11 +26,10 @@ enum class CommandType : int {
  * */
 class Match {
   private:
-    static constexpr const char *GET = "get";
-    static constexpr const char *SET = "set";
-    static constexpr const char *CMD = "cmd";
+    static constexpr const char *GET = "get"; // Not parameterized
+    static constexpr const char *SET = "set"; // Parameterized
 
-    const std::string                        m_BasePattern;
+    const std::string                        m_CommandString;
     const std::string                        m_SetFormat;
     const std::string                        m_GetPattern;
     const std::string                        m_SetPattern;
@@ -41,39 +40,36 @@ class Match {
         if (message.starts_with(GET)) {
             return CommandType::getCommand;
         }
-        if (message.starts_with(CMD)) {
-            return CommandType::cmdCommand;
-        }
         if (message.starts_with(SET)) {
             return CommandType::setCommand;
         }
         return CommandType::invalidCommand;
     }
 
-  public:
-    /** @note: get only constructor */
-    Match(const std::string basePattern, std::function<std::string()> getHandle)
-        : Match(basePattern, "%lf", getHandle, nullptr) {}
-
-    //  /** @note: Default setFormat "%lf" for double */
-    //  Match(const std::string basePattern, std::function<std::string()>
-    //  getHandle,
-    //        std::function<std::string(double)> setHandle)
-    //      : Match(basePattern, "%lf", getHandle, setHandle) {}
-
-    Match(const std::string basePattern, const std::string setFormat,
+    Match(const std::string commandString, const std::string setFormat,
           std::function<std::string()>       getHandle,
           std::function<std::string(double)> setHandle)
-        : m_BasePattern(basePattern), m_SetFormat(setFormat),
-          m_GetPattern(fmt::format("{}{}\n", GET, m_BasePattern)),
-          m_SetPattern(
-              fmt::format("{}{} {}\n", SET, m_BasePattern, m_SetFormat)),
+        : m_CommandString(commandString), m_SetFormat(setFormat),
+          m_GetPattern(fmt::format("{}\n", m_CommandString)),
+          m_SetPattern(fmt::format("{} {}\n", m_CommandString, m_SetFormat)),
           m_GetHandleFunc(std::move(getHandle)),
           m_SetHandleFunc(std::move(setHandle)) {}
 
+  public:
+    /** @note: get only constructor */
+    Match(const std::string            commandString,
+          std::function<std::string()> getHandle)
+        : Match(commandString, "%lf", getHandle, nullptr) {}
+
+    /** @note: set only constructor */
+    Match(const std::string                  commandString,
+          std::function<std::string(double)> setHandle)
+        : Match(commandString, "%lf", nullptr, setHandle) {}
+
+
     auto toString() const {
-        return fmt::format("[Match](base_pattern \"{}\". set format \"{}\")",
-                           m_BasePattern, m_SetFormat);
+        return fmt::format("[Match](command\"{}\". set format \"{}\")",
+                           m_CommandString, m_SetFormat);
     }
 
     /** throws: May throw something (std::invalid_argument)! */
@@ -96,7 +92,7 @@ class Match {
         if (m_GetHandleFunc != nullptr && message == m_GetPattern) {
             commandType = CommandType::getCommand;
 
-        } else if (m_SetHandleFunc != nullptr && message.starts_with(SET) &&
+        } else if (m_SetHandleFunc != nullptr &&
                    (param = handleSet(message.c_str()))) {
             commandType = CommandType::setCommand;
         } else {
@@ -107,16 +103,11 @@ class Match {
         default:
             return {};
 
-        case CommandType::cmdCommand:
-            return {fmt::format("{}{} {}\n", CMD, m_BasePattern,
-                                m_GetHandleFunc())};
-
         case CommandType::getCommand:
-            return {fmt::format("{}{} {}\n", GET, m_BasePattern,
-                                m_GetHandleFunc())};
+            return {fmt::format("{} {}\n", m_CommandString, m_GetHandleFunc())};
 
         case CommandType::setCommand:
-            return {fmt::format("{}{} {}\n", SET, m_BasePattern,
+            return {fmt::format("{} {}\n", m_CommandString,
                                 m_SetHandleFunc(param.value()))};
         }
     }
