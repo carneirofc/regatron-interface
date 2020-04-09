@@ -3,6 +3,7 @@
 #include "serialiolib.h" // NOLINT
 #include <iostream>
 
+
 #include "fmt/format.h"
 #include "log/Logger.hpp"
 
@@ -22,6 +23,7 @@ Comm::Comm() : Comm(1) {}
 
 Comm::~Comm() {
     if (DllClose() != DLL_SUCCESS) {
+
         LOG_ERROR("failed to close tcio lib");
     }
     LOG_INFO("regatron obj deleted");
