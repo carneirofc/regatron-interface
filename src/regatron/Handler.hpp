@@ -46,18 +46,23 @@ class Match {
     }
 
   public:
+    /** @note: Default setFormat "%lf" for double */
+    Match(const std::string basePattern, std::function<std::string()> getHandle,
+          std::function<std::string(double)> setHandle)
+        : Match(basePattern, "%lf", getHandle, setHandle) {}
+
     Match(const std::string basePattern, const std::string setFormat,
           std::function<std::string()>       getHandle,
           std::function<std::string(double)> setHandle)
         : m_BasePattern(basePattern), m_SetFormat(setFormat),
-          m_GetPattern(fmt::format("{} {}\n", GET, m_BasePattern)),
+          m_GetPattern(fmt::format("{}{}\n", GET, m_BasePattern)),
           m_SetPattern(
-              fmt::format("{} {} {}\n", SET, m_BasePattern, m_SetFormat)),
+              fmt::format("{}{} {}\n", SET, m_BasePattern, m_SetFormat)),
           m_GetHandleFunc(std::move(getHandle)),
           m_SetHandleFunc(std::move(setHandle)) {}
 
     auto toString() const {
-        return fmt::format("Match for base pattern \"{}\". set format \"{}\"",
+        return fmt::format("[Match](base_pattern \"{}\". set format \"{}\")",
                            m_BasePattern, m_SetFormat);
     }
 
@@ -65,15 +70,12 @@ class Match {
     std::optional<double> handleSet(const char *message) const {
         double data{0};
         int    r = std::sscanf(message, m_SetPattern.c_str(), &data);
-        std::cout << "Pattern: " << m_SetPattern.c_str()
-                  << "\nMessage: " << message << "\nr: " << r
-                  << "\nsscanf: " << data << "\nDereference: " << &data
-                  << std::endl;
         return r == 1 ? std::optional<double>{data} : std::nullopt;
     }
 
     /** Respond a message according to the command type.
-     * @return: A response to the client.
+     * @return: A response to the client. following the pattern
+     * '{}{} {}\n' COMMAND (get/set), BasePattern, handle return
      * @throws:
      * */
     std::optional<std::string> handle(const std::string &message) const {
@@ -81,11 +83,13 @@ class Match {
 
         std::optional<double> param;
 
-        if (message.starts_with(GET) && message == m_GetPattern) {
+        if (message.starts_with(GET) && message == m_GetPattern &&
+            m_GetHandleFunc != nullptr) {
             commandType = CommandType::getCommand;
 
         } else if (message.starts_with(SET) &&
-                   (param = handleSet(message.c_str()))) {
+                   (param = handleSet(message.c_str())) &&
+                   m_SetHandleFunc != nullptr) {
             commandType = CommandType::setCommand;
         } else {
             commandType = CommandType::invalidCommand;
@@ -93,15 +97,15 @@ class Match {
 
         switch (commandType) {
         default:
-            LOG_ERROR("message {} is not valid for Match {}", message,
-                      toString());
             return {};
 
         case CommandType::getCommand:
-            return {m_GetHandleFunc()};
+            return {fmt::format("{}{} {}\n", GET, m_BasePattern,
+                                m_GetHandleFunc())};
 
         case CommandType::setCommand:
-            return {m_SetHandleFunc(param.value())};
+            return {fmt::format("{}{} {}\n", SET, m_BasePattern,
+                                m_SetHandleFunc(param.value()))};
         }
     }
 };

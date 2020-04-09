@@ -13,7 +13,7 @@ def DirectoryOfThisScript():
 
 # CHANGE THIS LIST OF FLAGS. YES, THIS IS THE DROID YOU HAVE BEEN LOOKING FOR.
 flags = [
- '-x', 'c++'
+ '-x', 'c++','-std=c++1z'
 ]
 
 conan_flags = json.loads(open(os.path.join(DirectoryOfThisScript(),"build/conan_ycm_flags.json"), "r").read())
