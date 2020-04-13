@@ -6,7 +6,10 @@
 #include <string>
 
 namespace Regatron {
-#define GET_READING(member)                                                    \
+#define GET_FUNC(func)                                                         \
+    [this]() { return this->m_Regatron->getReadings()->func(); }
+
+#define GET_MEMBER(member)                                                     \
     [this]() {                                                                 \
         auto readings = this->m_Regatron->getReadings();                       \
         return fmt::format("{}", readings->member);                            \
@@ -18,32 +21,37 @@ namespace Regatron {
         return readings->toString(readings->m_SysWarningTree32Mon);            \
     }
 
+#define CMD_API(member)                                                        \
+    [this]() {                                                                 \
+        this->m_Regatron->getReadings()->member();                             \
+        return ACK;                                                            \
+    }
+
 // @fixme: Do this in a way that does not require a macros.
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_Regatron(std::move(regatronComm)),
       m_Matchers({
           // Commands with no response
+          Match{"cmdReadSysErrTree", CMD_API(readSystemErrorTree32)},
+          Match{"cmdReadModErrTree", CMD_API(readModuleErrorTree32)},
+          Match{"cmdStoreParam", CMD_API(storeParameters)},
+          Match{"cmdClearErrors", CMD_API(clearErrors)},
+          Match{"cmdReadControlMode", CMD_API(readControlMode)},
+          Match{"cmdReadControlInput", CMD_API(readRemoteControlInput)},
 
           // Simple readings
-          Match{"getModOutVoltage", GET_READING(m_ModActualOutVoltageMon)},
-          Match{"getModOutCurrent", GET_READING(m_ModActualOutCurrentMon)},
-          Match{"getModOutPower", GET_READING(m_ModActualOutPowerMon)},
-          Match{"getModRes", GET_READING(m_ModActualResMon)},
-          Match{"getModState", GET_READING(m_ModState)},
+          Match{"getTemperatures", GET_FUNC(getTemperatures)},
+          Match{"getModReadings", GET_FUNC(getModReadings)},
+          Match{"getSysReadings", GET_FUNC(getSysReadings)},
 
-          Match{"getSysOutVoltage", GET_READING(m_SysActualOutVoltageMon)},
-          Match{"getSysOutCurrent", GET_READING(m_SysActualOutCurrentMon)},
-          Match{"getSysOutPower", GET_READING(m_SysActualOutPowerMon)},
-          Match{"getSysRes", GET_READING(m_SysActualResMon)},
-          Match{"getSysState", GET_READING(m_ModState)},
-
-          // T_ErrorTree32
-          Match{"getModWarnTree", GET_TREE_READING(m_ModWarningTree32Mon)},
-          Match{"getModErrTree", GET_TREE_READING(m_ModErrorTree32Mon)},
-          Match{"getSysWarnTree", GET_TREE_READING(m_SysWarningTree32Mon)},
-          Match{"getSysErrTree", GET_TREE_READING(m_SysErrorTree32Mon)},
-          //
+          // Error + Warning T_ErrorTree32
+          Match{"getModTree", GET_FUNC(getModTree)},
+          Match{"getSysTree", GET_FUNC(getSysTree)},
       }) {}
+
+#undef GET_FUNC
+#undef GET_MEMBER
+#undef CMD_API
 
 const std::string Handler::handle(const std::string &message) {
     try {

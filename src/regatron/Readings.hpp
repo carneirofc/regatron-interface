@@ -117,7 +117,8 @@ class Readings {
     unsigned int m_moduleID = 0;
 
     /** Represent an T_ErrorTree32 object as a vector "[0, .... 32]"*/
-    std::string toString(const T_ErrorTree32 &errorTree32) const {
+    const std::string
+    T_ErrorTree32toString(const T_ErrorTree32 &errorTree32) const {
         std::ostringstream oss;
         oss << "[" << errorTree32.group << ",";
         int index = 0;
@@ -130,6 +131,74 @@ class Readings {
         oss << "]";
         return oss.str();
     };
+
+    const std::string getModTree() {
+        std::ostringstream oss;
+        readModuleErrorTree32();
+
+        // Error
+        oss << '[' << m_ModErrorTree32Mon.group << ',';
+        for (const auto &error : m_ModErrorTree32Mon.error) {
+            oss << error;
+            oss << ',';
+        }
+
+        // Warning
+        int idx{0};
+        oss << m_ModWarningTree32Mon.group << ',';
+        for (const auto &error : m_ModWarningTree32Mon.error) {
+            oss << error;
+            idx++;
+            if (idx < errorTree32Len) {
+                oss << ',';
+            }
+        }
+        oss << ']';
+        return oss.str();
+    }
+
+    const std::string getSysTree() {
+        std::ostringstream oss;
+        readSystemErrorTree32();
+
+        // Error
+        oss << '[' << m_SysErrorTree32Mon.group << ',';
+        for (const auto &error : m_SysErrorTree32Mon.error) {
+            oss << error;
+            oss << ',';
+        }
+
+        // Warning
+        int idx{0};
+        oss << m_SysWarningTree32Mon.group << ',';
+        for (const auto &error : m_SysWarningTree32Mon.error) {
+            oss << error;
+            idx++;
+            if (idx < errorTree32Len) {
+                oss << ',';
+            }
+        }
+        oss << ']';
+        return oss.str();
+    }
+
+    const std::string getModReadings() {
+        readModule();
+        std::ostringstream oss;
+        oss << '[' << m_ModActualOutVoltageMon << ','
+            << m_ModActualOutCurrentMon << ',' << m_ModActualOutPowerMon << ','
+            << m_ModActualResMon << ',' << m_ModState << ']';
+        return oss.str();
+    }
+
+    const std::string getSysReadings() {
+        readSystem();
+        std::ostringstream oss;
+        oss << '[' << m_SysActualOutVoltageMon << ','
+            << m_SysActualOutCurrentMon << ',' << m_SysActualOutPowerMon << ','
+            << m_SysActualResMon << ',' << m_SysState << ']';
+        return oss.str();
+    }
 
     /**
      * Read and convert to physical value DCLinkVoltage
@@ -171,6 +240,21 @@ class Readings {
         m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / 4000.;
     }
 
+    /**
+     * Get a string array representation of all temperatures.
+     * [0] IGBT Temp
+     * [1] Rect Temp
+     * [2] PCB  Temp
+     * @throws: std::runtime_error
+     * @return string in the format "[val1,...,valn]" */
+    const std::string getTemperatures() {
+        readTemperature();
+        std::ostringstream oss;
+        oss << '[' << m_IGBTTempMon << ',' << m_RectifierTempMon << ','
+            << m_PCBTempMon << ']';
+        return oss.str();
+    }
+
     // @todo: Restrict read/write if master ...? Here or upper layer?
     bool isMaster();
 
@@ -181,10 +265,24 @@ class Readings {
     void readModuleID();
 
     /** Monitor Readings @throw: std::runtime_exception */
-    void readGeneric();
+    // void readGeneric();
+
+    /** Methods readSystem and readModule will act on the following values:
+     * TC4GetVoltageActSense(&m_...ActualOutVoltageMon)
+     * TC4GetPowerActSense(&m_...ActualOutPowerMon)
+     * TC4GetCurrentAct(&m_...ActualOutCurrentMon)
+     * TC4GetResistanceAct(&m_...ActualResMon)
+     * TC4StateActSystem(&m_...State)
+     */
     void readSystem();
-    void readSystemErrorTree32();
     void readModule();
+
+    /** Methods readSystemError32 and readModuleError32 will act on the
+     * following values:
+     * TC4ReadErrorTree32(&m_...ErrorTree32Mon)
+     * TC4ReadWarningTree32(&m_...WarningTree32Mon)
+     * */
+    void readSystemErrorTree32();
     void readModuleErrorTree32();
 
     /** Set Module/System calls */
