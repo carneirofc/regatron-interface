@@ -40,7 +40,6 @@ namespace RemoteCtrlInp {
 */
 
 }
-
 class Readings {
   private:
     /** One time readings */
