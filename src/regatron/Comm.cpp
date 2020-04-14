@@ -11,9 +11,8 @@ namespace Regatron {
 constexpr unsigned int SEARCH_SLEEP_SEC = 1000 * 1000 * 2;
 
 Comm::Comm(int port)
-    : m_port(port), m_version(std::make_shared<Regatron::Version>()),
-      m_readings(std::make_shared<Regatron::Readings>()) {
-    this->m_version->readDllVersion();
+    : m_port(port), m_readings(std::make_shared<Regatron::Readings>()) {
+    this->m_readings->getVersion()->readDllVersion();
     LOG_INFO("initializing tcio lib");
     DllInit();
     getDllStatus();
