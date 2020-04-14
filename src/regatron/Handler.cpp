@@ -7,18 +7,12 @@
 
 namespace Regatron {
 #define GET_FUNC(func)                                                         \
-    [this]() { return this->m_Regatron->getReadings()->func(); }
+    [this]() { return this->m_Regatron->getReadings()->func; }
 
 #define GET_MEMBER(member)                                                     \
     [this]() {                                                                 \
         auto readings = this->m_Regatron->getReadings();                       \
         return fmt::format("{}", readings->member);                            \
-    }
-
-#define GET_TREE_READING(member)                                               \
-    [this]() {                                                                 \
-        auto readings = this->m_Regatron->getReadings();                       \
-        return readings->toString(readings->m_SysWarningTree32Mon);            \
     }
 
 #define CMD_API(member)                                                        \
@@ -32,21 +26,32 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_Regatron(std::move(regatronComm)),
       m_Matchers({
           // Commands with no response
-          Match{"cmdReadSysErrTree", CMD_API(readSystemErrorTree32)},
-          Match{"cmdReadModErrTree", CMD_API(readModuleErrorTree32)},
           Match{"cmdStoreParam", CMD_API(storeParameters)},
           Match{"cmdClearErrors", CMD_API(clearErrors)},
-          Match{"cmdReadControlMode", CMD_API(readControlMode)},
-          Match{"cmdReadControlInput", CMD_API(readRemoteControlInput)},
 
           // Simple readings
-          Match{"getTemperatures", GET_FUNC(getTemperatures)},
-          Match{"getModReadings", GET_FUNC(getModReadings)},
-          Match{"getSysReadings", GET_FUNC(getSysReadings)},
+          Match{"getDSPVersion", GET_FUNC(getVersion()->m_DSPVersionString)},
+          Match{"getDLLVersion", GET_FUNC(getVersion()->m_DLLVersionString)},
+          Match{"getBootloaderVersion",
+                GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
+          Match{"getModulatorVersion",
+                GET_FUNC(getVersion()->m_ModulatorDSPVersionString)},
+          Match{"getPheripherieVersion",
+                GET_FUNC(getVersion()->m_PeripherieDSPVersionString)},
+
+          Match{"getDCLinkVoltage", GET_FUNC(getDCLinkVoltage())},
+          Match{"getPrimaryCurrent", GET_FUNC(getPrimaryCurrent())},
+
+          Match{"getTemperatures", GET_FUNC(getTemperatures())},
+          Match{"getModReadings", GET_FUNC(getModReadings())},
+          Match{"getSysReadings", GET_FUNC(getSysReadings())},
+          Match{"getSysControlMode", GET_FUNC(getSysControlMode())},
+          Match{"getModControlMode", GET_FUNC(getModControlMode())},
+          Match{"getControlInput", GET_FUNC(getRemoteControlInput())},
 
           // Error + Warning T_ErrorTree32
-          Match{"getModTree", GET_FUNC(getModTree)},
-          Match{"getSysTree", GET_FUNC(getSysTree)},
+          Match{"getModTree", GET_FUNC(getModTree())},
+          Match{"getSysTree", GET_FUNC(getSysTree())},
       }) {}
 
 #undef GET_FUNC
