@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Version.hpp"
 #include "log/Logger.hpp"
 #include "serialiolib.h" // NOLINT
 #include <sstream>
@@ -43,6 +44,10 @@ namespace RemoteCtrlInp {
 class Readings {
   private:
     /** One time readings */
+
+    // Software version
+    std::shared_ptr<Regatron::Version> m_Version;
+
     // Additional
     int m_DCLinkPhysNom;         // [V]
     int m_PrimaryCurrentPhysNom; // [A]
@@ -63,6 +68,7 @@ class Readings {
     double m_SysCurrentPhysNom;    // [A]
     double m_SysPowerPhysNom;      // [kW]
     double m_SysResistancePhysNom; // [mOhm]
+    unsigned int m_SysControlMode;       // namespace ControlMode
 
     // -- Module
     double m_ModVoltagePhysMax;    // [V]
@@ -79,18 +85,19 @@ class Readings {
     double m_ModCurrentPhysNom;    // [A]
     double m_ModPowerPhysNom;      // [kW]
     double m_ModResistancePhysNom; // [mOhm]
-
-  public:
-    /** Monitor readings */
+    unsigned int m_ModControlMode;       // namespace ControlMode
 
     // Generic ...
-    unsigned int m_ControlMode;       // namespace ControlMode
     unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
     double       m_DCLinkVoltageMon;  // [V]
     double       m_PrimaryCurrentMon; // [A] Tranformer primary current
     double       m_IGBTTempMon;       // [°C] heat sink of IGBT
     double       m_RectifierTempMon;  // [°C] heat sink of rectifier
     double       m_PCBTempMon;        // [°C] PCB Controller board temperature
+
+  public:
+    auto getVersion() { return m_Version; }
+    /** Monitor readings */
 
     // System
     struct T_ErrorTree32  m_SysErrorTree32Mon;
@@ -115,23 +122,25 @@ class Readings {
     // -- Regatron Module
     unsigned int m_moduleID = 0;
 
-    /** Represent an T_ErrorTree32 object as a vector "[0, .... 32]"*/
-    const std::string
-    T_ErrorTree32toString(const T_ErrorTree32 &errorTree32) const {
+    Readings() : m_Version(std::make_shared<Regatron::Version>()) {}
+
+    /** Represent an T_ErrorTree32 object as a vector "[0, ... 32]"*/
+    static auto T_ErrorTree32toString(const T_ErrorTree32 &errorTree32) {
         std::ostringstream oss;
         oss << "[" << errorTree32.group << ",";
         int index = 0;
         for (const auto &error : errorTree32.error) {
             oss << error;
             index++;
-            if (index < errorTree32Len)
+            if (index < errorTree32Len) {
                 oss << ",";
+            }
         }
         oss << "]";
         return oss.str();
     };
 
-    const std::string getModTree() {
+    auto getModTree() {
         std::ostringstream oss;
         readModuleErrorTree32();
 
@@ -156,7 +165,7 @@ class Readings {
         return oss.str();
     }
 
-    const std::string getSysTree() {
+    auto getSysTree() {
         std::ostringstream oss;
         readSystemErrorTree32();
 
@@ -181,7 +190,7 @@ class Readings {
         return oss.str();
     }
 
-    const std::string getModReadings() {
+    auto getModReadings() {
         readModule();
         std::ostringstream oss;
         oss << '[' << m_ModActualOutVoltageMon << ','
@@ -190,7 +199,7 @@ class Readings {
         return oss.str();
     }
 
-    const std::string getSysReadings() {
+    auto getSysReadings() {
         readSystem();
         std::ostringstream oss;
         oss << '[' << m_SysActualOutVoltageMon << ','
@@ -211,6 +220,10 @@ class Readings {
         }
         m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / 4000.;
     }
+    auto getDCLinkVoltage() {
+        readDCLinkVoltage();
+        return fmt::format("{}", m_DCLinkVoltageMon);
+    }
 
     void readPrimaryCurrent() {
         int primaryCurrent;
@@ -220,6 +233,11 @@ class Readings {
         }
         m_PrimaryCurrentMon =
             (primaryCurrent * m_PrimaryCurrentPhysNom) / 4000.;
+    }
+
+    auto getPrimaryCurrent() {
+        readPrimaryCurrent();
+        return fmt::format("{}", m_PrimaryCurrentMon);
     }
 
     /**
@@ -246,7 +264,7 @@ class Readings {
      * [2] PCB  Temp
      * @throws: std::runtime_error
      * @return string in the format "[val1,...,valn]" */
-    const std::string getTemperatures() {
+    auto getTemperatures() {
         readTemperature();
         std::ostringstream oss;
         oss << '[' << m_IGBTTempMon << ',' << m_RectifierTempMon << ','
@@ -289,30 +307,59 @@ class Readings {
     void selectModule() { this->selectModule(MOD_VALUES); }
 
     void storeParameters() {
-        if (TC4StoreParameters() != DLL_SUCCESS)
+        if (TC4StoreParameters() != DLL_SUCCESS) {
             throw std::runtime_error("failed to store parameters");
+        }
     }
 
     void clearErrors() {
-        if (TC4ClearError() != DLL_SUCCESS)
+        if (TC4ClearError() != DLL_SUCCESS) {
             throw std::runtime_error("failed to clear erors");
+        }
     }
 
-    void readControlMode() {
-        if (TC4GetControlMode(&m_ControlMode) != DLL_SUCCESS)
-            throw std::runtime_error("failed to read control mode");
+    void readModControlMode() {
+        selectModule();
+        if (TC4GetControlMode(&m_ModControlMode) != DLL_SUCCESS) {
+            throw std::runtime_error("failed to read module control mode");
+        }
+        selectSystem();
+    }
+
+    void readSysControlMode() {
+        selectSystem();
+        if (TC4GetControlMode(&m_SysControlMode) != DLL_SUCCESS) {
+            throw std::runtime_error("failed to read system control mode");
+        }
+    }
+
+    auto getSysControlMode() {
+        readSysControlMode();
+        return fmt::format("{}", m_SysControlMode);
+    }
+
+    auto getModControlMode() {
+        readModControlMode();
+        return fmt::format("{}", m_ModControlMode);
     }
 
     void readRemoteControlInput() {
-        if (TC4GetRemoteControlInput(&m_RemoteCtrlInp) != DLL_SUCCESS)
+        if (TC4GetRemoteControlInput(&m_RemoteCtrlInp) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read remote control input");
+        }
+    }
+
+    auto getRemoteControlInput() {
+        readRemoteControlInput();
+        return fmt::format("{}", m_RemoteCtrlInp);
     }
 
     void selectModule(unsigned int module) {
-        if (TC4SetModuleSelector(module) != DLL_SUCCESS)
+        if (TC4SetModuleSelector(module) != DLL_SUCCESS) {
             throw std::runtime_error(fmt::format(
                 "failed to set module selector to {} (code {})",
                 ((module == SYS_VALUES) ? "system" : "device"), module));
+        }
     }
 };
 } // namespace Regatron
