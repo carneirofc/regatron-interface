@@ -6,13 +6,13 @@
 
 namespace Regatron {
 void Version::readDllVersion() {
-    if (DllReadVersion(&m_dllMajorMinor, &m_dllBuild, m_dllString) !=
+    if (DllReadVersion(&m_DLLMajorMinor, &m_DLLBuild, m_DLLString) !=
         DLL_SUCCESS) {
         throw std::runtime_error("failed to initialize tcio lib.");
     }
-    m_dllVerString = fmt::format("{}.{}.{}", (m_dllMajorMinor >> 16),
-                                 (m_dllMajorMinor & 0xff), m_dllBuild);
-    LOG_INFO("Dll version: {}, {}", m_dllVerString, m_dllString);
+    m_DLLVersionString = fmt::format("{}.{}.{}", (m_DLLMajorMinor >> 16),
+                                     (m_DLLMajorMinor & 0xff), m_DLLBuild);
+    LOG_INFO("Dll version: {}, {}", m_DLLVersionString, m_DLLString);
 }
 
 void Version::readDSPVersion() {
@@ -20,24 +20,24 @@ void Version::readDSPVersion() {
         DLL_SUCCESS) {
         throw std::runtime_error("failed to read DSP firmware version.");
     }
-    if (TC4GetPDSPVersion(&m_peripherieDSP) != DLL_SUCCESS) {
-        throw std::runtime_error("failed to read version of peripherie-DSP.");
-    }
-    if (TC4GetPeripherieVersion(&m_peripherieAuxiliaryDSP,
-                                &m_modulatorAuxiliaryDSP,
-                                &m_bootloader) != DLL_SUCCESS) {
+
+    if (TC4GetPeripherieVersion(&m_PeripherieDSPVersion, &m_ModulatorDSPVersion,
+                                &m_MainDSPBootloaderVersion) != DLL_SUCCESS) {
         throw std::runtime_error("failed to read auxiliary DSP module version "
                                  "(peripherie, modulator and bootloader).");
     }
 
-    LOG_INFO("Version DSP:\n"
-             "  Firmware {}.{}.{}\n"
-             "  Pheripherie: 0.{}\n"
-             "  Bootloader: {}\n"
-             "Version Auxiliary DSP:\n"
-             "  Peripherie: 0.{}\n"
-             "  Modulator: 0.{}",
-             m_DSPMain, m_DSPSub, m_DSPRevision, m_peripherieDSP, m_bootloader,
-             m_peripherieAuxiliaryDSP, m_modulatorAuxiliaryDSP);
+    m_DSPVersionString =
+        fmt::format("{}.{}.{}", m_DSPMain, m_DSPSub, m_DSPRevision);
+    m_MainDSPBootloaderVersionString =
+        fmt::format("0.{:02}", m_MainDSPBootloaderVersion);
+    m_PeripherieDSPVersionString =
+        fmt::format("0.{:02}", m_PeripherieDSPVersion);
+    m_ModulatorDSPVersionString = fmt::format("0.{:02}", m_ModulatorDSPVersion);
+
+    LOG_INFO("DSP Version: {}", m_DSPVersionString);
+    LOG_INFO("Main DSP Bootloader: {}", m_MainDSPBootloaderVersionString);
+    LOG_INFO("Pheripherie DSP: {}", m_PeripherieDSPVersionString);
+    LOG_INFO("Modulator DSP: {}", m_ModulatorDSPVersionString);
 }
 } // namespace Regatron
