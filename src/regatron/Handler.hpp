@@ -29,7 +29,7 @@ class Match {
     static constexpr const char *GET = "get"; // Not parameterized
     static constexpr const char *SET = "set"; // Parameterized
 
-    const std::string                        m_CommandString;
+    const std::string &                      m_CommandString;
     const std::string                        m_SetFormat;
     const std::string                        m_GetPattern;
     const std::string                        m_SetPattern;
@@ -46,7 +46,7 @@ class Match {
         return CommandType::invalidCommand;
     }
 
-    Match(const std::string commandString, const std::string setFormat,
+    Match(const std::string &commandString, const std::string setFormat,
           std::function<std::string()>       getHandle,
           std::function<std::string(double)> setHandle)
         : m_CommandString(commandString), m_SetFormat(setFormat),
@@ -57,18 +57,17 @@ class Match {
 
   public:
     /** @note: get only constructor */
-    Match(const std::string            commandString,
+    Match(const std::string &          commandString,
           std::function<std::string()> getHandle)
-        : Match(commandString, "%lf", getHandle, nullptr) {}
+        : Match(commandString, "%lf", std::move(getHandle), nullptr) {}
 
     /** @note: set only constructor */
-    Match(const std::string                  commandString,
+    Match(const std::string &                commandString,
           std::function<std::string(double)> setHandle)
-        : Match(commandString, "%lf", nullptr, setHandle) {}
-
+        : Match(commandString, "%lf", nullptr, std::move(setHandle)) {}
 
     auto toString() const {
-        return fmt::format("[Match](command\"{}\". set format \"{}\")",
+        return fmt::format(R"([Match](command" {} ". set format " {} "))",
                            m_CommandString, m_SetFormat);
     }
 

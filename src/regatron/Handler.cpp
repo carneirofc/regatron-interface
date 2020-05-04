@@ -6,10 +6,16 @@
 #include <string>
 
 namespace Regatron {
+#define SET_FUNC_DOUBLE(func)                                                  \
+    [this](double arg1) {                                                      \
+        this->m_Regatron->getReadings()->func(arg1);                           \
+        return ACK;                                                            \
+    }
+
 #define GET_FUNC(func)                                                         \
     [this]() { return this->m_Regatron->getReadings()->func; }
 
-#define GET_MEMBER(member)                                                     \
+#define GET_FORMAT(member)                                                     \
     [this]() {                                                                 \
         auto readings = this->m_Regatron->getReadings();                       \
         return fmt::format("{}", readings->member);                            \
@@ -25,6 +31,7 @@ namespace Regatron {
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_Regatron(std::move(regatronComm)),
       m_Matchers({
+          // clang-format off
           // Commands with no response
           Match{"cmdStoreParam", CMD_API(storeParameters)},
           Match{"cmdClearErrors", CMD_API(clearErrors)},
@@ -32,12 +39,9 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           // Simple readings
           Match{"getDSPVersion", GET_FUNC(getVersion()->m_DSPVersionString)},
           Match{"getDLLVersion", GET_FUNC(getVersion()->m_DLLVersionString)},
-          Match{"getBootloaderVersion",
-                GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
-          Match{"getModulatorVersion",
-                GET_FUNC(getVersion()->m_ModulatorDSPVersionString)},
-          Match{"getPheripherieVersion",
-                GET_FUNC(getVersion()->m_PeripherieDSPVersionString)},
+          Match{"getBootloaderVersion", GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
+          Match{"getModulatorVersion", GET_FUNC(getVersion()->m_ModulatorDSPVersionString)},
+          Match{"getPheripherieVersion", GET_FUNC(getVersion()->m_PeripherieDSPVersionString)},
 
           Match{"getDCLinkVoltage", GET_FUNC(getDCLinkVoltage())},
           Match{"getPrimaryCurrent", GET_FUNC(getPrimaryCurrent())},
@@ -52,6 +56,23 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           // Error + Warning T_ErrorTree32
           Match{"getModTree", GET_FUNC(getModTree())},
           Match{"getSysTree", GET_FUNC(getSysTree())},
+
+          Match{"getModCurrentRef", GET_FORMAT(getModCurrentRef())},
+          Match{"getModVoltageRef", GET_FORMAT(getModVoltageRef())},
+          Match{"getModResistanceRef", GET_FORMAT(getModResistanceRef())},
+          Match{"getModPowerRef", GET_FORMAT(getModPowerRef())},
+
+          Match{"getSysCurrentRef", GET_FORMAT(getSysCurrentRef())},
+          Match{"getSysVoltageRef", GET_FORMAT(getSysVoltageRef())},
+          Match{"getSysResistanceRef", GET_FORMAT(getSysResistanceRef())},
+          Match{"getSysPowerRef", GET_FORMAT(getSysPowerRef())},
+
+          Match{"getSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
+          Match{"getSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
+          Match{"getSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
+          Match{"getSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
+
+          // clang-format on
       }) {}
 
 #undef GET_FUNC

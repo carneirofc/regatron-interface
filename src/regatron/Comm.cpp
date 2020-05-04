@@ -103,7 +103,7 @@ void Comm::connect(int fromPort, int toPort) {
     m_readings->readModulePhys();
 
     // Default is to keep system selected !
-    m_readings->selectSystem();
+    m_readings->selectSys();
 }
 
 void Comm::moduleIDInfo() {

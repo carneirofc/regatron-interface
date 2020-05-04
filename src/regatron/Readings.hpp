@@ -48,6 +48,8 @@ class Readings {
     // Software version
     std::shared_ptr<Regatron::Version> m_Version;
 
+    constexpr static double NORM_MAX = 4000.;
+
     // Additional
     int m_DCLinkPhysNom;         // [V]
     int m_PrimaryCurrentPhysNom; // [A]
@@ -85,7 +87,7 @@ class Readings {
     double m_ModCurrentPhysNom;    // [A]
     double m_ModPowerPhysNom;      // [kW]
     double m_ModResistancePhysNom; // [mOhm]
-    unsigned int m_ModControlMode;       // namespace ControlMode
+    uint32_t m_ModControlMode;       // namespace ControlMode
 
     // Generic ...
     unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
@@ -99,16 +101,22 @@ class Readings {
     auto getVersion() { return m_Version; }
     /** Monitor readings */
 
+    // Regatron
+    unsigned int m_moduleID = 0;
+
     // System
+    constexpr static int  errorTree32Len = 32;
     struct T_ErrorTree32  m_SysErrorTree32Mon;
     struct T_ErrorTree32  m_SysWarningTree32Mon;
-    constexpr static int  errorTree32Len = 32;
-
-    unsigned int m_SysState;
-    double       m_SysActualOutVoltageMon;
-    double       m_SysActualOutPowerMon;
-    double       m_SysActualOutCurrentMon;
-    double       m_SysActualResMon;
+    unsigned int          m_SysState;
+    double                m_SysActualOutVoltageMon;
+    double                m_SysActualOutPowerMon;
+    double                m_SysActualOutCurrentMon;
+    double                m_SysActualResMon;
+    double                m_SysVoltageRef;
+    double                m_SysCurrentRef;
+    double                m_SysPowerRef;
+    double                m_SysResRef;
 
     // Module
     struct T_ErrorTree32  m_ModErrorTree32Mon;
@@ -118,9 +126,10 @@ class Readings {
     double                m_ModActualOutPowerMon;
     double                m_ModActualOutCurrentMon;
     double                m_ModActualResMon;
-
-    // -- Regatron Module
-    unsigned int m_moduleID = 0;
+    double                m_ModVoltageRef;
+    double                m_ModCurrentRef;
+    double                m_ModPowerRef;
+    double                m_ModResRef;
 
     Readings() : m_Version(std::make_shared<Regatron::Version>()) {}
 
@@ -218,7 +227,7 @@ class Readings {
         if (TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read DCLink digital voltage.");
         }
-        m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / 4000.;
+        m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / NORM_MAX;
     }
     auto getDCLinkVoltage() {
         readDCLinkVoltage();
@@ -232,7 +241,7 @@ class Readings {
                 "failed to read transformer primary current.");
         }
         m_PrimaryCurrentMon =
-            (primaryCurrent * m_PrimaryCurrentPhysNom) / 4000.;
+            (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
     }
 
     auto getPrimaryCurrent() {
@@ -253,8 +262,8 @@ class Readings {
         if (TC42GetTemperaturePCB(&m_PCBTempMon) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read PCB temperature.");
         }
-        m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / 4000.;
-        m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / 4000.;
+        m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / NORM_MAX;
+        m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / NORM_MAX;
     }
 
     /**
@@ -303,8 +312,8 @@ class Readings {
     void readModuleErrorTree32();
 
     /** Set Module/System calls */
-    void selectSystem() { this->selectModule(SYS_VALUES); }
-    void selectModule() { this->selectModule(MOD_VALUES); }
+    void selectSys() { this->selectMod(SYS_VALUES); }
+    void selectMod() { this->selectMod(MOD_VALUES); }
 
     void storeParameters() {
         if (TC4StoreParameters() != DLL_SUCCESS) {
@@ -319,15 +328,15 @@ class Readings {
     }
 
     void readModControlMode() {
-        selectModule();
+        selectMod();
         if (TC4GetControlMode(&m_ModControlMode) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read module control mode");
         }
-        selectSystem();
+        selectSys();
     }
 
     void readSysControlMode() {
-        selectSystem();
+        selectSys();
         if (TC4GetControlMode(&m_SysControlMode) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read system control mode");
         }
@@ -354,12 +363,30 @@ class Readings {
         return fmt::format("{}", m_RemoteCtrlInp);
     }
 
-    void selectModule(unsigned int module) {
+    void selectMod(unsigned int module) {
         if (TC4SetModuleSelector(module) != DLL_SUCCESS) {
             throw std::runtime_error(fmt::format(
                 "failed to set module selector to {} (code {})",
                 ((module == SYS_VALUES) ? "system" : "device"), module));
         }
     }
+
+    // @todo: Check if this returns different values depending on module/system
+    // (0, 64)
+    double getModCurrentRef();
+    double getModVoltageRef();
+    double getModResistanceRef();
+    double getModPowerRef();
+
+    double getSysCurrentRef();
+    double getSysVoltageRef();
+    double getSysResistanceRef();
+    double getSysPowerRef();
+
+    /** Calling these functions on a TopCon Slave will have no effect. */
+    void setSysCurrentRef(double);
+    void setSysVoltageRef(double);
+    void setSysResistanceRef(double);
+    void setSysPowerRef(double);
 };
 } // namespace Regatron

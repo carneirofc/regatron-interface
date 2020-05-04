@@ -41,7 +41,7 @@ class Comm {
     DllStatus getDllStatus();
 
   public:
-    Comm(int port);
+    explicit Comm(int port);
     Comm();
     ~Comm();
     void connect();
