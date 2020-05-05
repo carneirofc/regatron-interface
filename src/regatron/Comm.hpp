@@ -22,9 +22,6 @@ class Comm {
     int m_port        = 0;
     int m_portNrFound = -1;
 
-    // Software version
-    std::shared_ptr<Regatron::Version> m_version;
-
     // Readings
     std::shared_ptr<Regatron::Readings> m_readings;
 
@@ -42,9 +39,10 @@ class Comm {
     double incSysResistance = 0.0;
 
     DllStatus getDllStatus();
+    bool      commHealthy;
 
   public:
-    Comm(int port);
+    explicit Comm(int port);
     Comm();
     ~Comm();
     void connect();

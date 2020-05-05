@@ -9,7 +9,7 @@ void Readings::readModuleID() {
 }
 
 void Readings::readModuleErrorTree32() {
-    selectModule();
+    selectMod();
     if (TC4ReadErrorTree32(&m_ModErrorTree32Mon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get module error tree");
     }
@@ -20,7 +20,7 @@ void Readings::readModuleErrorTree32() {
 
 void Readings::readModule() {
 
-    selectModule();
+    selectMod();
     if (TC4GetVoltageActSense(&m_ModActualOutVoltageMon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get module actual output voltage");
     }
@@ -43,7 +43,7 @@ void Readings::readModule() {
 }
 
 void Readings::readSystemErrorTree32() {
-    selectSystem();
+    selectSys();
     if (TC4ReadErrorTree32(&m_SysErrorTree32Mon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get system error tree");
     }
@@ -53,7 +53,7 @@ void Readings::readSystemErrorTree32() {
 }
 
 void Readings::readSystem() {
-    selectSystem();
+    selectSys();
     if (TC4GetVoltageActSense(&m_SysActualOutVoltageMon) != DLL_SUCCESS) {
         throw std::runtime_error("failed to get system actual output voltage");
     }
@@ -131,4 +131,88 @@ void Readings::readSystemPhys() {
             "failed to get system physical nominal values.");
     }
 }
+
+double Readings::getModCurrentRef() {
+    selectMod();
+    if (TC4GetCurrentRef(&m_ModCurrentRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read module current referece");
+    }
+    return m_ModCurrentRef;
+}
+double Readings::getModVoltageRef() {
+    selectMod();
+    if (TC4GetVoltageRef(&m_ModVoltageRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read module voltage referece");
+    }
+    return m_ModVoltageRef;
+}
+double Readings::getModResistanceRef() {
+    selectMod();
+    if (TC4GetResistanceRef(&m_ModResRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read module resitance referece");
+    }
+    return m_ModResRef;
+}
+double Readings::getModPowerRef() {
+    selectMod();
+    if (TC4GetPowerRef(&m_ModPowerRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read module voltage referece");
+    }
+    return m_ModPowerRef;
+}
+
+double Readings::getSysCurrentRef() {
+    selectSys();
+    if (TC4GetCurrentRef(&m_SysCurrentRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read system current referece");
+    }
+    return m_SysCurrentRef;
+}
+double Readings::getSysVoltageRef() {
+    selectSys();
+    if (TC4GetVoltageRef(&m_SysVoltageRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read system voltage referece");
+    }
+    return m_SysVoltageRef;
+}
+double Readings::getSysResistanceRef() {
+    selectSys();
+    if (TC4GetResistanceRef(&m_SysResRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read system resitance referece");
+    }
+    return m_SysResRef;
+}
+double Readings::getSysPowerRef() {
+    selectSys();
+    if (TC4GetPowerRef(&m_SysPowerRef) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to read system voltage referece");
+    }
+    return m_SysPowerRef;
+}
+
+void Readings::setSysCurrentRef(double value /* [A] */) {
+    selectSys();
+    if (TC4SetCurrentRef(value) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to set system current referece");
+    }
+}
+void Readings::setSysVoltageRef(double value /* [V] */) {
+    selectSys();
+    if (TC4SetVoltageRef(value) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to set system voltage referece");
+    }
+}
+void Readings::setSysPowerRef(double value /* [kW] */) {
+    selectSys();
+    if (TC4SetPowerRef(value) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to set system power referece");
+    }
+}
+void Readings::setSysResistanceRef(double value /* [mOhm] */) {
+    selectSys();
+    if (TC4SetResistanceRef(value) != DLL_SUCCESS) {
+        throw std::runtime_error("failed to set system resistance referece");
+    }
+}
+
 } // namespace Regatron

@@ -5,8 +5,10 @@ add_executable(main main.cpp
     regatron/Comm.cpp
     regatron/Handler.cpp
     regatron/IBC.cpp
+    regatron/Match.cpp
     regatron/Readings.cpp
-    regatron/Version.cpp)
+    regatron/Version.cpp
+)
 
 target_include_directories(main PRIVATE 
   "${CMAKE_CURRENT_SOURCE_DIR}"

@@ -7,7 +7,7 @@ function(set_project_warnings project_name)
 
     set(MSVC_WARNINGS
         /W4 # Baseline reasonable warnings
-        /w14242 # 'identfier': conversion from 'type1' to 'type1', possible loss of data
+        /w14242 # 'identifier': conversion from 'type1' to 'type1', possible loss of data
         /w14254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
         /w14263 # 'function': member function does not override any base class virtual member function
         /w14265 # 'classname': class has virtual functions, but destructor is not virtual instances of this class may
@@ -55,11 +55,12 @@ function(set_project_warnings project_name)
 
     set(GCC_WARNINGS
         ${CLANG_WARNINGS}
-        -Wmisleading-indentation # warn if identation implies blocks where blocks do not exist
+        -Wmisleading-indentation # warn if indentation implies blocks where blocks do not exist
         -Wduplicated-cond # warn if if / else chain has duplicated conditions
         -Wduplicated-branches # warn if if / else branches have duplicated code
         -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
         -Wuseless-cast # warn if you perform a cast to the same type
+        -extra-arg=-Wno-unknown-warning-option
     )
 
     if(MSVC)

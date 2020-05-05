@@ -8,13 +8,18 @@
 namespace Net {
 class Server {
   public:
+    Server() = delete;
+    Server &operator=(const Server &) = default;
+    Server &operator=(Server &&) = default;
+    ~Server();
+
     Server(std::shared_ptr<Net::Handler> handler,
            const short unsigned int      tcpPort);
     Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint);
-    ~Server();
     void listen();
     void shutdown();
     void stop();
+
 
   private:
     std::shared_ptr<Net::Handler>                                  m_handler;
@@ -24,7 +29,7 @@ class Server {
                                                     m_UNIXAcceptor;
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_TCPAcceptor;
     void              write(const std::string &message);
-    const std::string read();
+    auto              read();
     bool              m_Run;
 };
 } // namespace Net

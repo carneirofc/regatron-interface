@@ -11,9 +11,8 @@ namespace Regatron {
 constexpr unsigned int SEARCH_SLEEP_SEC = 1000 * 1000 * 2;
 
 Comm::Comm(int port)
-    : m_port(port), m_version(std::make_shared<Regatron::Version>()),
-      m_readings(std::make_shared<Regatron::Readings>()) {
-    this->m_version->readDllVersion();
+    : m_port(port), m_readings(std::make_shared<Regatron::Readings>()) {
+    this->m_readings->getVersion()->readDllVersion();
     LOG_INFO("initializing tcio lib");
     DllInit();
     getDllStatus();
@@ -104,7 +103,7 @@ void Comm::connect(int fromPort, int toPort) {
     m_readings->readModulePhys();
 
     // Default is to keep system selected !
-    m_readings->selectSystem();
+    m_readings->selectSys();
 }
 
 void Comm::moduleIDInfo() {
@@ -115,7 +114,7 @@ void Comm::moduleIDInfo() {
         LOG_INFO("module connect at {} is configured as {}, module ID {}.",
                  this->m_portNrFound,
                  ((m_readings->isMaster()) ? "master" : "slave"),
-                 m_readings->m_moduleID);
+                 m_readings->getModuleID());
     }
 }
 } // namespace Regatron
