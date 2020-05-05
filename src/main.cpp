@@ -39,8 +39,6 @@ int main(const int argc, const char *argv[]) {
 
     Utils::Logger::Init();
 
-    LOG_INFO("Hello, world! {}", true);
-
     bool tcp        = args.at("tcp").asBool();
     int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
     int  tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;

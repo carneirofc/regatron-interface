@@ -39,6 +39,7 @@ class Comm {
     double incSysResistance = 0.0;
 
     DllStatus getDllStatus();
+    bool      commHealthy;
 
   public:
     explicit Comm(int port);

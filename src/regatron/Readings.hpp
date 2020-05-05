@@ -48,6 +48,7 @@ class Readings {
     // Software version
     std::shared_ptr<Regatron::Version> m_Version;
 
+    constexpr static int    errorTree32Len = 32;
     constexpr static double NORM_MAX = 4000.;
 
     // Additional
@@ -72,40 +73,6 @@ class Readings {
     double m_SysResistancePhysNom; // [mOhm]
     unsigned int m_SysControlMode;       // namespace ControlMode
 
-    // -- Module
-    double m_ModVoltagePhysMax;    // [V]
-    double m_ModCurrentPhysMax;    // [A]
-    double m_ModPowerPhysMax;      // [kW]
-    double m_ModResistancePhysMax; // [mOhm]
-
-    double m_ModVoltagePhysMin;    // [V]
-    double m_ModCurrentPhysMin;    // [A]
-    double m_ModPowerPhysMin;      // [kW]
-    double m_ModResistancePhysMin; // [mOhm]
-
-    double m_ModVoltagePhysNom;    // [V]
-    double m_ModCurrentPhysNom;    // [A]
-    double m_ModPowerPhysNom;      // [kW]
-    double m_ModResistancePhysNom; // [mOhm]
-    uint32_t m_ModControlMode;       // namespace ControlMode
-
-    // Generic ...
-    unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
-    double       m_DCLinkVoltageMon;  // [V]
-    double       m_PrimaryCurrentMon; // [A] Tranformer primary current
-    double       m_IGBTTempMon;       // [°C] heat sink of IGBT
-    double       m_RectifierTempMon;  // [°C] heat sink of rectifier
-    double       m_PCBTempMon;        // [°C] PCB Controller board temperature
-
-  public:
-    auto getVersion() { return m_Version; }
-    /** Monitor readings */
-
-    // Regatron
-    unsigned int m_moduleID = 0;
-
-    // System
-    constexpr static int  errorTree32Len = 32;
     struct T_ErrorTree32  m_SysErrorTree32Mon;
     struct T_ErrorTree32  m_SysWarningTree32Mon;
     unsigned int          m_SysState;
@@ -118,7 +85,20 @@ class Readings {
     double                m_SysPowerRef;
     double                m_SysResRef;
 
-    // Module
+    // -- Module
+    double                m_ModVoltagePhysMax;    // [V]
+    double                m_ModCurrentPhysMax;    // [A]
+    double                m_ModPowerPhysMax;      // [kW]
+    double                m_ModResistancePhysMax; // [mOhm]
+    double                m_ModVoltagePhysMin;    // [V]
+    double                m_ModCurrentPhysMin;    // [A]
+    double                m_ModPowerPhysMin;      // [kW]
+    double                m_ModResistancePhysMin; // [mOhm]
+    double                m_ModVoltagePhysNom;    // [V]
+    double                m_ModCurrentPhysNom;    // [A]
+    double                m_ModPowerPhysNom;      // [kW]
+    double                m_ModResistancePhysNom; // [mOhm]
+    uint32_t              m_ModControlMode;       // namespace ControlMode
     struct T_ErrorTree32  m_ModErrorTree32Mon;
     struct T_ErrorTree32  m_ModWarningTree32Mon;
     unsigned int          m_ModState;
@@ -130,6 +110,22 @@ class Readings {
     double                m_ModCurrentRef;
     double                m_ModPowerRef;
     double                m_ModResRef;
+
+    // Generic ...
+    unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
+    double       m_DCLinkVoltageMon;  // [V]
+    double       m_PrimaryCurrentMon; // [A] Tranformer primary current
+    double       m_IGBTTempMon;       // [°C] heat sink of IGBT
+    double       m_RectifierTempMon;  // [°C] heat sink of rectifier
+    double       m_PCBTempMon;        // [°C] PCB Controller board temperature
+
+    // Regatron
+    unsigned int m_moduleID = 0;
+
+  public:
+    auto getModuleID() const { return m_moduleID; }
+    auto getVersion() const { return m_Version; }
+    /** Monitor readings */
 
     Readings() : m_Version(std::make_shared<Regatron::Version>()) {}
 
@@ -254,7 +250,8 @@ class Readings {
      * @throw std::runtime_error
      */
     void readTemperature() {
-        int igbtTemp, rectTemp;
+        int igbtTemp;
+        int rectTemp;
         if (TC4GetTempDigital(&igbtTemp, &rectTemp) != DLL_SUCCESS) {
             throw std::runtime_error(
                 "failed to read IGBT and Rectifier temperature.");

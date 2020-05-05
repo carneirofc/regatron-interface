@@ -88,7 +88,7 @@ const std::string Handler::handle(const std::string &message) {
         }
 
         // Default not found message
-        LOG_WARN("No match for message \"{}\"", message);
+        LOG_WARN(R"(No match for message "{}")", message);
         return NACK;
 
         LOG_WARN("No compatible action for {}!", message);

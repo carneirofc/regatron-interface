@@ -114,7 +114,7 @@ void Comm::moduleIDInfo() {
         LOG_INFO("module connect at {} is configured as {}, module ID {}.",
                  this->m_portNrFound,
                  ((m_readings->isMaster()) ? "master" : "slave"),
-                 m_readings->m_moduleID);
+                 m_readings->getModuleID());
     }
 }
 } // namespace Regatron
