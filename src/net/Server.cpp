@@ -8,7 +8,7 @@ Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
       m_IOContext(std::make_shared<boost::asio::io_context>()),
       m_Socket(std::make_shared<boost::asio::generic::stream_protocol::socket>(
           *m_IOContext)),
-      m_UNIXAcceptor(nullptr), m_TCPAcceptor(nullptr) {
+      m_UNIXAcceptor(nullptr), m_TCPAcceptor(nullptr), m_Run{false} {
     if (std::filesystem::exists(unixEndpoint)) {
         LOG_WARN("File {} already exists... Trying to delete it ...",
                  unixEndpoint);
@@ -28,16 +28,16 @@ Server::Server(std::shared_ptr<Net::Handler> handler,
           *m_IOContext)),
       m_UNIXAcceptor(nullptr),
       m_TCPAcceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(
-          *m_IOContext, boost::asio::ip::tcp::endpoint{
-                            boost::asio::ip::tcp::v4(), tcpPort})) {
+          *m_IOContext,
+          boost::asio::ip::tcp::endpoint{boost::asio::ip::tcp::v4(), tcpPort})),
+      m_Run{false} {
     LOG_INFO("Server at port \"{}\"", tcpPort);
 }
 
-const std::string Server::read() {
+auto Server::read() {
     boost::asio::streambuf buf;
     boost::asio::read_until(*m_Socket, buf, "\n");
-    const std::string data = boost::asio::buffer_cast<const char *>(buf.data());
-    return data;
+    return std::string{boost::asio::buffer_cast<const char *>(buf.data())};
 }
 
 Server::~Server() {

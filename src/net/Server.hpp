@@ -29,7 +29,7 @@ class Server {
                                                     m_UNIXAcceptor;
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_TCPAcceptor;
     void              write(const std::string &message);
-    const std::string read();
+    auto              read();
     bool              m_Run;
 };
 } // namespace Net
