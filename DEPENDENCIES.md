@@ -18,6 +18,13 @@ Target: x86_64-pc-linux-gnu<br>
 Thread model: posix<br>
 InstalledDir: /usr/bin<br>
 
+clang-tidy <br>
+LLVM (http://llvm.org/): <br>
+  LLVM version 10.0.0 <br>
+  Optimized build. <br>
+  Default target: x86_64-pc-linux-gnu <br>
+  Host CPU: broadwell <br>
+
 cmake-format 0.6.9<br>
 
 [Conan](https://conan.io/) version 1.23.0
