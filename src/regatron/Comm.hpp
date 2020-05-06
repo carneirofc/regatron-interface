@@ -1,32 +1,26 @@
 #pragma once
 
-#include <memory>
-#include <unistd.h>
-
-#include "IBC.hpp"
 #include "Readings.hpp"
+#include "Regatron.hpp"
 #include "Version.hpp"
 
-namespace Regatron {
+#include "fmt/format.h"
+#include "serialiolib.h" // NOLINT
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unistd.h>
 
-enum DllStatus {
-    OK            = 0,
-    DLL_FAILURE   = -1,
-    COMM_ERROR    = -10,
-    COMMAND_ERROR = -100
-};
+namespace Regatron {
 
 class Comm {
   private:
     // Connection
-    int m_port        = 0;
-    int m_portNrFound = -1;
+    int m_Port        = 0;
+    int m_PortNrFound = -1;
 
     // Readings
     std::shared_ptr<Regatron::Readings> m_readings;
-
-    // IBC
-    std::shared_ptr<Regatron::IBC> m_ibc;
 
     // Increment (internal usage)
     double incDevVoltage    = 0.0;
@@ -38,8 +32,9 @@ class Comm {
     double incSysPower      = 0.0;
     double incSysResistance = 0.0;
 
-    DllStatus getDllStatus();
-    bool      commHealthy;
+    void       InitializeDLL();
+    CommStatus m_CommStatus;
+    bool       m_AutoReconnect;
 
   public:
     explicit Comm(int port);
@@ -48,12 +43,21 @@ class Comm {
     void connect();
     void connect(int port);
     void connect(int fromPort, int toPort);
-    bool isMaster();
-    void moduleIDInfo();
-    void readSystem();
-    void readDevice();
-    void readTemps();
-    auto getReadings() { return m_readings; };
+    void disconnect();
+
+    CommStatus getCommStatus() const { return m_CommStatus; }
+    bool       getAutoReconnect() const { return m_AutoReconnect; };
+    void       setAutoReconnect(bool autoReconnect) {
+        m_AutoReconnect = autoReconnect;
+    }
+
+    /** Regatron Readings */
+    auto getReadings() {
+        if (m_CommStatus != CommStatus::Ok) {
+            throw CommException(m_CommStatus);
+        }
+        return m_readings;
+    };
 };
 
 } // namespace Regatron

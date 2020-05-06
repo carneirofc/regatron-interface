@@ -1,4 +1,10 @@
 #pragma once
+#include "Regatron.hpp"
+
+#include "serialiolib.h" // NOLINT
+#include <fmt/format.h>
+#include <log/Logger.hpp>
+
 #include <string>
 
 namespace Regatron {

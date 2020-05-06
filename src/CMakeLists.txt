@@ -1,6 +1,5 @@
 add_executable(main main.cpp
     log/Logger.cpp
-    net/Handler.cpp
     net/Server.cpp
     regatron/Comm.cpp
     regatron/Handler.cpp

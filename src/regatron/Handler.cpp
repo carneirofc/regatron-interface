@@ -1,37 +1,49 @@
 
 #include "Handler.hpp"
 
-#include "log/Logger.hpp"
-#include <array>
-#include <string>
-
 namespace Regatron {
 #define SET_FUNC_DOUBLE(func)                                                  \
     [this](double arg1) {                                                      \
-        this->m_Regatron->getReadings()->func(arg1);                           \
+        this->m_RegatronComm->getReadings()->func(arg1);                       \
         return ACK;                                                            \
     }
 
 #define GET_FUNC(func)                                                         \
-    [this]() { return this->m_Regatron->getReadings()->func; }
+    [this]() { return this->m_RegatronComm->getReadings()->func; }
 
 #define GET_FORMAT(member)                                                     \
     [this]() {                                                                 \
-        auto readings = this->m_Regatron->getReadings();                       \
+        auto readings = this->m_RegatronComm->getReadings();                   \
         return fmt::format("{}", readings->member);                            \
     }
 
 #define CMD_API(member)                                                        \
     [this]() {                                                                 \
-        this->m_Regatron->getReadings()->member();                             \
+        this->m_RegatronComm->getReadings()->member();                         \
         return ACK;                                                            \
     }
 
 // @fixme: Do this in a way that does not require a macros.
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
-    : m_Regatron(std::move(regatronComm)),
+    : m_RegatronComm(std::move(regatronComm)),
       m_Matchers({
           // clang-format off
+          Match{"cmdConnect", [this](){ this->m_RegatronComm->connect(); return ACK;}},
+          Match{"getCommStatus", [this](){
+              auto commStatus = this->m_RegatronComm->getCommStatus();
+              return fmt::format("{}", commStatus);
+              }
+          },
+          Match{"getAutoReconnect", [this](){
+              auto autoReconnect = this->m_RegatronComm->getAutoReconnect();
+              return fmt::format("{}", 1?autoReconnect:0);
+          }},
+          Match{"setAutoReconnect", [this](float autoReconnect){
+              this->m_RegatronComm->setAutoReconnect(autoReconnect != 0);
+              return ACK;
+          }},
+
+
           // Commands with no response
           Match{"cmdStoreParam", CMD_API(storeParameters)},
           Match{"cmdClearErrors", CMD_API(clearErrors)},
@@ -79,7 +91,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 #undef GET_MEMBER
 #undef CMD_API
 
-const std::string Handler::handle(const std::string &message) {
+std::string Handler::handle(const std::string &message) {
     try {
         for (const auto &m : m_Matchers) {
             if (auto response = m.handle(message)) {
@@ -92,10 +104,21 @@ const std::string Handler::handle(const std::string &message) {
         return NACK;
 
         LOG_WARN("No compatible action for {}!", message);
+    } catch (const CommException &e) {
+        // @todo: Gracefully handle this !
+        LOG_CRITICAL(
+            R"(CommException: Regatron communication exception "{}" when handling message "{}")",
+            e.what(), message);
+
     } catch (const std::invalid_argument &e) {
-        LOG_CRITICAL("Exception: Invalid argument {} {}.", message, e.what());
+        LOG_CRITICAL(
+            R"(Invalid Argument: Exception "{}" When handling message "{}")",
+            e.what(), message);
+
     } catch (const std::runtime_error &e) {
-        LOG_CRITICAL("Exception: A bug !{} {}.", message, e.what());
+        LOG_CRITICAL(
+            R"(Runtime Error: Unexpected runtime error "{}" when handling message "{}")",
+            e.what(), message);
     }
     return NACK;
 }

@@ -75,7 +75,7 @@ void Readings::readSystem() {
     }
 }
 
-bool Readings::isMaster() { return (m_moduleID == 0); }
+bool Readings::isMaster() const { return (m_moduleID == 0); }
 
 void Readings::readAdditionalPhys() {
     if (TC4GetAdditionalPhysicalValues(&m_DCLinkPhysNom,

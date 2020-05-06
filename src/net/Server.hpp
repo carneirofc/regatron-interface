@@ -3,7 +3,8 @@
 #include "log/Logger.hpp"
 #include "net/Handler.hpp"
 
-#include <boost/asio.hpp>
+#include <boost/asio.hpp> // NOLINT
+#include <filesystem>
 
 namespace Net {
 class Server {
