@@ -33,12 +33,6 @@ Server::Server(std::shared_ptr<Net::Handler> handler,
     LOG_INFO("Server at port \"{}\"", tcpPort);
 }
 
-auto Server::read() {
-    boost::asio::streambuf buf;
-    boost::asio::read_until(*m_Socket, buf, "\n");
-    return std::string{boost::asio::buffer_cast<const char *>(buf.data())};
-}
-
 Server::~Server() {
     // Shudown socket
     shutdown();
@@ -58,12 +52,6 @@ Server::~Server() {
     }
 }
 
-void Server::write(const std::string &message) {
-    boost::asio::write(*m_Socket, boost::asio::buffer(message));
-}
-
-void Server::stop() { m_Run = false; }
-
 void Server::shutdown() {
     // Shutdown socket
     boost::system::error_code ec;
@@ -81,6 +69,26 @@ void Server::shutdown() {
     }
 }
 
+auto Server::read() {
+    boost::asio::streambuf buf;
+    boost::asio::read_until(*m_Socket, buf, "\n");
+    return std::string{boost::asio::buffer_cast<const char *>(buf.data())};
+}
+auto Server::read(boost::system::error_code &ec) {
+    boost::asio::streambuf buf;
+    boost::asio::read_until(*m_Socket, buf, "\n", ec);
+    return std::string{boost::asio::buffer_cast<const char *>(buf.data())};
+}
+
+void Server::write(const std::string &message) {
+    boost::asio::write(*m_Socket, boost::asio::buffer(message));
+}
+void Server::write(const std::string &message, boost::system::error_code &ec) {
+    boost::asio::write(*m_Socket, boost::asio::buffer(message), ec);
+}
+
+void Server::stop() { m_Run = false; }
+
 void Server::listen() {
     m_Run = true;
 
@@ -97,13 +105,20 @@ void Server::listen() {
 
         try {
             LOG_INFO("Client connected.");
-            // read operation
+
             while (m_Run) {
                 const std::string message = Server::read();
                 this->write(this->m_handler->handle(message));
             }
-        } catch (std::runtime_error &e) {
-            LOG_CRITICAL("Exception: {}", e.what());
+        } catch (const boost::system::system_error &e) {
+            if (e.code() == boost::asio::error::eof) {
+                LOG_WARN("Connection closed by the client. {}", e.what());
+            } else if (e.code() == boost::asio::error::operation_aborted) {
+                LOG_WARN("Connection closed by the server. {}", e.what());
+            } else {
+                throw;
+            }
+
             shutdown();
         }
     }
