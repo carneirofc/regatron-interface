@@ -3,7 +3,8 @@
 #include "log/Logger.hpp"
 #include "net/Handler.hpp"
 
-#include <boost/asio.hpp>
+#include <boost/asio.hpp> // NOLINT
+#include <filesystem>
 
 namespace Net {
 class Server {
@@ -28,7 +29,9 @@ class Server {
     std::shared_ptr<boost::asio::local::stream_protocol::acceptor>
                                                     m_UNIXAcceptor;
     std::shared_ptr<boost::asio::ip::tcp::acceptor> m_TCPAcceptor;
-    void              write(const std::string &message);
+    void write(const std::string &message, boost::system::error_code &ec);
+    void write(const std::string &message);
+    auto              read(boost::system::error_code &ec);
     auto              read();
     bool              m_Run;
 };

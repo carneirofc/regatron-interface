@@ -1,4 +1,5 @@
 #pragma once
+#include "log/Logger.hpp"
 #include <fmt/format.h>
 #include <functional>
 #include <string>
@@ -24,31 +25,28 @@ class Match {
     static constexpr const char *GET = "get"; // Not parameterized
     static constexpr const char *SET = "set"; // Parameterized
 
-    const std::string &                      m_CommandString;
-    const std::string &                      m_SetFormat;
+    const std::string                        m_CommandString;
+    const std::string                        m_SetFormat;
     const std::string                        m_GetPattern;
     const std::string                        m_SetPattern;
     const std::function<std::string()>       m_GetHandleFunc;
     const std::function<std::string(double)> m_SetHandleFunc;
 
     CommandType getCommandType(const std::string &message);
-    Match(const std::string &commandString, const std::string &setFormat,
+    Match(const std::string commandString, const std::string setFormat,
           std::function<std::string()>       getHandle,
           std::function<std::string(double)> setHandle);
 
   public:
     /** @note: get only constructor */
-    Match(const std::string &          commandString,
+    Match(const std::string            commandString,
           std::function<std::string()> getHandle);
 
     /** @note: set only constructor */
-    Match(const std::string &                commandString,
+    Match(const std::string                  commandString,
           std::function<std::string(double)> setHandle);
 
-    auto toString() const {
-        return fmt::format(R"([Match](command" {} ". set format " {} "))",
-                           m_CommandString, m_SetFormat);
-    }
+    std::string toString() const;
 
     /** throws: May throw something (std::invalid_argument)! */
     std::optional<double> handleSet(const char *message) const;

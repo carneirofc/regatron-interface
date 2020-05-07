@@ -1,11 +1,11 @@
 #pragma once
 
-#include "boost/asio.hpp"
+#include "boost/asio.hpp" // NO LINT
 
 namespace Net {
 class Handler {
   public:
-    virtual const std::string handle(const std::string &message);
+    virtual std::string handle(const std::string &message) = 0;
     Handler()                = default;
     Handler(const Handler &) = default;
     Handler(Handler &&)      = default;

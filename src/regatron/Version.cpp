@@ -1,9 +1,5 @@
 #include "Version.hpp"
 
-#include "serialiolib.h" // NOLINT
-#include <fmt/format.h>
-#include <log/Logger.hpp>
-
 namespace Regatron {
 void Version::readDllVersion() {
     if (DllReadVersion(&m_DLLMajorMinor, &m_DLLBuild, m_DLLString) !=

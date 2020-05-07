@@ -279,7 +279,7 @@ class Readings {
     }
 
     // @todo: Restrict read/write if master ...? Here or upper layer?
-    bool isMaster();
+    bool isMaster() const;
 
     /** One time readings - @throw std::runtime_exception */
     void readAdditionalPhys();
@@ -309,8 +309,8 @@ class Readings {
     void readModuleErrorTree32();
 
     /** Set Module/System calls */
-    void selectSys() { this->selectMod(SYS_VALUES); }
-    void selectMod() { this->selectMod(MOD_VALUES); }
+    inline void selectSys() { this->selectMod(SYS_VALUES); }
+    inline void selectMod() { this->selectMod(MOD_VALUES); }
 
     void storeParameters() {
         if (TC4StoreParameters() != DLL_SUCCESS) {
@@ -324,7 +324,7 @@ class Readings {
         }
     }
 
-    void readModControlMode() {
+    inline void readModControlMode() {
         selectMod();
         if (TC4GetControlMode(&m_ModControlMode) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read module control mode");
@@ -332,10 +332,16 @@ class Readings {
         selectSys();
     }
 
-    void readSysControlMode() {
+    inline void readSysControlMode() {
         selectSys();
         if (TC4GetControlMode(&m_SysControlMode) != DLL_SUCCESS) {
             throw std::runtime_error("failed to read system control mode");
+        }
+    }
+
+    inline void readRemoteControlInput() {
+        if (TC4GetRemoteControlInput(&m_RemoteCtrlInp) != DLL_SUCCESS) {
+            throw std::runtime_error("failed to read remote control input");
         }
     }
 
@@ -347,12 +353,6 @@ class Readings {
     auto getModControlMode() {
         readModControlMode();
         return fmt::format("{}", m_ModControlMode);
-    }
-
-    void readRemoteControlInput() {
-        if (TC4GetRemoteControlInput(&m_RemoteCtrlInp) != DLL_SUCCESS) {
-            throw std::runtime_error("failed to read remote control input");
-        }
     }
 
     auto getRemoteControlInput() {

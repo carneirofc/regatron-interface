@@ -2,24 +2,31 @@
 
 namespace Regatron {
 
-Match::Match(const std::string &commandString, const std::string &setFormat,
+Match::Match(const std::string commandString, const std::string setFormat,
              std::function<std::string()>       getHandle,
              std::function<std::string(double)> setHandle)
-    : m_CommandString(commandString), m_SetFormat(setFormat),
+    : m_CommandString(std::move(commandString)),
+      m_SetFormat(std::move(setFormat)),
       m_GetPattern(fmt::format("{}\n", m_CommandString)),
       m_SetPattern(fmt::format("{} {}\n", m_CommandString, m_SetFormat)),
       m_GetHandleFunc(std::move(getHandle)),
-      m_SetHandleFunc(std::move(setHandle)) {}
+      m_SetHandleFunc(std::move(setHandle)) {
+    LOG_TRACE(toString());
+}
 
 /** @note: get only constructor */
-Match::Match(const std::string &          commandString,
+Match::Match(const std::string            commandString,
              std::function<std::string()> getHandle)
     : Match(commandString, "%lf", std::move(getHandle), nullptr) {}
 
 /** @note: set only constructor */
-Match::Match(const std::string &                commandString,
+Match::Match(const std::string                  commandString,
              std::function<std::string(double)> setHandle)
     : Match(commandString, "%lf", nullptr, std::move(setHandle)) {}
+
+std::string Match::toString() const {
+    return fmt::format(R"([Match](m_CommandString"{}"))", m_CommandString);
+}
 
 CommandType Match::getCommandType(const std::string &message) {
     if (message.starts_with(GET)) {
