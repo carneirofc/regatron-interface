@@ -58,9 +58,11 @@ void Comm::connect(int fromPort, int toPort) {
 
     if (DllSearchDevice(fromPort, toPort, &m_PortNrFound) != DLL_SUCCESS ||
         m_PortNrFound == -1) {
-        throw CommException(fmt::format(
-            R"(failed to connect to a device in range Port range "/dev/ttyD{:02}" to "/dev/ttyD{:02})",
-            fromPort, toPort));
+        throw CommException(
+            fmt::format(
+                R"(failed to connect to a device in range Port range "/dev/ttyD{:02}" to "/dev/ttyD{:02})",
+                fromPort, toPort)
+                .c_str());
     }
 
     // set remote control to RS232

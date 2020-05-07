@@ -30,13 +30,12 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           // clang-format off
           Match{"cmdConnect", [this](){ this->m_RegatronComm->connect(); return ACK;}},
           Match{"getCommStatus", [this](){
-              auto commStatus = this->m_RegatronComm->getCommStatus();
-              return fmt::format("{}", commStatus);
+                  auto commStatus = this->m_RegatronComm->getCommStatus();
+                  return fmt::format("{}", commStatus);
               }
           },
           Match{"getAutoReconnect", [this](){
-              auto autoReconnect = this->m_RegatronComm->getAutoReconnect();
-              return fmt::format("{}", 1?autoReconnect:0);
+              return fmt::format("{}", static_cast<int>(this->m_RegatronComm->getAutoReconnect()));
           }},
           Match{"setAutoReconnect", [this](float autoReconnect){
               this->m_RegatronComm->setAutoReconnect(autoReconnect != 0);

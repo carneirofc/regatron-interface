@@ -1,29 +1,26 @@
 #pragma once
-#include <exception>
+#include <stdexcept>
 #include <string>
 
 namespace Regatron {
 enum class CommStatus { Ok, CommFail, DLLFail, DLLCommFail, Disconncted };
 
-class CommException : public std::exception {
+class CommException : public std::runtime_error {
   protected:
     const char *     m_Message;
     const CommStatus m_CommStatus;
 
   public:
-    virtual ~CommException() throw() = default;
-
-    CommException(const std::string &message, CommStatus commstatus)
-        : CommException(message.c_str(), commstatus) {}
     CommException(const char *message, CommStatus commstatus)
-        : m_Message(message), m_CommStatus(commstatus) {}
+        : std::runtime_error(""), m_Message(message), m_CommStatus(commstatus) {
+    }
 
-    CommException(const std::string &message)
-        : CommException(message.c_str()) {}
     CommException(const char *message)
-        : m_Message(message), m_CommStatus(CommStatus::CommFail) {}
+        : std::runtime_error(""), m_Message(message),
+          m_CommStatus(CommStatus::CommFail) {}
 
-    explicit CommException(CommStatus commstatus) : m_CommStatus(commstatus) {
+    CommException(CommStatus commstatus)
+        : std::runtime_error(""), m_CommStatus(commstatus) {
         if (commstatus == CommStatus::Disconncted) {
             m_Message = "comm is disconnected";
         } else if (commstatus == CommStatus::CommFail) {
@@ -37,7 +34,7 @@ class CommException : public std::exception {
             m_Message = "comm ok?";
         }
     }
-    virtual CommStatus  getCommStatus() const throw() { return m_CommStatus; }
-    virtual const char *what() const throw() { return m_Message; }
+    CommStatus getCommStatus() const noexcept { return this->m_CommStatus; }
+    virtual const char *what() const noexcept { return this->m_Message; }
 };
 } // namespace Regatron
