@@ -6,7 +6,7 @@
 (venv)$ make-format -i cmake/*
 ```
 ## Tracing
-This tool is very useful together with [src/utils/Instrumentator.hpp].
+This tool is very useful together with `./src/utils/Instrumentator.hpp`.
 ```
 chrome://tracing
 ```
