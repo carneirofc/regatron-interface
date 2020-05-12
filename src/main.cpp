@@ -17,7 +17,7 @@ static const char *USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands.
 Only one client is supported at time. Use Regatron's serialiolib.
-Tries to connect to the device defined by the pattern /dev/ttyDxx,
+Tries to connect to the device defined by the pattern /dev/ttyUSBx,
 where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
 
