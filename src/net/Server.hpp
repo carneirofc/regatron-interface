@@ -20,7 +20,6 @@ class Server {
     Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint);
     void listen();
     void shutdown();
-    void stop();
 
 
   private:

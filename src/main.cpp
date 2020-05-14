@@ -46,9 +46,9 @@ int main(const int argc, const char *argv[]) {
 
     const std::string unixEndpoint = args.at("<endpoint>").asString();
 
-    std::shared_ptr<Regatron::Comm> regatron =
+    static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
-    std::shared_ptr<Regatron::Handler> handler =
+    static std::shared_ptr<Regatron::Handler> handler =
         std::make_shared<Regatron::Handler>(regatron);
     static std::shared_ptr<Net::Server> server = nullptr;
 
@@ -60,7 +60,9 @@ int main(const int argc, const char *argv[]) {
          * */
         LOG_ERROR("Capture signal \"{}\", gracefully shutting down...", signum);
         if (server != nullptr) {
-            server->stop();
+            regatron->setAutoReconnect(false);
+            regatron->disconnect();
+
             server->shutdown();
         }
         exit(SIGINT);

@@ -20,6 +20,7 @@ const std::string ACK{"ACK\n"};
 class Handler : public Net::Handler {
   public:
     Handler(std::shared_ptr<Regatron::Comm> regatronComm);
+    ~Handler();
 
   private:
     std::shared_ptr<Regatron::Comm> m_RegatronComm;

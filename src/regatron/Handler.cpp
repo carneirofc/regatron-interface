@@ -25,7 +25,7 @@ namespace Regatron {
 
 // @fixme: Do this in a way that does not require a macros.
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
-    : m_RegatronComm(std::move(regatronComm)),
+    : m_RegatronComm(regatronComm),
       m_Matchers({
           // clang-format off
           Match{"cmdConnect", [this](){ this->m_RegatronComm->connect(); return ACK;}},
@@ -90,6 +90,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 #undef GET_FUNC
 #undef GET_MEMBER
 #undef CMD_API
+
+Handler::~Handler() { m_RegatronComm->disconnect(); }
 
 std::string Handler::handle(const std::string &message) {
     try {

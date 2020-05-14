@@ -50,6 +50,7 @@ Server::~Server() {
 }
 
 void Server::shutdown() {
+    m_Run = false;
     // Shutdown socket
     std::error_code ec;
     m_Socket->shutdown(asio::socket_base::shutdown_send, ec);
@@ -83,8 +84,6 @@ void Server::write(const std::string &message) {
 void Server::write(const std::string &message, std::error_code &ec) {
     asio::write(*m_Socket, asio::buffer(message), ec);
 }
-
-void Server::stop() { m_Run = false; }
 
 void Server::listen() {
     m_Run = true;
