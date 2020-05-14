@@ -45,6 +45,7 @@ class Logger {
                                            __PRETTY_FUNCTION__, __VA_ARGS__)
 */
 #define LOG_TRACE(...)    ::Utils::Logger::getLogger()->trace(__VA_ARGS__)
+#define LOG_DEBUG(...)    ::Utils::Logger::getLogger()->debug(__VA_ARGS__)
 #define LOG_INFO(...)     ::Utils::Logger::getLogger()->info(__VA_ARGS__)
 #define LOG_WARN(...)     ::Utils::Logger::getLogger()->warn(__VA_ARGS__)
 #define LOG_ERROR(...)    ::Utils::Logger::getLogger()->error(__VA_ARGS__)
