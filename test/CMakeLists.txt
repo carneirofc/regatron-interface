@@ -10,15 +10,16 @@ target_link_libraries(catch_main PUBLIC CONAN_PKG::catch2)
 target_link_libraries(catch_main PRIVATE project_options)
 
 add_executable(general_tests general_tests.cpp)
-
 target_link_libraries(
     general_tests
     PRIVATE project_warnings
             project_options
             catch_main
-            log)
+            log
+            CONAN_PKG::spdlog
+            CONAN_PKG::fmt)
 
-target_include_directories(general_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${REGATRON_INTERFACE_SOURCE_DIR}/src")
+target_include_directories(general_tests PRIVATE "${CONAN_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}" "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
 catch_discover_tests(
     general_tests
@@ -37,9 +38,12 @@ target_link_libraries(
     PRIVATE project_options
             project_warnings
             catch_main
-            log)
+            log
+            CONAN_PKG::spdlog
+            CONAN_PKG::fmt)
 target_compile_definitions(relaxed_general_tests PRIVATE -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
-target_include_directories(relaxed_general_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+target_include_directories(relaxed_general_tests PRIVATE "${CONAN_INCLUDE_DIRS}"
+                                                         "${CMAKE_CURRENT_SOURCE_DIR}"
                                                          "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
 catch_discover_tests(
@@ -51,14 +55,3 @@ catch_discover_tests(
     --reporter=xml
     --out=relaxed_general.xml)
 
-# ---------- Regatron ----------
-add_executable(linuxTcioSample linuxTcioSample.cpp)
-
-target_include_directories(
-    linuxTcioSample PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-                            "${CMAKE_CURRENT_LIST_DIR}/../vendor/Regatron/V3.80.00 30072014 (Linux)/include")
-
-target_link_libraries(
-    linuxTcioSample
-    PRIVATE project_options project_warnings
-            "${CMAKE_CURRENT_LIST_DIR}/../vendor/Regatron/V3.80.00 30072014 (Linux)/Linux/x64/libtcio.so")
