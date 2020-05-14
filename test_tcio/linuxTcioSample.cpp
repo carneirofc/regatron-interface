@@ -69,7 +69,7 @@ int main() {
     //search device
     if (DLL_SUCCESS == result){
       usleep((__useconds_t)(1000*1000*2)); //hack: while eth and rs232 at the same tc device: wait 2 sec
-      result = DllSearchDevice(1, 1, &portNrFound);
+      result = DllSearchDevice(1, 255, &portNrFound);
       cout << "result DllSearchDevice: " << result << "\tportNrFound: "<< portNrFound << endl;
     }
 
