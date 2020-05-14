@@ -33,14 +33,20 @@ option(ENABLE_TESTING "Enable Test Builds" ON)
 # Very basic PCH example
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
 if(ENABLE_PCH)
-    # This sets a global PCH parameter, each project will build its own PCH,
-    # which is a good idea if any #define's change
-    target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
+    # This sets a global PCH parameter, each project will build its own PCH, which is a good idea if any #define's
+    # change
+    target_precompile_headers(
+        project_options
+        INTERFACE
+        <vector>
+        <string>
+        <map>
+        <utility>)
 endif()
 
-# https://think-async.com/Asio/asio-1.16.1/doc/asio/history.html#asio.history.asio_1_16_1
-# This build is not yet available in conan ... https://github.com/conan-io/conan-center-index/pull/1521
-# set(CONAN_EXTRA_REQUIRES "asio/1.16.1@")
+# https://think-async.com/Asio/asio-1.16.1/doc/asio/history.html#asio.history.asio_1_16_1 This build is not yet
+# available in conan ... https://github.com/conan-io/conan-center-index/pull/1521 set(CONAN_EXTRA_REQUIRES
+# "asio/1.16.1@")
 
 # Set up some extra Conan dependencies based on our needs before loading Conan
 set(CONAN_EXTRA_REQUIRES "")
