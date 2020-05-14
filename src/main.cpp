@@ -63,6 +63,7 @@ int main(const int argc, const char *argv[]) {
             regatron->setAutoReconnect(false);
             regatron->disconnect();
 
+            server->stop();
             server->shutdown();
         }
         exit(SIGINT);
