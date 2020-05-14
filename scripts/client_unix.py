@@ -3,60 +3,53 @@ import socket
 
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
-
-def perf_tree(messages):
-
-    from time import perf_counter
-
-    s.connect(server_address)
-    try:
-        count = 500
-        t1 = perf_counter()
-        for i in range(count):
-            # Send data
-            for m in messages:
-                message = m.encode("utf-8")
-                s.sendall(message)
-                s.recv(512)
-        t2 = perf_counter()
-        print("Messages per sec: {}".format(count / (t2 - t1)))
-    finally:
-        print("closing socket")
-        s.close()
-
-
 # Connect the socket to the port where the server is listening
 server_address = "/var/tmp/unix"
-messages = [
+
+connect_command = [
+    "cmdConnect\n",
+]
+read_commands = [
     "cmdClearErrors\n",
-    "cmdStoreParam\n",
-    "setAutoReconnect 0\n",
+    "getTemperatures\n",
     "getAutoReconnect\n",
     "getBootloaderVersion\n",
     "getCommStatus\n",
+    "getControlInput\n",
     "getDCLinkVoltage\n",
     "getDLLVersion\n",
     "getDSPVersion\n",
+    "getModVoltageRef\n",
     "getModulatorVersion\n",
     "getPheripherieVersion\n",
-    "cmdConnect\n",
+    "getPrimaryCurrent\n",
+    "getModControlMode\n",
+    "getModCurrentRef\n",
+    "getModPowerRef\n",
+    "getModReadings\n",
+    "getModResistanceRef\n",
+    "getModTree\n",
+    "getSysControlMode\n",
+    "getSysCurrentRef\n" "getSysReadings\n",
+    "getSysTree\n",
 ]
 
 
-def send(messages):
+def send_commands(messages):
+
     s.connect(server_address)
     try:
         # Send data
         for m in messages:
             message = m.encode("utf-8")
+            print("send", message)
             s.sendall(message)
-            print(">>", message)
-            data = b""
-            data = s.recv(128)
-            print("<<", data)
+            data = s.recv(512)
+            print("recv", data, "\n")
     finally:
+        print("closing socket")
         s.close()
 
 
-send(messages)
-# perf_tree(messages)
+send_commands(read_commands)
+# send_commands(connect_command)
