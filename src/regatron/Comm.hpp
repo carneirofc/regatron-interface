@@ -35,6 +35,7 @@ class Comm {
     void       InitializeDLL();
     CommStatus m_CommStatus;
     bool       m_AutoReconnect;
+    bool       m_Connected;
 
   public:
     explicit Comm(int port);
