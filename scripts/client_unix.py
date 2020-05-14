@@ -30,7 +30,8 @@ read_commands = [
     "getModResistanceRef\n",
     "getModTree\n",
     "getSysControlMode\n",
-    "getSysCurrentRef\n" "getSysReadings\n",
+    "getSysCurrentRef\n",
+    "getSysReadings\n",
     "getSysTree\n",
 ]
 
@@ -51,5 +52,5 @@ def send_commands(messages):
         s.close()
 
 
-send_commands(read_commands)
-# send_commands(connect_command)
+#send_commands(read_commands)
+send_commands(connect_command)
