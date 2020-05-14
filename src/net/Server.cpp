@@ -49,19 +49,22 @@ Server::~Server() {
     }
 }
 
-void Server::shutdown() {
+void Server::stop(){
     m_Run = false;
-    // Shutdown socket
+}
+
+void Server::shutdown() {
+    // Shutdown socket connections /** if m_Run is true, the socket will start again... @todo: Fix names !*/
     std::error_code ec;
     m_Socket->shutdown(asio::socket_base::shutdown_send, ec);
     if (ec) {
-        LOG_WARN("Failed to shutdown socket. Error {}.", ec.message());
+        LOG_DEBUG("Failed to shutdown socket. Error {}.", ec.message());
     } else {
         LOG_INFO("Socket shutdown.");
     }
     m_Socket->close(ec);
     if (ec) {
-        LOG_ERROR("Failed to close socket. Error {}.", ec.message());
+        LOG_DEBUG("Failed to close socket. Error {}.", ec.message());
     } else {
         LOG_INFO("Socket closed.");
     }
