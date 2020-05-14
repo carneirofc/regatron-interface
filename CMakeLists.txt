@@ -38,11 +38,13 @@ if(ENABLE_PCH)
     target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
 endif()
 
+# https://think-async.com/Asio/asio-1.16.1/doc/asio/history.html#asio.history.asio_1_16_1
+# This build is not yet available in conan ... https://github.com/conan-io/conan-center-index/pull/1521
+# set(CONAN_EXTRA_REQUIRES "asio/1.16.1@")
+
 # Set up some extra Conan dependencies based on our needs before loading Conan
 set(CONAN_EXTRA_REQUIRES "")
 set(CONAN_EXTRA_OPTIONS "")
-
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} boost/1.71.0@conan/stable)
 
 include(cmake/Conan.cmake)
 run_conan()
