@@ -1,4 +1,5 @@
 #pragma once
+#include "utils/Instrumentator.hpp"
 #include <stdexcept>
 #include <string>
 
@@ -7,16 +8,16 @@ enum class CommStatus { Ok, CommFail, DLLFail, DLLCommFail, Disconncted };
 
 class CommException : public std::runtime_error {
   protected:
-    const char *     m_Message;
+    std::string      m_Message;
     const CommStatus m_CommStatus;
 
   public:
-    CommException(const char *message, CommStatus commstatus)
-        : std::runtime_error(""), m_Message(message), m_CommStatus(commstatus) {
-    }
+    CommException(std::string message, CommStatus commstatus)
+        : std::runtime_error(""), m_Message(std::move(message)),
+          m_CommStatus(commstatus) {}
 
-    CommException(const char *message)
-        : std::runtime_error(""), m_Message(message),
+    CommException(std::string message)
+        : std::runtime_error(""), m_Message(std::move(message)),
           m_CommStatus(CommStatus::CommFail) {}
 
     CommException(CommStatus commstatus)
@@ -35,6 +36,8 @@ class CommException : public std::runtime_error {
         }
     }
     CommStatus getCommStatus() const noexcept { return this->m_CommStatus; }
-    virtual const char *what() const noexcept { return this->m_Message; }
+    virtual const char *what() const noexcept {
+        return this->m_Message.c_str();
+    }
 };
 } // namespace Regatron

@@ -3,10 +3,12 @@
 
 namespace Regatron {
 constexpr unsigned int SEARCH_SLEEP_SEC = 1000 * 1000 * 2;
+constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 40;
+constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 40;
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
-      m_AutoReconnect(false), m_CommStatus{CommStatus::Disconncted} {
+      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(false) {
     m_readings->getVersion()->readDllVersion();
     LOG_INFO("initializing tcio lib");
     InitializeDLL();
@@ -37,8 +39,8 @@ void Comm::connect() { connect(m_Port, m_Port); }
 void Comm::connect(int port) { connect(port, port); }
 void Comm::connect(int fromPort, int toPort) {
     if(fromPort < 0 || toPort < 0 || fromPort > toPort){
-        auto message = fmt::format(R"(invalid port setting. From "{}" to "{}".)", fromPort, toPort).c_str();
-        throw CommException(message);
+        throw CommException(fmt::format(
+            R"(invalid port setting. From "{}" to "{}".)", fromPort, toPort));
     }
 
     if (DllSetSearchDevice2ttyUSB() != DLL_SUCCESS) {
@@ -55,18 +57,19 @@ void Comm::connect(int fromPort, int toPort) {
    }
 
     // search device
-    DllSetCommTimeouts(40, 40); //use this function for VM or rs232 over ethernet
-    usleep(SEARCH_SLEEP_SEC);   // hack: while eth and rs232 at the same tc
-                                // device: wait 2 sec
+   DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER,
+                      WRITE_TIMEOUT_MULTIPLIER); // use this function for VM or
+                                                 // rs232 over ethernet
+   usleep(SEARCH_SLEEP_SEC); // hack: while eth and rs232 at the same tc
+                             // device: wait 2 sec
 
-    if (DllSearchDevice(fromPort+1, toPort+1, &m_PortNrFound) != DLL_SUCCESS ||
-    //if (DllSearchDevice(1, 1, &m_PortNrFound) != DLL_SUCCESS ||
-        m_PortNrFound == -1) {
-        throw CommException(
-            fmt::format(
-                R"(failed to connect to a device in range Port range "/dev/ttyUSB{}" to "/dev/ttyUSB{}", PortNrFound "{}".)",
-                fromPort, toPort, m_PortNrFound)
-                .c_str());
+   if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
+           DLL_SUCCESS ||
+       // if (DllSearchDevice(1, 1, &m_PortNrFound) != DLL_SUCCESS ||
+       m_PortNrFound == -1) {
+       throw CommException(fmt::format(
+           R"(failed to connect to a device in range Port range "/dev/ttyUSB{}" to "/dev/ttyUSB{}", PortNrFound "{}".)",
+           fromPort, toPort, m_PortNrFound));
     }
 
     // set remote control to RS232

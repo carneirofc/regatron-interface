@@ -11,24 +11,25 @@ target_link_libraries(catch_main PRIVATE project_options)
 
   
 add_executable(
-    instrumentator_tests
-    instrumentator_tests.cpp)
+    general_tests
+    general_tests.cpp)
 
 target_link_libraries(
-    instrumentator_tests PRIVATE
+    general_tests PRIVATE
         project_warnings
         project_options
-        catch_main)
+        catch_main
+        log)
 
 target_include_directories(
-    instrumentator_tests PRIVATE
+    general_tests PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
 catch_discover_tests(
-  instrumentator_tests
+  general_tests
   TEST_PREFIX
-  "instrumentator."
+  "general."
   EXTRA_ARGS
   -s
   --reporter=xml
@@ -37,25 +38,28 @@ catch_discover_tests(
 # Disable the constexpr portion of the test, and build again this allows us to
 # have an executable that we can debug when things go wrong with the constexpr
 # testing
-add_executable(relaxed_instrumentator_tests instrumentator_tests.cpp)
+add_executable(relaxed_general_tests general_tests.cpp)
 target_link_libraries(
-  relaxed_instrumentator_tests PRIVATE project_options project_warnings
-                                  catch_main)
+    relaxed_general_tests PRIVATE project_options project_warnings
+      catch_main log)
 target_compile_definitions(
-  relaxed_instrumentator_tests PRIVATE
-                                  -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
-
+    relaxed_general_tests PRIVATE
+        -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
+target_include_directories(
+    relaxed_general_tests PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
 catch_discover_tests(
-  relaxed_instrumentator_tests
-  TEST_PREFIX
-  "relaxed_instrumentator."
-  EXTRA_ARGS
-  -s
-  --reporter=xml
-  --out=relaxed_instrumentator.xml)
+    relaxed_general_tests
+      TEST_PREFIX
+      "relaxed_general."
+      EXTRA_ARGS
+      -s
+      --reporter=xml
+      --out=relaxed_general.xml)
 
-# ---------- Regatron
+# ---------- Regatron ----------
 add_executable(linuxTcioSample linuxTcioSample.cpp)
 
 target_include_directories( linuxTcioSample PRIVATE 
@@ -65,5 +69,4 @@ target_include_directories( linuxTcioSample PRIVATE
 
 target_link_libraries(
       linuxTcioSample PRIVATE project_options project_warnings
-      "${CMAKE_CURRENT_LIST_DIR}/../vendor/Regatron/V3.80.00 30072014 (Linux)/Linux/x64/libtcio.so"
-     )
+      "${CMAKE_CURRENT_LIST_DIR}/../vendor/Regatron/V3.80.00 30072014 (Linux)/Linux/x64/libtcio.so")

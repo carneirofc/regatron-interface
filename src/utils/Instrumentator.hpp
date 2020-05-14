@@ -17,15 +17,24 @@
 
 #include <algorithm>
 #include <chrono>
+#include <fmt/format.h>
+#include <fmt/printf.h>
 #include <fstream>
 #include <memory>
 #include <string>
 #include <thread>
 
+#ifdef linux
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+namespace utils {
 struct ProfileResult {
     std::string Name;
     long long   Start, End;
     uint32_t    ThreadID;
+    uint32_t    PID;
 };
 
 struct InstrumentationSession {
@@ -35,8 +44,8 @@ struct InstrumentationSession {
 class Instrumentor {
   private:
     std::unique_ptr<InstrumentationSession> m_CurrentSession;
-    std::ofstream           m_OutputStream;
-    int                     m_ProfileCount;
+    std::ofstream                           m_OutputStream;
+    int                                     m_ProfileCount;
 
     Instrumentor() : m_CurrentSession(), m_ProfileCount(0) {}
 
@@ -51,17 +60,26 @@ class Instrumentor {
 
     void EndSession() {
         WriteFooter();
+        m_OutputStream.flush();
         m_OutputStream.close();
         m_CurrentSession.reset();
-        m_ProfileCount   = 0;
+        m_ProfileCount = 0;
     }
 
     void WriteProfile(const ProfileResult &result) {
-        if (m_ProfileCount++ > 0)
+        if (m_ProfileCount++ > 0){
             m_OutputStream << ",";
+        }
 
         std::string name = result.Name;
         std::replace(name.begin(), name.end(), '"', '\'');
+        // auto message = fmt::format(
+        //    R"({"cat":"function","dur":{},"name":{},"ph":"X","pid":{},"tid":{},"ts":{}})",
+        //    (result.End - result.Start), name, result.PID, result.ThreadID,
+        //    result.Start);
+        // std::cout<< message <<'\n';
+
+        //        m_OutputStream <<message;
 
         m_OutputStream << "{";
         m_OutputStream << "\"cat\":\"function\",";
@@ -72,19 +90,13 @@ class Instrumentor {
         m_OutputStream << "\"tid\":" << result.ThreadID << ",";
         m_OutputStream << "\"ts\":" << result.Start;
         m_OutputStream << "}";
-
-        m_OutputStream.flush();
     }
 
     void WriteHeader() {
         m_OutputStream << "{\"otherData\": {},\"traceEvents\":[";
-        m_OutputStream.flush();
     }
 
-    void WriteFooter() {
-        m_OutputStream << "]}";
-        m_OutputStream.flush();
-    }
+    void WriteFooter() { m_OutputStream << "]}"; }
 
     static Instrumentor &Get() {
         static Instrumentor instance;
@@ -116,9 +128,13 @@ class InstrumentationTimer {
                             .time_since_epoch()
                             .count();
 
-        uint32_t threadID =
-            std::hash<std::thread::id>{}(std::this_thread::get_id());
-        Instrumentor::Get().WriteProfile({m_Name, start, end, threadID});
+        auto threadID = static_cast<uint32_t>(
+            std::hash<std::thread::id>{}(std::this_thread::get_id()));
+        uint32_t pid{0};
+#ifdef linux
+        pid = static_cast<uint32_t>(getpid());
+#endif
+        Instrumentor::Get().WriteProfile({m_Name, start, end, threadID, pid});
 
         m_Stopped = true;
     }
@@ -129,3 +145,23 @@ class InstrumentationTimer {
          m_StartTimepoint;
     bool m_Stopped;
 };
+} // namespace utils
+
+#define INSTRUMENTATOR_PROFILE 1
+#ifdef INSTRUMENTATOR_PROFILE
+#define INSTRUMENTATOR_FUNC_SIG __func__
+#define INSTRUMENTATOR_PROFILE_BEGIN_SESSION(name, filepath)                   \
+    ::utils::Instrumentor::Get().BeginSession(name, filepath)
+#define INSTRUMENTATOR_PROFILE_END_SESSION()                                   \
+    ::utils::Instrumentor::Get().EndSession()
+#define INSTRUMENTATOR_PROFILE_SCOPE(name)                                     \
+    ::utils::InstrumentationTimer timer##__LINE__(name);
+#define INSTRUMENTATOR_PROFILE_FUNCTION()                                      \
+    INSTRUMENTATOR_PROFILE_SCOPE(INSTRUMENTATOR_FUNC_SIG)
+#else
+#define INSTRUMENTATOR_PROFILE_BEGIN_SESSION(name, filepath)
+#define INSTRUMENTATOR_PROFILE_END_SESSION()
+#define INSTRUMENTATOR_PROFILE_SCOPE(name)
+#define INSTRUMENTATOR_PROFILE_FUNCTION()
+
+#endif

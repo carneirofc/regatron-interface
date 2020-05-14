@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 # Set the project name to your project name, my project isn't very descriptive
-project(regatron-interface CXX)
+project(REGATRON_INTERFACE CXX)
 include(cmake/StandardProjectSettings.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
@@ -28,7 +28,7 @@ enable_doxygen()
 include(cmake/StaticAnalyzers.cmake)
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
-option(ENABLE_TESTING "Enable Test Builds" OFF)
+option(ENABLE_TESTING "Enable Test Builds" ON)
 
 # Very basic PCH example
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
@@ -53,10 +53,4 @@ if(ENABLE_TESTING)
     add_subdirectory(test)
 endif()
 
-if(ENABLE_FUZZING)
-    message("Building Fuzz Tests, using fuzzing sanitizer https://www.llvm.org/docs/LibFuzzer.html")
-    add_subdirectory(fuzz_test)
-endif()
-
 add_subdirectory(src)
-add_subdirectory(test)

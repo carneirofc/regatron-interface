@@ -58,6 +58,8 @@ std::optional<std::string> Match::handle(const std::string &message) const {
     } else {
         commandType = CommandType::invalidCommand;
     }
+INSTRUMENTATOR_PROFILE_FUNCTION();
+    //INSTRUMENTATOR_PROFILE_SCOPE(message.c_str());
 
     switch (commandType) {
     default:

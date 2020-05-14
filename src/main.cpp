@@ -12,6 +12,7 @@
 #include "net/Server.hpp"
 #include "regatron/Comm.hpp"
 #include "regatron/Handler.hpp"
+#include "utils/Instrumentator.hpp"
 
 static const char *USAGE =
     R"(Regatron Interface.
@@ -71,6 +72,8 @@ int main(const int argc, const char *argv[]) {
     } else {
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
+    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "results.json");
     server->listen();
+    INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;
 }
