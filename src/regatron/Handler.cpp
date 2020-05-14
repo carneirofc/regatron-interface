@@ -91,8 +91,6 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 #undef GET_MEMBER
 #undef CMD_API
 
-Handler::~Handler() { m_RegatronComm->disconnect(); }
-
 std::string Handler::handle(const std::string &message) {
     try {
         m_RegatronComm->autoConnect();

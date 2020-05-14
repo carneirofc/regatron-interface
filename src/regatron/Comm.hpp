@@ -57,6 +57,7 @@ class Comm {
     bool       getAutoReconnect() const { return m_AutoReconnect; };
     void       setAutoReconnect(bool autoReconnect) {
         m_AutoReconnect = autoReconnect;
+        LOG_TRACE(R"(autoReconnect: "{}")", m_AutoReconnect);
     }
     void inline autoConnect() {
         if (m_AutoReconnect && !m_Connected) {
