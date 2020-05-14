@@ -19,7 +19,8 @@ target_link_libraries(
             CONAN_PKG::spdlog
             CONAN_PKG::fmt)
 
-target_include_directories(general_tests PRIVATE "${CONAN_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}" "${REGATRON_INTERFACE_SOURCE_DIR}/src")
+target_include_directories(general_tests PRIVATE "${CONAN_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}"
+                                                 "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
 catch_discover_tests(
     general_tests
@@ -42,8 +43,7 @@ target_link_libraries(
             CONAN_PKG::spdlog
             CONAN_PKG::fmt)
 target_compile_definitions(relaxed_general_tests PRIVATE -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
-target_include_directories(relaxed_general_tests PRIVATE "${CONAN_INCLUDE_DIRS}"
-                                                         "${CMAKE_CURRENT_SOURCE_DIR}"
+target_include_directories(relaxed_general_tests PRIVATE "${CONAN_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}"
                                                          "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
 catch_discover_tests(
@@ -54,4 +54,3 @@ catch_discover_tests(
     -s
     --reporter=xml
     --out=relaxed_general.xml)
-
