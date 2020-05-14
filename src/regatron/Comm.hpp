@@ -6,14 +6,19 @@
 
 #include "fmt/format.h"
 #include "serialiolib.h" // NOLINT
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <unistd.h>
+#include <thread>
 
 namespace Regatron {
 
 class Comm {
+    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{30};
+
   private:
     // Connection
     int m_Port        = 0;
@@ -36,6 +41,8 @@ class Comm {
     CommStatus m_CommStatus;
     bool       m_AutoReconnect;
     bool       m_Connected;
+    std::chrono::time_point<std::chrono::system_clock>
+        m_AutoReconnectAttemptTime;
 
   public:
     explicit Comm(int port);
@@ -50,6 +57,32 @@ class Comm {
     bool       getAutoReconnect() const { return m_AutoReconnect; };
     void       setAutoReconnect(bool autoReconnect) {
         m_AutoReconnect = autoReconnect;
+    }
+    void inline autoConnect() {
+        if (m_AutoReconnect && !m_Connected) {
+            auto now = std::chrono::system_clock::now();
+            auto timeDelta = now - m_AutoReconnectAttemptTime;
+
+            if (timeDelta < AUTOCONNECT_INTERVAL) {
+                LOG_TRACE(
+                    R"(autoconnect: timeout is active for more "{} s", ignoring atempt.)",
+                    (std::chrono::duration_cast<std::chrono::seconds>(
+                         AUTOCONNECT_INTERVAL - timeDelta))
+                        .count());
+                return;
+            }
+
+            LOG_TRACE(
+                R"(autoconnect: attempting to connect after "{} s".)",
+                std::chrono::duration_cast<std::chrono::seconds>(timeDelta)
+                    .count());
+            try {
+                m_AutoReconnectAttemptTime = now;
+                connect();
+            } catch (const CommException &e) {
+                LOG_ERROR(R"(autoconnect: Failed to connect "{}")", e.what());
+            }
+        }
     }
 
     /** Regatron Readings */

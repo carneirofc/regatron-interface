@@ -93,6 +93,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 
 std::string Handler::handle(const std::string &message) {
     try {
+        m_RegatronComm->autoConnect();
         for (const auto &m : m_Matchers) {
             if (auto response = m.handle(message)) {
                 return response.value();
@@ -105,10 +106,10 @@ std::string Handler::handle(const std::string &message) {
 
         LOG_WARN("No compatible action for {}!", message);
     } catch (const CommException &e) {
-        // @todo: Gracefully handle this !
         LOG_CRITICAL(
-            R"(CommException: Regatron communication exception "{}" when handling message "{}")",
+            R"(CommException: Regatron communication exception "{}" when handling message "{}". Device connection will be closed.)",
             e.what(), message);
+        m_RegatronComm->disconnect();
 
     } catch (const std::invalid_argument &e) {
         LOG_CRITICAL(

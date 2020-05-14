@@ -2,16 +2,15 @@
 #include "Comm.hpp"
 
 namespace Regatron {
-constexpr unsigned int SEARCH_SLEEP_SEC = 1000 * 1000 * 2;
+constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
 constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 40;
 constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 40;
 constexpr const char* DEVICE_PREFIX = "/dev/ttyD";
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
-      m_CommStatus{CommStatus::Disconncted},
-      m_AutoReconnect(false),
-      m_Connected(false){
+      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(false),
+      m_Connected(false), m_AutoReconnectAttemptTime() {
     m_readings->getVersion()->readDllVersion();
     LOG_INFO("initializing tcio lib");
     InitializeDLL();
@@ -67,15 +66,16 @@ void Comm::connect(int fromPort, int toPort) {
                       WRITE_TIMEOUT_MULTIPLIER);
 
    // hack: while eth and rs232 at the same tc device: wait 2 sec
-   usleep(SEARCH_SLEEP_SEC);
+   std::this_thread::sleep_for(DELAY_RS232);
 
    if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
            DLL_SUCCESS || m_PortNrFound == -1) {
        throw CommException(fmt::format(
-           R"(failed to connect to a device in range Port range "{}{}" to "{}{}", PortNrFound "{}".)",
-           DEVICE_PREFIX,fromPort,DEVICE_PREFIX, toPort, m_PortNrFound));
+           R"(failed to connect to a device in range "{}{:02}" to "{}{:02}", PortNrFound "{}".)",
+           DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
-    LOG_TRACE(R"(Connected to device number "{}" at "{}{}")", m_PortNrFound, DEVICE_PREFIX,m_PortNrFound + 1);
+    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}")", m_PortNrFound,
+              DEVICE_PREFIX, m_PortNrFound + 1);
     m_Connected = true;
 
     // set remote control to RS232
