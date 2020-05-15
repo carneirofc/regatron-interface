@@ -6,14 +6,15 @@ constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
 constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 40;
 constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 40;
 constexpr const char* DEVICE_PREFIX = "/dev/ttyD";
+constexpr int          DLL_STATUS_OK                  = 0;
+constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
+constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
       m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(false),
-      m_Connected(false), m_AutoReconnectAttemptTime() {
+      m_Connected(false) {
     m_readings->getVersion()->readDllVersion();
-    LOG_INFO("initializing tcio lib");
-    InitializeDLL();
 }
 
 Comm::Comm() : Comm(1) {}
@@ -23,32 +24,62 @@ Comm::~Comm() {
     LOG_TRACE("Comm destroyed!");
 }
 
-void Comm::InitializeDLL() {
-    DllInit();
-
+void Comm::disconnect() {
+    auto result = DllClose();
+    m_Connected = false;
+    LOG_WARN(
+        R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
+        result);
+}
+void Comm::CheckDLLStatus() {
     int state{-1};
     int errorNo{0};
 
+    LOG_TRACE("Reading DLL status.");
     if (DllGetStatus(&state, &errorNo) != DLL_SUCCESS) {
         throw CommException("dll status: failed to get Dll status.",
                             CommStatus::DLLFail);
     }
+    switch (state) {
+    case DLL_STATUS_OK:
+        m_CommStatus = CommStatus::Ok;
+        break;
+    case DLL_STATUS_COMMUNICATION_ERROR:
+        m_CommStatus = CommStatus::DLLFail;
+        break;
+    case DLL_STATUS_COMMAND_EXECUTION_ERROR:
+        m_CommStatus = CommStatus::DLLCommFail;
+    }
+    if (state != DLL_STATUS_OK) {
+        throw CommException("dll status: Invalid return status !.",
+                            CommStatus::DLLFail);
+    }
 }
-
+void Comm::InitializeDLL() {
+    LOG_TRACE("Initializing TCIO lib.");
+    if (DllInit() != DLL_SUCCESS) {
+        throw CommException("Failed to initialize TCIO lib.",
+                            CommStatus::DLLFail);
+    }
+    CheckDLLStatus();
+}
 void Comm::connect() { connect(m_Port, m_Port); }
 void Comm::connect(int port) { connect(port, port); }
 void Comm::connect(int fromPort, int toPort) {
-    if(m_Connected){
-        throw CommException(R"(Already connected to a device, consider using "cmdDisconnect")");
+    if (m_Connected) {
+        throw CommException(
+            R"(Already connected to a device, consider using "cmdDisconnect")");
     }
 
-    if(fromPort < 0 || toPort < 0 || fromPort > toPort){
-        throw CommException(fmt::format(
-            R"(invalid port setting. From "{}" to "{}".)", fromPort, toPort));
+    if (fromPort < 0 || toPort < 0 || fromPort > toPort) {
+        throw CommException(
+            fmt::format(R"(invalid port range [{},{}].)", fromPort, toPort));
     }
+
+    InitializeDLL();
 
     if (DllSetSearchDevice2ttyDIGI() != DLL_SUCCESS) {
-        throw CommException("failed to set digi string pattern");
+        throw CommException("failed to set ttyDIGI string pattern.");
      }
 
    if (fromPort == toPort) {
@@ -62,8 +93,7 @@ void Comm::connect(int fromPort, int toPort) {
    }
 
    // use this function for VM or  rs232 over ethernet
-   DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER,
-                      WRITE_TIMEOUT_MULTIPLIER);
+   // DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
 
    // hack: while eth and rs232 at the same tc device: wait 2 sec
    std::this_thread::sleep_for(DELAY_RS232);
@@ -110,11 +140,4 @@ void Comm::connect(int fromPort, int toPort) {
         m_readings->getModuleID());
     m_CommStatus = CommStatus::Ok;
 }
-
-void Comm::disconnect() {
-    auto result = DllClose();
-    m_Connected = false;
-    LOG_WARN(R"(conenction closed with code "{}")", result);
-}
-
 } // namespace Regatron

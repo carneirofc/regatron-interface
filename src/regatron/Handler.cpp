@@ -107,7 +107,7 @@ std::string Handler::handle(const std::string &message) {
         LOG_WARN("No compatible action for {}!", message);
     } catch (const CommException &e) {
         LOG_CRITICAL(
-            R"(CommException: Regatron communication exception "{}" when handling message "{}". Device connection will be closed.)",
+            R"(CommException: Regatron communication exception "{}" when handling message "{}". Device TCIO will be closed.)",
             e.what(), message);
         m_RegatronComm->disconnect();
 

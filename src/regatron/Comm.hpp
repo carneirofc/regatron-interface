@@ -37,12 +37,13 @@ class Comm {
     double incSysPower      = 0.0;
     double incSysResistance = 0.0;
 
-    void       InitializeDLL();
     CommStatus m_CommStatus;
     bool       m_AutoReconnect;
     bool       m_Connected;
     std::chrono::time_point<std::chrono::system_clock>
         m_AutoReconnectAttemptTime;
+    void CheckDLLStatus();
+    void InitializeDLL();
 
   public:
     explicit Comm(int port);
