@@ -14,7 +14,6 @@ Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
       m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(false),
       m_Connected(false) {
-    m_readings->getVersion()->readDllVersion();
 }
 
 Comm::Comm() : Comm(1) {}
@@ -62,13 +61,14 @@ void Comm::InitializeDLL() {
                             CommStatus::DLLFail);
     }
     CheckDLLStatus();
+    m_readings->getVersion()->readDllVersion();
 }
-void Comm::connect() { connect(m_Port, m_Port); }
-void Comm::connect(int port) { connect(port, port); }
-void Comm::connect(int fromPort, int toPort) {
+bool Comm::connect() { return connect(m_Port, m_Port); }
+bool Comm::connect(int port) { return connect(port, port); }
+bool Comm::connect(int fromPort, int toPort) {
     if (m_Connected) {
-        throw CommException(
-            R"(Already connected to a device, consider using "cmdDisconnect")");
+        LOG_WARN(R"(Already connected to a device, consider using "cmdDisconnect")");
+        return false;
     }
 
     if (fromPort < 0 || toPort < 0 || fromPort > toPort) {
@@ -131,6 +131,8 @@ void Comm::connect(int fromPort, int toPort) {
     }
     m_readings->readModulePhys();
 
+    m_readings->getVersion()->readDSPVersion();
+
     // Default is to keep system selected !
     m_readings->selectSys();
 
@@ -139,5 +141,6 @@ void Comm::connect(int fromPort, int toPort) {
         m_PortNrFound, ((m_readings->isMaster()) ? "master" : "slave"),
         m_readings->getModuleID());
     m_CommStatus = CommStatus::Ok;
+    return true;
 }
 } // namespace Regatron

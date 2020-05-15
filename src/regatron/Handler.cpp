@@ -28,7 +28,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_RegatronComm(regatronComm),
       m_Matchers({
           // clang-format off
-          Match{"cmdConnect", [this](){ this->m_RegatronComm->connect(); return ACK;}},
+          Match{"cmdConnect", [this](){ return (this->m_RegatronComm->connect()) ? ACK : NACK; }},
           Match{"cmdDisconnect", [this](){ this->m_RegatronComm->disconnect(); return ACK;}},
           Match{"getCommStatus", [this](){
                   auto commStatus = this->m_RegatronComm->getCommStatus();
