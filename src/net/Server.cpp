@@ -111,13 +111,9 @@ void Server::listen() {
             }
         } catch (const std::system_error &e) {
             if (e.code() == asio::error::eof) {
-                LOG_WARN("Connection closed by the client. {}", e.what());
-            } else if (e.code() == asio::error::operation_aborted) {
-                LOG_WARN("Connection closed by the server. {}", e.what());
-            } else {
-                throw;
+                LOG_DEBUG("Connection closed by the client. {}", e.what());
             }
-
+            LOG_CRITICAL("Connection closed {}.", e.what());
             shutdown();
         }
     }
