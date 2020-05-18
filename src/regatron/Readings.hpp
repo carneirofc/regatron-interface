@@ -215,13 +215,13 @@ class Readings {
 
     /**
      * Read and convert to physical value DCLinkVoltage
-     * @throw std::runtime_exception when dll fails
+     * @throw CommException when dll fails
      */
     void readDCLinkVoltage() {
         int DCLinkVoltStd;
 
         if (TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS) {
-            throw std::runtime_error("failed to read DCLink digital voltage.");
+            throw CommException("failed to read DCLink digital voltage.");
         }
         m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / NORM_MAX;
     }
@@ -233,7 +233,7 @@ class Readings {
     void readPrimaryCurrent() {
         int primaryCurrent;
         if (TC4GetIPrimDigital(&primaryCurrent) != DLL_SUCCESS) {
-            throw std::runtime_error(
+            throw CommException(
                 "failed to read transformer primary current.");
         }
         m_PrimaryCurrentMon =
@@ -247,17 +247,17 @@ class Readings {
 
     /**
      * Read and convert IGBT, Rectifier and PCB temperatures.
-     * @throw std::runtime_error
+     * @throw CommException
      */
     void readTemperature() {
         int igbtTemp;
         int rectTemp;
         if (TC4GetTempDigital(&igbtTemp, &rectTemp) != DLL_SUCCESS) {
-            throw std::runtime_error(
+            throw CommException(
                 "failed to read IGBT and Rectifier temperature.");
         }
         if (TC42GetTemperaturePCB(&m_PCBTempMon) != DLL_SUCCESS) {
-            throw std::runtime_error("failed to read PCB temperature.");
+            throw CommException("failed to read PCB temperature.");
         }
         m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / NORM_MAX;
         m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / NORM_MAX;
@@ -268,7 +268,7 @@ class Readings {
      * [0] IGBT Temp
      * [1] Rect Temp
      * [2] PCB  Temp
-     * @throws: std::runtime_error
+     * @throws: CommException
      * @return string in the format "[val1,...,valn]" */
     auto getTemperatures() {
         readTemperature();
@@ -281,13 +281,13 @@ class Readings {
     // @todo: Restrict read/write if master ...? Here or upper layer?
     bool isMaster() const;
 
-    /** One time readings - @throw std::runtime_exception */
+    /** One time readings - @throw CommException */
     void readAdditionalPhys();
     void readSystemPhys();
     void readModulePhys();
     void readModuleID();
 
-    /** Monitor Readings @throw: std::runtime_exception */
+    /** Monitor Readings @throw: CommException */
     // void readGeneric();
 
     /** Methods readSystem and readModule will act on the following values:
@@ -314,20 +314,20 @@ class Readings {
 
     void storeParameters() {
         if (TC4StoreParameters() != DLL_SUCCESS) {
-            throw std::runtime_error("failed to store parameters");
+            throw CommException("failed to store parameters");
         }
     }
 
     void clearErrors() {
         if (TC4ClearError() != DLL_SUCCESS) {
-            throw std::runtime_error("failed to clear erors");
+            throw CommException("failed to clear erors");
         }
     }
 
     inline void readModControlMode() {
         selectMod();
         if (TC4GetControlMode(&m_ModControlMode) != DLL_SUCCESS) {
-            throw std::runtime_error("failed to read module control mode");
+            throw CommException("failed to read module control mode");
         }
         selectSys();
     }
@@ -335,13 +335,13 @@ class Readings {
     inline void readSysControlMode() {
         selectSys();
         if (TC4GetControlMode(&m_SysControlMode) != DLL_SUCCESS) {
-            throw std::runtime_error("failed to read system control mode");
+            throw CommException("failed to read system control mode");
         }
     }
 
     inline void readRemoteControlInput() {
         if (TC4GetRemoteControlInput(&m_RemoteCtrlInp) != DLL_SUCCESS) {
-            throw std::runtime_error("failed to read remote control input");
+            throw CommException("failed to read remote control input");
         }
     }
 
@@ -362,7 +362,7 @@ class Readings {
 
     void selectMod(unsigned int module) {
         if (TC4SetModuleSelector(module) != DLL_SUCCESS) {
-            throw std::runtime_error(fmt::format(
+            throw CommException(fmt::format(
                 "failed to set module selector to {} (code {})",
                 ((module == SYS_VALUES) ? "system" : "device"), module));
         }

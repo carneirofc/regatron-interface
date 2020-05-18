@@ -12,7 +12,7 @@ constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
-      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(false),
+      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(true),
       m_Connected(false) {
 }
 
@@ -92,8 +92,11 @@ bool Comm::connect(int fromPort, int toPort) {
            DEVICE_PREFIX,fromPort,DEVICE_PREFIX,toPort);
    }
 
-   // use this function for VM or  rs232 over ethernet
-   // DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
+   // use this function for VM or rs232 over ethernet
+   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER)) {
+       throw CommException(R"("Failed to set DLL comm timeouts.")");
+   }
+   LOG_TRACE(R"(Dll Comm Timeouts "read={}" "write={}".)", READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
 
    // hack: while eth and rs232 at the same tc device: wait 2 sec
    std::this_thread::sleep_for(DELAY_RS232);

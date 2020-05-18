@@ -4,7 +4,7 @@ namespace Regatron {
 void Version::readDllVersion() {
     if (DllReadVersion(&m_DLLMajorMinor, &m_DLLBuild, m_DLLString) !=
         DLL_SUCCESS) {
-        throw std::runtime_error("failed to initialize tcio lib.");
+        throw CommException("failed to initialize tcio lib.");
     }
     m_DLLVersionString = fmt::format("{}.{}.{}", (m_DLLMajorMinor >> 16),
                                      (m_DLLMajorMinor & 0xff), m_DLLBuild);
@@ -14,12 +14,12 @@ void Version::readDllVersion() {
 void Version::readDSPVersion() {
     if (TC4GetDeviceDSPID(&m_DSPMain, &m_DSPSub, &m_DSPRevision) !=
         DLL_SUCCESS) {
-        throw std::runtime_error("failed to read DSP firmware version.");
+        throw CommException("failed to read DSP firmware version.");
     }
 
     if (TC4GetPeripherieVersion(&m_PeripherieDSPVersion, &m_ModulatorDSPVersion,
                                 &m_MainDSPBootloaderVersion) != DLL_SUCCESS) {
-        throw std::runtime_error("failed to read auxiliary DSP module version "
+        throw CommException("failed to read auxiliary DSP module version "
                                  "(peripherie, modulator and bootloader).");
     }
 
