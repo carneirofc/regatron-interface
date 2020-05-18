@@ -79,10 +79,11 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysResistanceRef", GET_FORMAT(getSysResistanceRef())},
           Match{"getSysPowerRef", GET_FORMAT(getSysPowerRef())},
 
-          Match{"getSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
-          Match{"getSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
-          Match{"getSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
-          Match{"getSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
+          /*** Calling this on slaves will have no effect */
+          Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
+          Match{"setSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
+          Match{"setSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
+          Match{"setSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
 
           // clang-format on
       }) {}
