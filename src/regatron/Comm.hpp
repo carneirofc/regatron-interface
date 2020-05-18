@@ -49,9 +49,9 @@ class Comm {
     explicit Comm(int port);
     Comm();
     ~Comm();
-    void connect();
-    void connect(int port);
-    void connect(int fromPort, int toPort);
+    bool connect();
+    bool connect(int port);
+    bool connect(int fromPort, int toPort);
     void disconnect();
 
     CommStatus getCommStatus() const { return m_CommStatus; }

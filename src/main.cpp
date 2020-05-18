@@ -75,7 +75,7 @@ int main(const int argc, const char *argv[]) {
     } else {
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
-    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "results.json");
+    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "regatron_interface_results.json");
     server->listen();
     INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;

@@ -58,19 +58,20 @@ std::optional<std::string> Match::handle(const std::string &message) const {
     } else {
         commandType = CommandType::invalidCommand;
     }
-INSTRUMENTATOR_PROFILE_FUNCTION();
-    //INSTRUMENTATOR_PROFILE_SCOPE(message.c_str());
 
     switch (commandType) {
     default:
         return {};
 
-    case CommandType::getCommand:
+    case CommandType::getCommand: {
+        INSTRUMENTATOR_PROFILE_SCOPE(m_CommandString.c_str());
         return {fmt::format("{} {}\n", m_CommandString, m_GetHandleFunc())};
-
-    case CommandType::setCommand:
+    }
+    case CommandType::setCommand: {
+        INSTRUMENTATOR_PROFILE_SCOPE(m_CommandString.c_str());
         return {fmt::format("{} {}\n", m_CommandString,
                             m_SetHandleFunc(param.value()))};
+    }
     }
 }
 
