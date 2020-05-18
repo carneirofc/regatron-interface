@@ -4,23 +4,36 @@
 namespace Regatron {
 #define SET_FUNC_DOUBLE(func)                                                  \
     [this](double arg1) {                                                      \
-        this->m_RegatronComm->getReadings()->func(arg1);                       \
-        return ACK;                                                            \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        if (readings) {                                                        \
+            readings.value()->func(arg1);                                      \
+            return ACK;                                                        \
+        } else {                                                               \
+            return NACK;                                                       \
+        }                                                                      \
     }
 
 #define GET_FUNC(func)                                                         \
-    [this]() { return this->m_RegatronComm->getReadings()->func; }
+    [this]() {                                                                 \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        return readings ? readings.value()->func : NACK;                       \
+    }
 
 #define GET_FORMAT(member)                                                     \
     [this]() {                                                                 \
         auto readings = this->m_RegatronComm->getReadings();                   \
-        return fmt::format("{}", readings->member);                            \
+        return readings ? fmt::format("{}", readings.value()->member) : NACK;  \
     }
 
 #define CMD_API(member)                                                        \
     [this]() {                                                                 \
-        this->m_RegatronComm->getReadings()->member();                         \
-        return ACK;                                                            \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        if (readings) {                                                        \
+            readings.value()->member();                                        \
+            return ACK;                                                        \
+        } else {                                                               \
+            return NACK;                                                       \
+        }                                                                      \
     }
 
 // @fixme: Do this in a way that does not require a macros.

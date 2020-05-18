@@ -88,11 +88,13 @@ class Comm {
     }
 
     /** Regatron Readings */
-    auto getReadings() {
+    std::optional<std::shared_ptr<Regatron::Readings>> getReadings() {
         if (m_CommStatus != CommStatus::Ok) {
-            throw CommException(m_CommStatus);
+            LOG_ERROR(R"(getReadings failed with invalid comm status "{}")",
+                      static_cast<int>(m_CommStatus));
+            return {};
         }
-        return m_readings;
+        return {m_readings};
     };
 };
 

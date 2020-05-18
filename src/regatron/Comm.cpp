@@ -26,6 +26,7 @@ Comm::~Comm() {
 void Comm::disconnect() {
     auto result = DllClose();
     m_Connected = false;
+    m_CommStatus = CommStatus::Disconncted;
     LOG_WARN(
         R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
         result);
