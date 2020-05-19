@@ -16,12 +16,15 @@ target_link_libraries(
             project_options
             catch_main
             log
+            regatron
             CONAN_PKG::spdlog
             CONAN_PKG::fmt)
 
 target_include_directories(general_tests PRIVATE "${CONAN_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}"
                                                  "${REGATRON_INTERFACE_SOURCE_DIR}/src")
 
+target_include_directories(general_tests SYSTEM
+                           PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../vendor/Regatron/V3.80.00 30072014 (Linux)/include")
 catch_discover_tests(
     general_tests
     TEST_PREFIX
@@ -40,11 +43,14 @@ target_link_libraries(
             project_warnings
             catch_main
             log
+            regatron
             CONAN_PKG::spdlog
             CONAN_PKG::fmt)
 target_compile_definitions(relaxed_general_tests PRIVATE -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
 target_include_directories(relaxed_general_tests PRIVATE "${CONAN_INCLUDE_DIRS}" "${CMAKE_CURRENT_SOURCE_DIR}"
                                                          "${REGATRON_INTERFACE_SOURCE_DIR}/src")
+target_include_directories(relaxed_general_tests SYSTEM
+                           PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../vendor/Regatron/V3.80.00 30072014 (Linux)/include")
 
 catch_discover_tests(
     relaxed_general_tests

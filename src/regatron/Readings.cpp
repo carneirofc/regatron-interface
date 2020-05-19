@@ -2,6 +2,22 @@
 
 namespace Regatron {
 
+/**
+ 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
+ 32000: fastest set value ramp: 0-100% (full scale) in 50us
+ */
+unsigned int Slope::timeToRaw(double y /* [5e-5 to 1.6] s */) {
+    return static_cast<unsigned int>((y - Slope::SLOPE_B) / Slope::SLOPE_A);
+}
+
+/**
+ 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
+ 32000: fastest set value ramp: 0-100% (full scale) in 50us
+ */
+double Slope::rawToTime(double x) {
+    return Slope::SLOPE_A * x + Slope::SLOPE_B;
+}
+
 void Readings::readModuleID() {
     if (TC4GetModuleID(&(this->m_moduleID)) != DLL_SUCCESS) {
         throw CommException("failed to get module ID.");

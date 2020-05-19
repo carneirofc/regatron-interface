@@ -10,6 +10,33 @@ namespace Regatron {
 constexpr unsigned int SYS_VALUES = 64;
 constexpr unsigned int MOD_VALUES = 0;
 
+namespace Slope {
+constexpr double MIN_TIME = 50e-6;
+constexpr double MAX_TIME = 1.6;
+constexpr double MIN_RAW  = 1.;
+constexpr double MAX_RAW  = 32000.;
+
+// constexpr double B        = (MIN_TIME - MAX_RAW * MAX_TIME) / (-MAX_RAW + 1);
+// constexpr double A        = MAX_TIME - B;
+
+constexpr double SLOPE_B =
+    (MIN_TIME - (MAX_RAW * MAX_TIME)) / (MIN_RAW - MAX_RAW);
+constexpr double SLOPE_A = MAX_TIME - SLOPE_B;
+
+/**
+ 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
+ 32000: fastest set value ramp: 0-100% (full scale) in 50us
+ @param y [5e-5 to 1.6] s
+ */
+unsigned int timeToRaw(double y);
+/**
+ 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
+ 32000: fastest set value ramp: 0-100% (full scale) in 50us
+ @param x [1 32000] raw
+ */
+double rawToTime(double x);
+} // namespace Slope
+
 namespace State {
 constexpr unsigned int POWERUP = 2;
 constexpr unsigned int READY   = 4;
@@ -51,6 +78,8 @@ class Readings {
     constexpr static int    errorTree32Len = 32;
     constexpr static double NORM_MAX = 4000.;
 
+    // IBC
+    float m_IBCInvHeatsinkTemp; // [°C]
     // Additional
     int m_DCLinkPhysNom;         // [V]
     int m_PrimaryCurrentPhysNom; // [A]
@@ -192,6 +221,11 @@ class Readings {
         if (TC42GetTemperaturePCB(&m_PCBTempMon) != DLL_SUCCESS) {
             throw CommException("failed to read PCB temperature.");
         }
+        /*if (TCIBCGetInverterTemperatureHeatsink(&m_IBCInvHeatsinkTemp) !=
+            DLL_SUCCESS) {
+            throw CommException(
+                "failed to read IBC Inverter heatsink temperature.");
+        }*/
         m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / NORM_MAX;
         m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / NORM_MAX;
     }
