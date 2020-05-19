@@ -12,6 +12,7 @@
 #include "net/Server.hpp"
 #include "regatron/Comm.hpp"
 #include "regatron/Handler.hpp"
+#include "utils/Instrumentator.hpp"
 
 static const char *USAGE =
     R"(Regatron Interface.
@@ -45,9 +46,9 @@ int main(const int argc, const char *argv[]) {
 
     const std::string unixEndpoint = args.at("<endpoint>").asString();
 
-    std::shared_ptr<Regatron::Comm> regatron =
+    static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
-    std::shared_ptr<Regatron::Handler> handler =
+    static std::shared_ptr<Regatron::Handler> handler =
         std::make_shared<Regatron::Handler>(regatron);
     static std::shared_ptr<Net::Server> server = nullptr;
 
@@ -59,6 +60,9 @@ int main(const int argc, const char *argv[]) {
          * */
         LOG_ERROR("Capture signal \"{}\", gracefully shutting down...", signum);
         if (server != nullptr) {
+            regatron->setAutoReconnect(false);
+            regatron->disconnect();
+
             server->stop();
             server->shutdown();
         }
@@ -71,6 +75,8 @@ int main(const int argc, const char *argv[]) {
     } else {
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
+    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "regatron_interface_results.json");
     server->listen();
+    INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;
 }

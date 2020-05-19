@@ -2,33 +2,58 @@
 #include "Handler.hpp"
 
 namespace Regatron {
+#define SET_FUNC_UINT(func)                                                    \
+    [this](double arg1) {                                                      \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        if (readings) {                                                        \
+            readings.value()->func(static_cast<unsigned int>(arg1));           \
+            return ACK;                                                        \
+        } else {                                                               \
+            return NACK;                                                       \
+        }                                                                      \
+    }
+
 #define SET_FUNC_DOUBLE(func)                                                  \
     [this](double arg1) {                                                      \
-        this->m_RegatronComm->getReadings()->func(arg1);                       \
-        return ACK;                                                            \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        if (readings) {                                                        \
+            readings.value()->func(arg1);                                      \
+            return ACK;                                                        \
+        } else {                                                               \
+            return NACK;                                                       \
+        }                                                                      \
     }
 
 #define GET_FUNC(func)                                                         \
-    [this]() { return this->m_RegatronComm->getReadings()->func; }
+    [this]() {                                                                 \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        return readings ? readings.value()->func : NACK;                       \
+    }
 
 #define GET_FORMAT(member)                                                     \
     [this]() {                                                                 \
         auto readings = this->m_RegatronComm->getReadings();                   \
-        return fmt::format("{}", readings->member);                            \
+        return readings ? fmt::format("{}", readings.value()->member) : NACK;  \
     }
 
 #define CMD_API(member)                                                        \
     [this]() {                                                                 \
-        this->m_RegatronComm->getReadings()->member();                         \
-        return ACK;                                                            \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        if (readings) {                                                        \
+            readings.value()->member();                                        \
+            return ACK;                                                        \
+        } else {                                                               \
+            return NACK;                                                       \
+        }                                                                      \
     }
 
 // @fixme: Do this in a way that does not require a macros.
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
-    : m_RegatronComm(std::move(regatronComm)),
+    : m_RegatronComm(regatronComm),
       m_Matchers({
           // clang-format off
-          Match{"cmdConnect", [this](){ this->m_RegatronComm->connect(); return ACK;}},
+          Match{"cmdConnect", [this](){ return (this->m_RegatronComm->connect()) ? ACK : NACK; }},
+          Match{"cmdDisconnect", [this](){ this->m_RegatronComm->disconnect(); return ACK;}},
           Match{"getCommStatus", [this](){
                   auto commStatus = this->m_RegatronComm->getCommStatus();
                   return fmt::format("{}", commStatus);
@@ -57,12 +82,14 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getDCLinkVoltage", GET_FUNC(getDCLinkVoltage())},
           Match{"getPrimaryCurrent", GET_FUNC(getPrimaryCurrent())},
 
-          Match{"getTemperatures", GET_FUNC(getTemperatures())},
-          Match{"getModReadings", GET_FUNC(getModReadings())},
-          Match{"getSysReadings", GET_FUNC(getSysReadings())},
-          Match{"getSysControlMode", GET_FUNC(getSysControlMode())},
-          Match{"getModControlMode", GET_FUNC(getModControlMode())},
           Match{"getControlInput", GET_FUNC(getRemoteControlInput())},
+          Match{"getModControlMode", GET_FUNC(getModControlMode())},
+          Match{"getModMinMaxNom", GET_FUNC(getModMinMaxNom())},
+          Match{"getModReadings", GET_FUNC(getModReadings())},
+          Match{"getSysControlMode", GET_FUNC(getSysControlMode())},
+          Match{"getSysMinMaxNom", GET_FUNC(getSysMinMaxNom())},
+          Match{"getSysReadings", GET_FUNC(getSysReadings())},
+          Match{"getTemperatures", GET_FUNC(getTemperatures())},
 
           // Error + Warning T_ErrorTree32
           Match{"getModTree", GET_FUNC(getModTree())},
@@ -77,11 +104,14 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysVoltageRef", GET_FORMAT(getSysVoltageRef())},
           Match{"getSysResistanceRef", GET_FORMAT(getSysResistanceRef())},
           Match{"getSysPowerRef", GET_FORMAT(getSysPowerRef())},
+          Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
 
-          Match{"getSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
-          Match{"getSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
-          Match{"getSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
-          Match{"getSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
+          /*** Calling this on slaves will have no effect */
+          Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
+          Match{"setSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
+          Match{"setSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
+          Match{"setSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
+          Match{"setSysOutVoltEnable", SET_FUNC_UINT(setSysOutVoltEnable)},
 
           // clang-format on
       }) {}
@@ -92,6 +122,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 
 std::string Handler::handle(const std::string &message) {
     try {
+        m_RegatronComm->autoConnect();
         for (const auto &m : m_Matchers) {
             if (auto response = m.handle(message)) {
                 return response.value();
@@ -104,10 +135,10 @@ std::string Handler::handle(const std::string &message) {
 
         LOG_WARN("No compatible action for {}!", message);
     } catch (const CommException &e) {
-        // @todo: Gracefully handle this !
         LOG_CRITICAL(
-            R"(CommException: Regatron communication exception "{}" when handling message "{}")",
+            R"(CommException: Regatron communication exception "{}" when handling message "{}". Device TCIO will be closed.)",
             e.what(), message);
+        m_RegatronComm->disconnect();
 
     } catch (const std::invalid_argument &e) {
         LOG_CRITICAL(

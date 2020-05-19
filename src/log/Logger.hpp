@@ -1,17 +1,22 @@
-
 #pragma once
 
 #include "spdlog/spdlog.h"
 #include <memory>
 
+/**
+ * Always call Utils::Logger::Init()
+ */
 namespace Utils {
 class Logger {
   private:
     static std::shared_ptr<spdlog::logger> defaultLogger;
 
   public:
-    static void                                    Init();
+    static void Init(spdlog::level::level_enum level = spdlog::level::trace);
     inline static std::shared_ptr<spdlog::logger> &getLogger() {
+        if (!defaultLogger) {
+            Init();
+        }
         return defaultLogger;
     }
 };
@@ -40,6 +45,7 @@ class Logger {
                                            __PRETTY_FUNCTION__, __VA_ARGS__)
 */
 #define LOG_TRACE(...)    ::Utils::Logger::getLogger()->trace(__VA_ARGS__)
+#define LOG_DEBUG(...)    ::Utils::Logger::getLogger()->debug(__VA_ARGS__)
 #define LOG_INFO(...)     ::Utils::Logger::getLogger()->info(__VA_ARGS__)
 #define LOG_WARN(...)     ::Utils::Logger::getLogger()->warn(__VA_ARGS__)
 #define LOG_ERROR(...)    ::Utils::Logger::getLogger()->error(__VA_ARGS__)

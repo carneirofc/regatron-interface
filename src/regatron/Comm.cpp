@@ -2,77 +2,121 @@
 #include "Comm.hpp"
 
 namespace Regatron {
-constexpr unsigned int SEARCH_SLEEP_SEC = 1000 * 1000 * 2;
+constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
+constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 40;
+constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 40;
+constexpr const char* DEVICE_PREFIX = "/dev/ttyD";
+constexpr int          DLL_STATUS_OK                  = 0;
+constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
+constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
-      m_AutoReconnect(false), m_CommStatus{CommStatus::Disconncted} {
-    m_readings->getVersion()->readDllVersion();
-    LOG_INFO("initializing tcio lib");
-    InitializeDLL();
+      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(true),
+      m_Connected(false) {
 }
 
 Comm::Comm() : Comm(1) {}
 
 Comm::~Comm() {
-    if (DllClose() != DLL_SUCCESS) {
-        LOG_ERROR("failed to close tcio lib");
-    }
-    LOG_INFO("regatron obj deleted");
+    disconnect();
+    LOG_TRACE("Comm destroyed!");
 }
 
-void Comm::InitializeDLL() {
-    DllInit();
-
+void Comm::disconnect() {
+    auto result = DllClose();
+    m_Connected = false;
+    m_CommStatus = CommStatus::Disconncted;
+    LOG_WARN(
+        R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
+        result);
+}
+void Comm::CheckDLLStatus() {
     int state{-1};
     int errorNo{0};
 
+    LOG_TRACE("Reading DLL status.");
     if (DllGetStatus(&state, &errorNo) != DLL_SUCCESS) {
         throw CommException("dll status: failed to get Dll status.",
                             CommStatus::DLLFail);
     }
+    switch (state) {
+    case DLL_STATUS_OK:
+        m_CommStatus = CommStatus::Ok;
+        break;
+    case DLL_STATUS_COMMUNICATION_ERROR:
+        m_CommStatus = CommStatus::DLLFail;
+        break;
+    case DLL_STATUS_COMMAND_EXECUTION_ERROR:
+        m_CommStatus = CommStatus::DLLCommFail;
+    }
+    if (state != DLL_STATUS_OK) {
+        throw CommException("dll status: Invalid return status !.",
+                            CommStatus::DLLFail);
+    }
 }
-
-void Comm::connect() { connect(m_Port, m_Port); }
-void Comm::connect(int port) { connect(port, port); }
-void Comm::connect(int fromPort, int toPort) {
-    if(fromPort < 0 || toPort < 0 || fromPort > toPort){
-        auto message = fmt::format(R"(invalid port setting. From "{}" to "{}".)", fromPort, toPort).c_str();
-        throw CommException(message);
+void Comm::InitializeDLL() {
+    LOG_TRACE("Initializing TCIO lib.");
+    if (DllInit() != DLL_SUCCESS) {
+        throw CommException("Failed to initialize TCIO lib.",
+                            CommStatus::DLLFail);
+    }
+    CheckDLLStatus();
+    m_readings->getVersion()->readDllVersion();
+}
+bool Comm::connect() { return connect(m_Port, m_Port); }
+bool Comm::connect(int port) { return connect(port, port); }
+bool Comm::connect(int fromPort, int toPort) {
+    if (m_Connected) {
+        LOG_WARN(R"(Already connected to a device, consider using "cmdDisconnect")");
+        return false;
     }
 
-    if (DllSetSearchDevice2ttyUSB() != DLL_SUCCESS) {
-        throw CommException("failed to set digi string pattern");
+    if (fromPort < 0 || toPort < 0 || fromPort > toPort) {
+        throw CommException(
+            fmt::format(R"(invalid port range [{},{}].)", fromPort, toPort));
+    }
+
+    InitializeDLL();
+
+    if (DllSetSearchDevice2ttyDIGI() != DLL_SUCCESS) {
+        throw CommException("failed to set ttyDIGI string pattern.");
      }
 
    if (fromPort == toPort) {
-       LOG_INFO(R"(searching DIGI RealPort device "/dev/ttyUSB{}")",
+       LOG_INFO(R"(searching DIGI RealPort device "{}{:02}")",
+               DEVICE_PREFIX,
                fromPort);
    } else {
        LOG_INFO(
-           R"(searching DIGI RealPort device in range "/dev/ttyUSB{}" to "/dev/ttyUSB{}")",
-           fromPort, toPort);
+           R"(searching DIGI RealPort device in range "{}{:02}" to "{}{:02}")",
+           DEVICE_PREFIX,fromPort,DEVICE_PREFIX,toPort);
    }
 
-    // search device
-    DllSetCommTimeouts(40, 40); //use this function for VM or rs232 over ethernet
-    usleep(SEARCH_SLEEP_SEC);   // hack: while eth and rs232 at the same tc
-                                // device: wait 2 sec
+   // use this function for VM or rs232 over ethernet
+   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER)) {
+       throw CommException(R"("Failed to set DLL comm timeouts.")");
+   }
+   LOG_TRACE(R"(Dll Comm Timeouts "read={}" "write={}".)", READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
 
-    if (DllSearchDevice(fromPort+1, toPort+1, &m_PortNrFound) != DLL_SUCCESS ||
-    //if (DllSearchDevice(1, 1, &m_PortNrFound) != DLL_SUCCESS ||
-        m_PortNrFound == -1) {
-        throw CommException(
-            fmt::format(
-                R"(failed to connect to a device in range Port range "/dev/ttyUSB{}" to "/dev/ttyUSB{}", PortNrFound "{}".)",
-                fromPort, toPort, m_PortNrFound)
-                .c_str());
+   // hack: while eth and rs232 at the same tc device: wait 2 sec
+   std::this_thread::sleep_for(DELAY_RS232);
+
+   if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
+           DLL_SUCCESS || m_PortNrFound == -1) {
+       throw CommException(fmt::format(
+           R"(failed to connect to a device in range "{}{:02}" to "{}{:02}", PortNrFound "{}".)",
+           DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
+    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}")", m_PortNrFound,
+              DEVICE_PREFIX, m_PortNrFound + 1);
+    m_Connected = true;
 
     // set remote control to RS232
     if (TC4SetRemoteControlInput(2) != DLL_SUCCESS) {
         throw CommException("failed to set remote control do RS232.");
     }
+    LOG_TRACE("Remote control set to RS232.");
 
     // init lib
     if (TC4GetPhysicalValuesIncrement(
@@ -91,16 +135,16 @@ void Comm::connect(int fromPort, int toPort) {
     }
     m_readings->readModulePhys();
 
+    m_readings->getVersion()->readDSPVersion();
+
     // Default is to keep system selected !
     m_readings->selectSys();
 
     LOG_INFO(
-        R"(regatron device connected at port "{}", configured as "{}" with module ID "{}".)",
+        R"(Regatron device connected at port "{}", configured as "{}" with module ID "{}".)",
         m_PortNrFound, ((m_readings->isMaster()) ? "master" : "slave"),
         m_readings->getModuleID());
     m_CommStatus = CommStatus::Ok;
+    return true;
 }
-
-void Comm::disconnect() { LOG_WARN("disconnecting ..."); }
-
 } // namespace Regatron

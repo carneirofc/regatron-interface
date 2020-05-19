@@ -3,8 +3,9 @@
 #include "log/Logger.hpp"
 #include "net/Handler.hpp"
 
-#include <boost/asio.hpp> // NOLINT
+#include <asio.hpp> // NOLINT
 #include <filesystem>
+#include <system_error>
 
 namespace Net {
 class Server {
@@ -24,14 +25,13 @@ class Server {
 
   private:
     std::shared_ptr<Net::Handler>                                  m_handler;
-    std::shared_ptr<boost::asio::io_context>                       m_IOContext;
-    std::shared_ptr<boost::asio::generic::stream_protocol::socket> m_Socket;
-    std::shared_ptr<boost::asio::local::stream_protocol::acceptor>
-                                                    m_UNIXAcceptor;
-    std::shared_ptr<boost::asio::ip::tcp::acceptor> m_TCPAcceptor;
-    void write(const std::string &message, boost::system::error_code &ec);
+    std::shared_ptr<asio::io_context>                              m_IOContext;
+    std::shared_ptr<asio::generic::stream_protocol::socket>        m_Socket;
+    std::shared_ptr<asio::local::stream_protocol::acceptor> m_UNIXAcceptor;
+    std::shared_ptr<asio::ip::tcp::acceptor>                m_TCPAcceptor;
+    void              write(const std::string &message, std::error_code &ec);
     void write(const std::string &message);
-    auto              read(boost::system::error_code &ec);
+    auto              read(std::error_code &ec);
     auto              read();
     bool              m_Run;
 };

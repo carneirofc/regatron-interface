@@ -59,16 +59,25 @@ std::optional<std::string> Match::handle(const std::string &message) const {
         commandType = CommandType::invalidCommand;
     }
 
+    if(commandType == CommandType::invalidCommand){
+        return {};
+    }
+
+    LOG_DEBUG(R"(command: "{}" message: "{}")", m_CommandString,  message);
+    INSTRUMENTATOR_PROFILE_SCOPE(m_CommandString.c_str());
+    
     switch (commandType) {
     default:
+        LOG_CRITICAL(R"(Logic error ! Unknown commandType at "Match::handle".)");
         return {};
 
-    case CommandType::getCommand:
+    case CommandType::getCommand: {
         return {fmt::format("{} {}\n", m_CommandString, m_GetHandleFunc())};
-
-    case CommandType::setCommand:
+    }
+    case CommandType::setCommand: {
         return {fmt::format("{} {}\n", m_CommandString,
                             m_SetHandleFunc(param.value()))};
+    }
     }
 }
 

@@ -1,33 +1,27 @@
 ## Serial API
 
-### ErrorTree32
+### ReadOnly
 
 | command |
 |:-------------:|
-|getModErrTree  |
+|getModTree  |
 |getModOutCurrent|
 |getModOutPower|
 |getModOutVoltage|
 |getModRes|
 |getModState|
 |getSysState|
-|getModWarnTree |
-|getSysErrTree  |
+|getSysree  |
 |getSysOutCurrent|
 |getSysOutPower|
 |getSysOutVoltage|
 |getSysRes|
-|getSysWarnTree |
+|getTemperatures|
 
-| function |
-|:-------------:|
-|readGeneric()|
-|readSystem()|
-|readSystemErrorTree32()|
-|readModule()|
-|readModuleErrorTree32()|
-|------------|
-|storeParameters()|
-|clearErrors()|
-|readControlMode()|
-|readRemoteControlInput()|
+### Commands
+
+|command | function |
+|:-------------:|:-------------:|
+|cmdConnect| connect |
+|cmdClearErrors | clearErrors|
+|cmdStoreParam | storeParameters|

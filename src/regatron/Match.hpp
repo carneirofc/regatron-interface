@@ -1,5 +1,6 @@
 #pragma once
 #include "log/Logger.hpp"
+#include "utils/Instrumentator.hpp"
 #include <fmt/format.h>
 #include <functional>
 #include <string>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boost/asio.hpp" // NO LINT
+#include "asio.hpp" // NO LINT
 
 namespace Net {
 class Handler {

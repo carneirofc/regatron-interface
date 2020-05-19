@@ -4,8 +4,8 @@ namespace Net {
 
 Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
     : m_handler(std::move(handler)),
-      m_IOContext(std::make_shared<boost::asio::io_context>()),
-      m_Socket(std::make_shared<boost::asio::generic::stream_protocol::socket>(
+      m_IOContext(std::make_shared<asio::io_context>()),
+      m_Socket(std::make_shared<asio::generic::stream_protocol::socket>(
           *m_IOContext)),
       m_UNIXAcceptor(nullptr), m_TCPAcceptor(nullptr), m_Run{false} {
     if (std::filesystem::exists(unixEndpoint)) {
@@ -13,22 +13,19 @@ Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
                  unixEndpoint);
         std::filesystem::remove(unixEndpoint);
     }
-    m_UNIXAcceptor =
-        std::make_shared<boost::asio::local::stream_protocol::acceptor>(
-            *m_IOContext,
-            boost::asio::local::stream_protocol::endpoint{unixEndpoint});
+    m_UNIXAcceptor = std::make_shared<asio::local::stream_protocol::acceptor>(
+        *m_IOContext, asio::local::stream_protocol::endpoint{unixEndpoint});
     LOG_INFO("Server at endpoint {}", unixEndpoint);
 }
 Server::Server(std::shared_ptr<Net::Handler> handler,
                const short unsigned int      tcpPort)
     : m_handler(std::move(handler)),
-      m_IOContext(std::make_shared<boost::asio::io_context>()),
-      m_Socket(std::make_shared<boost::asio::generic::stream_protocol::socket>(
+      m_IOContext(std::make_shared<asio::io_context>()),
+      m_Socket(std::make_shared<asio::generic::stream_protocol::socket>(
           *m_IOContext)),
       m_UNIXAcceptor(nullptr),
-      m_TCPAcceptor(std::make_shared<boost::asio::ip::tcp::acceptor>(
-          *m_IOContext,
-          boost::asio::ip::tcp::endpoint{boost::asio::ip::tcp::v4(), tcpPort})),
+      m_TCPAcceptor(std::make_shared<asio::ip::tcp::acceptor>(
+          *m_IOContext, asio::ip::tcp::endpoint{asio::ip::tcp::v4(), tcpPort})),
       m_Run{false} {
     LOG_INFO("Server at port \"{}\"", tcpPort);
 }
@@ -52,42 +49,44 @@ Server::~Server() {
     }
 }
 
+void Server::stop(){
+    m_Run = false;
+}
+
 void Server::shutdown() {
-    // Shutdown socket
-    boost::system::error_code ec;
-    m_Socket->shutdown(boost::asio::socket_base::shutdown_send, ec);
+    // Shutdown socket connections /** if m_Run is true, the socket will start again... @todo: Fix names !*/
+    std::error_code ec;
+    m_Socket->shutdown(asio::socket_base::shutdown_send, ec);
     if (ec) {
-        LOG_WARN("Failed to shutdown socket. Error {}.", ec.message());
+        LOG_DEBUG("Failed to shutdown socket. Error {}.", ec.message());
     } else {
         LOG_INFO("Socket shutdown.");
     }
     m_Socket->close(ec);
     if (ec) {
-        LOG_ERROR("Failed to close socket. Error {}.", ec.message());
+        LOG_DEBUG("Failed to close socket. Error {}.", ec.message());
     } else {
         LOG_INFO("Socket closed.");
     }
 }
 
 auto Server::read() {
-    boost::asio::streambuf buf;
-    boost::asio::read_until(*m_Socket, buf, "\n");
-    return std::string{boost::asio::buffer_cast<const char *>(buf.data())};
+    asio::streambuf buf;
+    asio::read_until(*m_Socket, buf, "\n");
+    return std::string{asio::buffer_cast<const char *>(buf.data())};
 }
-auto Server::read(boost::system::error_code &ec) {
-    boost::asio::streambuf buf;
-    boost::asio::read_until(*m_Socket, buf, "\n", ec);
-    return std::string{boost::asio::buffer_cast<const char *>(buf.data())};
+auto Server::read(std::error_code &ec) {
+    asio::streambuf buf;
+    asio::read_until(*m_Socket, buf, "\n", ec);
+    return std::string{asio::buffer_cast<const char *>(buf.data())};
 }
 
 void Server::write(const std::string &message) {
-    boost::asio::write(*m_Socket, boost::asio::buffer(message));
+    asio::write(*m_Socket, asio::buffer(message));
 }
-void Server::write(const std::string &message, boost::system::error_code &ec) {
-    boost::asio::write(*m_Socket, boost::asio::buffer(message), ec);
+void Server::write(const std::string &message, std::error_code &ec) {
+    asio::write(*m_Socket, asio::buffer(message), ec);
 }
-
-void Server::stop() { m_Run = false; }
 
 void Server::listen() {
     m_Run = true;
@@ -110,15 +109,11 @@ void Server::listen() {
                 const std::string message = Server::read();
                 this->write(this->m_handler->handle(message));
             }
-        } catch (const boost::system::system_error &e) {
-            if (e.code() == boost::asio::error::eof) {
-                LOG_WARN("Connection closed by the client. {}", e.what());
-            } else if (e.code() == boost::asio::error::operation_aborted) {
-                LOG_WARN("Connection closed by the server. {}", e.what());
-            } else {
-                throw;
+        } catch (const std::system_error &e) {
+            if (e.code() == asio::error::eof) {
+                LOG_DEBUG("Connection closed by the client. {}", e.what());
             }
-
+            LOG_CRITICAL("Connection closed {}.", e.what());
             shutdown();
         }
     }

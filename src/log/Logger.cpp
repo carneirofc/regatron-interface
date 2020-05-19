@@ -5,8 +5,8 @@
 namespace Utils {
 std::shared_ptr<spdlog::logger> Logger::defaultLogger;
 
-void Utils::Logger::Init() {
+void Utils::Logger::Init(spdlog::level::level_enum level) {
     defaultLogger = spdlog::stdout_color_mt("main");
-    defaultLogger->set_level(spdlog::level::trace);
+    defaultLogger->set_level(level);
 }
 } // namespace Utils

@@ -14,12 +14,13 @@
 #include <string>
 
 namespace Regatron {
-const std::string NACK{"NACK\n"};
-const std::string ACK{"ACK\n"};
+constexpr const char* NACK = "NACK";
+constexpr const char* ACK = "ACK";
 
 class Handler : public Net::Handler {
   public:
     Handler(std::shared_ptr<Regatron::Comm> regatronComm);
+    ~Handler() = default;
 
   private:
     std::shared_ptr<Regatron::Comm> m_RegatronComm;
