@@ -66,7 +66,6 @@ class Readings {
     double m_SysCurrentPhysMin;    // [A]
     double m_SysPowerPhysMin;      // [kW]
     double m_SysResistancePhysMin; // [mOhm]
-
     double m_SysVoltagePhysNom;    // [V]
     double m_SysCurrentPhysNom;    // [A]
     double m_SysPowerPhysNom;      // [kW]
@@ -84,6 +83,7 @@ class Readings {
     double                m_SysCurrentRef;
     double                m_SysPowerRef;
     double                m_SysResRef;
+    unsigned int          m_SysOutVoltEnable;
 
     // -- Module
     double                m_ModVoltagePhysMax;    // [V]
@@ -129,88 +129,21 @@ class Readings {
 
     Readings() : m_Version(std::make_shared<Regatron::Version>()) {}
 
-    /** Represent an T_ErrorTree32 object as a vector "[0, ... 32]"*/
-    static auto T_ErrorTree32toString(const T_ErrorTree32 &errorTree32) {
-        std::ostringstream oss;
-        oss << "[" << errorTree32.group << ",";
-        int index = 0;
-        for (const auto &error : errorTree32.error) {
-            oss << error;
-            index++;
-            if (index < errorTree32Len) {
-                oss << ",";
-            }
-        }
-        oss << "]";
-        return oss.str();
-    };
-
-    auto getModTree() {
-        std::ostringstream oss;
-        readModuleErrorTree32();
-
-        // Error
-        oss << '[' << m_ModErrorTree32Mon.group << ',';
-        for (const auto &error : m_ModErrorTree32Mon.error) {
-            oss << error;
-            oss << ',';
-        }
-
-        // Warning
-        int idx{0};
-        oss << m_ModWarningTree32Mon.group << ',';
-        for (const auto &error : m_ModWarningTree32Mon.error) {
-            oss << error;
-            idx++;
-            if (idx < errorTree32Len) {
-                oss << ',';
-            }
-        }
-        oss << ']';
-        return oss.str();
-    }
-
-    auto getSysTree() {
-        std::ostringstream oss;
-        readSystemErrorTree32();
-
-        // Error
-        oss << '[' << m_SysErrorTree32Mon.group << ',';
-        for (const auto &error : m_SysErrorTree32Mon.error) {
-            oss << error;
-            oss << ',';
-        }
-
-        // Warning
-        int idx{0};
-        oss << m_SysWarningTree32Mon.group << ',';
-        for (const auto &error : m_SysWarningTree32Mon.error) {
-            oss << error;
-            idx++;
-            if (idx < errorTree32Len) {
-                oss << ',';
-            }
-        }
-        oss << ']';
-        return oss.str();
-    }
+    std::string getModTree();
+    std::string getSysTree();
 
     auto getModReadings() {
         readModule();
-        std::ostringstream oss;
-        oss << '[' << m_ModActualOutVoltageMon << ','
-            << m_ModActualOutCurrentMon << ',' << m_ModActualOutPowerMon << ','
-            << m_ModActualResMon << ',' << m_ModState << ']';
-        return oss.str();
+        return fmt::format(R"([{},{},{},{},{}])", m_ModActualOutVoltageMon,
+                           m_ModActualOutCurrentMon, m_ModActualOutPowerMon,
+                           m_ModActualResMon, m_ModState);
     }
 
     auto getSysReadings() {
         readSystem();
-        std::ostringstream oss;
-        oss << '[' << m_SysActualOutVoltageMon << ','
-            << m_SysActualOutCurrentMon << ',' << m_SysActualOutPowerMon << ','
-            << m_SysActualResMon << ',' << m_SysState << ']';
-        return oss.str();
+        return fmt::format(R"([{},{},{},{},{}])", m_SysActualOutVoltageMon,
+                           m_SysActualOutCurrentMon, m_SysActualOutPowerMon,
+                           m_SysActualResMon, m_SysState);
     }
 
     /**
@@ -374,16 +307,20 @@ class Readings {
     double getModVoltageRef();
     double getModResistanceRef();
     double getModPowerRef();
+    std::string getModMinMaxNom();
 
     double getSysCurrentRef();
     double getSysVoltageRef();
     double getSysResistanceRef();
     double getSysPowerRef();
+    std::string getSysMinMaxNom();
+    bool   getSysOutVoltEnable();
 
     /** Calling these functions on a TopCon Slave will have no effect. */
     void setSysCurrentRef(double);
     void setSysVoltageRef(double);
     void setSysResistanceRef(double);
     void setSysPowerRef(double);
+    void setSysOutVoltEnable(unsigned int);
 };
 } // namespace Regatron

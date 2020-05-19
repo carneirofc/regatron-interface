@@ -2,6 +2,17 @@
 #include "Handler.hpp"
 
 namespace Regatron {
+#define SET_FUNC_UINT(func)                                                    \
+    [this](double arg1) {                                                      \
+        auto readings = this->m_RegatronComm->getReadings();                   \
+        if (readings) {                                                        \
+            readings.value()->func(static_cast<unsigned int>(arg1));           \
+            return ACK;                                                        \
+        } else {                                                               \
+            return NACK;                                                       \
+        }                                                                      \
+    }
+
 #define SET_FUNC_DOUBLE(func)                                                  \
     [this](double arg1) {                                                      \
         auto readings = this->m_RegatronComm->getReadings();                   \
@@ -71,12 +82,14 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getDCLinkVoltage", GET_FUNC(getDCLinkVoltage())},
           Match{"getPrimaryCurrent", GET_FUNC(getPrimaryCurrent())},
 
-          Match{"getTemperatures", GET_FUNC(getTemperatures())},
-          Match{"getModReadings", GET_FUNC(getModReadings())},
-          Match{"getSysReadings", GET_FUNC(getSysReadings())},
-          Match{"getSysControlMode", GET_FUNC(getSysControlMode())},
-          Match{"getModControlMode", GET_FUNC(getModControlMode())},
           Match{"getControlInput", GET_FUNC(getRemoteControlInput())},
+          Match{"getModControlMode", GET_FUNC(getModControlMode())},
+          Match{"getModMinMaxNom", GET_FUNC(getModMinMaxNom())},
+          Match{"getModReadings", GET_FUNC(getModReadings())},
+          Match{"getSysControlMode", GET_FUNC(getSysControlMode())},
+          Match{"getSysMinMaxNom", GET_FUNC(getSysMinMaxNom())},
+          Match{"getSysReadings", GET_FUNC(getSysReadings())},
+          Match{"getTemperatures", GET_FUNC(getTemperatures())},
 
           // Error + Warning T_ErrorTree32
           Match{"getModTree", GET_FUNC(getModTree())},
@@ -91,12 +104,14 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysVoltageRef", GET_FORMAT(getSysVoltageRef())},
           Match{"getSysResistanceRef", GET_FORMAT(getSysResistanceRef())},
           Match{"getSysPowerRef", GET_FORMAT(getSysPowerRef())},
+          Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
 
           /*** Calling this on slaves will have no effect */
           Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
           Match{"setSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
           Match{"setSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
           Match{"setSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
+          Match{"setSysOutVoltEnable", SET_FUNC_UINT(setSysOutVoltEnable)},
 
           // clang-format on
       }) {}

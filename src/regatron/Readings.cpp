@@ -132,6 +132,24 @@ void Readings::readSystemPhys() {
     }
 }
 
+std::string Readings::getSysMinMaxNom() {
+    return fmt::format(
+        R"([{},{},{},{},{},{},{},{},{},{},{},{}])", m_SysVoltagePhysMin,
+        m_SysCurrentPhysMin, m_SysPowerPhysMin, m_SysResistancePhysMin,
+        m_SysVoltagePhysMax, m_SysCurrentPhysMax, m_SysPowerPhysMax,
+        m_SysResistancePhysMax, m_SysVoltagePhysNom, m_SysCurrentPhysNom,
+        m_SysPowerPhysNom, m_SysResistancePhysNom);
+}
+
+std::string Readings::getModMinMaxNom() {
+    return fmt::format(
+        R"([{},{},{},{},{},{},{},{},{},{},{},{}])", m_ModVoltagePhysMin,
+        m_ModCurrentPhysMin, m_ModPowerPhysMin, m_ModResistancePhysMin,
+        m_ModVoltagePhysMax, m_ModCurrentPhysMax, m_ModPowerPhysMax,
+        m_ModResistancePhysMax, m_ModVoltagePhysNom, m_ModCurrentPhysNom,
+        m_ModPowerPhysNom, m_ModResistancePhysNom);
+}
+
 double Readings::getModCurrentRef() {
     selectMod();
     if (TC4GetCurrentRef(&m_ModCurrentRef) != DLL_SUCCESS) {
@@ -215,4 +233,66 @@ void Readings::setSysResistanceRef(double value /* [mOhm] */) {
     }
 }
 
+std::string Readings::getModTree() {
+    std::ostringstream oss;
+    readModuleErrorTree32();
+
+    // Error
+    oss << '[' << m_ModErrorTree32Mon.group << ',';
+    for (const auto &error : m_ModErrorTree32Mon.error) {
+        oss << error;
+        oss << ',';
+    }
+
+    // Warning
+    int idx{0};
+    oss << m_ModWarningTree32Mon.group << ',';
+    for (const auto &error : m_ModWarningTree32Mon.error) {
+        oss << error;
+        idx++;
+        if (idx < errorTree32Len) {
+            oss << ',';
+        }
+    }
+    oss << ']';
+    return oss.str();
+}
+
+std::string Readings::getSysTree() {
+    std::ostringstream oss;
+    readSystemErrorTree32();
+
+    // Error
+    oss << '[' << m_SysErrorTree32Mon.group << ',';
+    for (const auto &error : m_SysErrorTree32Mon.error) {
+        oss << error;
+        oss << ',';
+    }
+
+    // Warning
+    int idx{0};
+    oss << m_SysWarningTree32Mon.group << ',';
+    for (const auto &error : m_SysWarningTree32Mon.error) {
+        oss << error;
+        idx++;
+        if (idx < errorTree32Len) {
+            oss << ',';
+        }
+    }
+    oss << ']';
+    return oss.str();
+}
+
+void Readings::setSysOutVoltEnable(unsigned int state) {
+    if (TC4SetControlIn(state) != DLL_SUCCESS) {
+        throw CommException("failed to set system output voltage state");
+    }
+}
+
+bool Readings::getSysOutVoltEnable() {
+    if (TC4GetControlIn(&m_SysOutVoltEnable) != DLL_SUCCESS) {
+        throw CommException("failed to get system output voltage state");
+    }
+    return static_cast<bool>(m_SysOutVoltEnable);
+}
 } // namespace Regatron
