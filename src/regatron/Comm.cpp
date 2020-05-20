@@ -35,7 +35,6 @@ void Comm::CheckDLLStatus() {
     int state{-1};
     int errorNo{0};
 
-    LOG_TRACE("Reading DLL status.");
     if (DllGetStatus(&state, &errorNo) != DLL_SUCCESS) {
         throw CommException("dll status: failed to get Dll status.",
                             CommStatus::DLLFail);
@@ -54,6 +53,7 @@ void Comm::CheckDLLStatus() {
         throw CommException("dll status: Invalid return status !.",
                             CommStatus::DLLFail);
     }
+    LOG_TRACE(R"(DLL status "{}".)", state);
 }
 void Comm::InitializeDLL() {
     LOG_TRACE("Initializing TCIO lib.");
@@ -110,7 +110,7 @@ bool Comm::connect(int fromPort, int toPort) {
            DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
     LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}")", m_PortNrFound,
-              DEVICE_PREFIX, m_PortNrFound + 1);
+              DEVICE_PREFIX, m_PortNrFound - 1);
     m_Connected = true;
 
     // set remote control to RS232
