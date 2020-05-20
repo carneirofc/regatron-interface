@@ -17,7 +17,14 @@
 namespace Regatron {
 
 class Comm {
-    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{30};
+    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{15};
+    static constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
+    static constexpr const char*  DEVICE_PREFIX = "/dev/ttyD";
+    static constexpr int          DLL_STATUS_OK                  = 0;
+    static constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
+    static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
+    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 100;
+    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 100;
 
   private:
     // Connection

@@ -2,13 +2,6 @@
 #include "Comm.hpp"
 
 namespace Regatron {
-constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
-constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 40;
-constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 40;
-constexpr const char* DEVICE_PREFIX = "/dev/ttyD";
-constexpr int          DLL_STATUS_OK                  = 0;
-constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
-constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
