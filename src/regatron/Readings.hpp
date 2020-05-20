@@ -35,6 +35,8 @@ unsigned int timeToRaw(double y);
  @param x [1 32000] raw
  */
 double rawToTime(double x);
+bool   checkTimeValue(double);
+bool   checkRawValue(unsigned int);
 } // namespace Slope
 
 namespace State {
@@ -148,15 +150,39 @@ class Readings {
     double       m_RectifierTempMon;  // [°C] heat sink of rectifier
     double       m_PCBTempMon;        // [°C] PCB Controller board temperature
 
+    // Master only ...
+    // double m_StartupVoltageRampSeconds; // Seconds from 0% to 100%
+    // double m_StartupCurrentRampSeconds; // Seconds from 0% to 100%
+    // double m_VoltageRampSeconds;
+    // double m_CurrentRampSeconds;
+
+    unsigned int m_StartupVoltageRamp;
+    unsigned int m_VoltageRamp;
+    unsigned int m_StartupCurrentRamp;
+    unsigned int m_CurrentRamp;
+
     // Regatron
     unsigned int m_moduleID = 0;
 
   public:
     auto getModuleID() const { return m_moduleID; }
     auto getVersion() const { return m_Version; }
-    /** Monitor readings */
 
-    Readings() : m_Version(std::make_shared<Regatron::Version>()) {}
+    bool setStartupVoltageRampSeconds(double value);
+    bool setVoltageRampSeconds(double value);
+
+    bool setStartupCurrentRampSeconds(double value);
+    bool setCurrentRampSeconds(double value);
+
+    bool writeVoltageRamp();
+    bool writeCurrentRamp();
+
+    std::string getVoltageRamp();
+    std::string getCurrentRamp();
+
+    /** Monitor readings */
+    Readings()
+        : m_Version(std::make_shared<Regatron::Version>()) {}
 
     std::string getModTree();
     std::string getSysTree();

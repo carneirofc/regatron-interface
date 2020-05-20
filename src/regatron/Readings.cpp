@@ -17,6 +17,114 @@ unsigned int Slope::timeToRaw(double y /* [5e-5 to 1.6] s */) {
 double Slope::rawToTime(double x) {
     return Slope::SLOPE_A * x + Slope::SLOPE_B;
 }
+bool inline Slope::checkTimeValue(double value) {
+    return value >= Slope::MIN_TIME && value <= Slope::MAX_TIME;
+}
+bool inline Slope::checkRawValue(unsigned int value) {
+    return value >= Slope::MIN_RAW && value <= Slope::MAX_RAW;
+}
+
+bool Readings::setStartupVoltageRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid startupVoltageRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_StartupVoltageRamp = Slope::timeToRaw(value);
+    return true;
+}
+bool Readings::setVoltageRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid VoltageRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_VoltageRamp = Slope::timeToRaw(value);
+    return true;
+}
+bool Readings::setStartupCurrentRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid startupCurrentRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_StartupCurrentRamp = Slope::timeToRaw(value);
+    return true;
+}
+bool Readings::setCurrentRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid CurrentRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_CurrentRamp = Slope::timeToRaw(value);
+    return true;
+}
+
+bool Readings::writeVoltageRamp() {
+    if (!Slope::checkRawValue(m_StartupVoltageRamp) ||
+        !Slope::checkRawValue(m_VoltageRamp)) {
+        LOG_WARN(
+            R"(setVoltageRamp: Parameters "{}" and "{}" must be >= {} and <= {}.)",
+            m_StartupVoltageRamp, m_VoltageRamp, Slope::MIN_RAW,
+            Slope::MAX_RAW);
+        return false;
+    }
+    LOG_TRACE(R"(Configuring voltage slope to ({},{}) aka ({},{})s)",
+              m_StartupVoltageRamp, m_VoltageRamp,
+              Slope::rawToTime(m_StartupVoltageRamp),
+              Slope::rawToTime(m_VoltageRamp));
+
+    if (TC4SetVoltageSlopeRamp(m_StartupVoltageRamp, m_VoltageRamp) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set voltage slopes");
+    }
+    return true;
+}
+bool Readings::writeCurrentRamp() {
+    if (!Slope::checkRawValue(m_StartupCurrentRamp) ||
+        !Slope::checkRawValue(m_CurrentRamp)) {
+        LOG_WARN(
+            R"(setCurrentRamp: Parameters "{}" and "{}" must be >= {} and <= {}.)",
+            m_StartupCurrentRamp, m_CurrentRamp, Slope::MIN_RAW,
+            Slope::MAX_RAW);
+        return false;
+    }
+    LOG_TRACE(R"(Configuring current slope to ({},{}) aka ({},{})s)",
+              m_StartupCurrentRamp, m_CurrentRamp,
+              Slope::rawToTime(m_StartupCurrentRamp),
+              Slope::rawToTime(m_CurrentRamp));
+
+    if (TC4SetCurrentSlopeRamp(m_StartupCurrentRamp, m_CurrentRamp) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set current slopes");
+    }
+    return true;
+}
+
+std::string Readings::getVoltageRamp() {
+    unsigned int startupValue{};
+    unsigned int value{};
+
+    if (TC4GetVoltageSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+        throw CommException("failed to get voltage slope ramp values.");
+    }
+    return fmt::format("[{},{}]", Slope::rawToTime(startupValue),
+                       Slope::rawToTime(value));
+}
+std::string Readings::getCurrentRamp() {
+    unsigned int startupValue{};
+    unsigned int value{};
+    if (TC4GetCurrentSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+        throw CommException("failed to get current slope ramp values.");
+    }
+    return fmt::format("[{},{}]", Slope::rawToTime(startupValue),
+                       Slope::rawToTime(value));
+}
 
 void Readings::readModuleID() {
     if (TC4GetModuleID(&(this->m_moduleID)) != DLL_SUCCESS) {

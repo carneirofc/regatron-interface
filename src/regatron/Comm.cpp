@@ -94,7 +94,8 @@ bool Comm::connect(int fromPort, int toPort) {
    }
 
    // use this function for VM or rs232 over ethernet
-   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER)) {
+   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER) !=
+       DLL_SUCCESS) {
        throw CommException(R"("Failed to set DLL comm timeouts.")");
    }
    LOG_TRACE(R"(Dll Comm Timeouts "read={}" "write={}".)", READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
