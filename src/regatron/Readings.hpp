@@ -374,7 +374,7 @@ class Readings {
     double getSysResistanceRef();
     double getSysPowerRef();
     std::string getSysMinMaxNom();
-    bool   getSysOutVoltEnable();
+    int         getSysOutVoltEnable();
 
     /** Calling these functions on a TopCon Slave will have no effect. */
     void setSysCurrentRef(double);

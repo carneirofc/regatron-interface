@@ -413,10 +413,10 @@ void Readings::setSysOutVoltEnable(unsigned int state) {
     }
 }
 
-bool Readings::getSysOutVoltEnable() {
+int Readings::getSysOutVoltEnable() {
     if (TC4GetControlIn(&m_SysOutVoltEnable) != DLL_SUCCESS) {
         throw CommException("failed to get system output voltage state");
     }
-    return static_cast<bool>(m_SysOutVoltEnable);
+    return static_cast<int>(m_SysOutVoltEnable);
 }
 } // namespace Regatron
