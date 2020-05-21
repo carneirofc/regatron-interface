@@ -8,9 +8,8 @@ namespace Regatron {
         if (readings) {                                                        \
             readings.value()->func(static_cast<unsigned int>(arg1));           \
             return ACK;                                                        \
-        } else {                                                               \
-            return NACK;                                                       \
         }                                                                      \
+        return NACK;                                                           \
     }
 
 #define SET_FUNC_DOUBLE(func)                                                  \
@@ -19,9 +18,8 @@ namespace Regatron {
         if (readings) {                                                        \
             readings.value()->func(arg1);                                      \
             return ACK;                                                        \
-        } else {                                                               \
-            return NACK;                                                       \
         }                                                                      \
+        return NACK;                                                           \
     }
 
 #define GET_FUNC(func)                                                         \
@@ -42,9 +40,8 @@ namespace Regatron {
         if (readings) {                                                        \
             readings.value()->member();                                        \
             return ACK;                                                        \
-        } else {                                                               \
-            return NACK;                                                       \
         }                                                                      \
+        return NACK;                                                           \
     }
 
 // @fixme: Do this in a way that does not require a macros.
@@ -52,6 +49,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_RegatronComm(regatronComm),
       m_Matchers({
           // clang-format off
+          Match{"cmdReadErrors", CMD_API(readErrors)},
           Match{"cmdConnect", [this](){ return (this->m_RegatronComm->connect()) ? ACK : NACK; }},
           Match{"cmdDisconnect", [this](){ this->m_RegatronComm->disconnect(); return ACK;}},
           Match{"getCommStatus", [this](){
@@ -107,6 +105,17 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
 
           /*** Calling this on slaves will have no effect */
+          Match{"setStartupVoltageRampSeconds", SET_FUNC_DOUBLE(setStartupVoltageRampSeconds)},
+          Match{"setVoltageRampSeconds", SET_FUNC_DOUBLE(setVoltageRampSeconds)},
+          Match{"cmdWriteVoltageRamp", CMD_API(writeVoltageRamp)},
+          Match{"getVoltageRampSlope", GET_FUNC(getVoltageRamp())},
+
+          Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
+          Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},
+          Match{"cmdWriteCurrentRamp", CMD_API(writeCurrentRamp)},
+          Match{"getCurrentRampSlope", GET_FUNC(getCurrentRamp())},
+
+
           Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
           Match{"setSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
           Match{"setSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
@@ -132,8 +141,6 @@ std::string Handler::handle(const std::string &message) {
         // Default not found message
         LOG_WARN(R"(No match for message "{}")", message);
         return NACK;
-
-        LOG_WARN("No compatible action for {}!", message);
     } catch (const CommException &e) {
         LOG_CRITICAL(
             R"(CommException: Regatron communication exception "{}" when handling message "{}". Device TCIO will be closed.)",

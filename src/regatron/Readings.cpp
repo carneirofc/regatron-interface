@@ -17,6 +17,114 @@ unsigned int Slope::timeToRaw(double y /* [5e-5 to 1.6] s */) {
 double Slope::rawToTime(double x) {
     return Slope::SLOPE_A * x + Slope::SLOPE_B;
 }
+bool inline Slope::checkTimeValue(double value) {
+    return value >= Slope::MIN_TIME && value <= Slope::MAX_TIME;
+}
+bool inline Slope::checkRawValue(unsigned int value) {
+    return value >= Slope::MIN_RAW && value <= Slope::MAX_RAW;
+}
+
+bool Readings::setStartupVoltageRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid startupVoltageRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_StartupVoltageRamp = Slope::timeToRaw(value);
+    return true;
+}
+bool Readings::setVoltageRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid VoltageRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_VoltageRamp = Slope::timeToRaw(value);
+    return true;
+}
+bool Readings::setStartupCurrentRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid startupCurrentRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_StartupCurrentRamp = Slope::timeToRaw(value);
+    return true;
+}
+bool Readings::setCurrentRampSeconds(double value) {
+    if (!Slope::checkTimeValue(value)) {
+        LOG_WARN(
+            R"(Invalid CurrentRamp value "{}". Must be between  must be >= {} and <= {}.)",
+            value, Slope::MIN_TIME, Slope::MAX_TIME);
+        return false;
+    }
+    m_CurrentRamp = Slope::timeToRaw(value);
+    return true;
+}
+
+bool Readings::writeVoltageRamp() {
+    if (!Slope::checkRawValue(m_StartupVoltageRamp) ||
+        !Slope::checkRawValue(m_VoltageRamp)) {
+        LOG_WARN(
+            R"(setVoltageRamp: Parameters "{}" and "{}" must be >= {} and <= {}.)",
+            m_StartupVoltageRamp, m_VoltageRamp, Slope::MIN_RAW,
+            Slope::MAX_RAW);
+        return false;
+    }
+    LOG_TRACE(R"(Configuring voltage slope to ({},{}) aka ({},{})s)",
+              m_StartupVoltageRamp, m_VoltageRamp,
+              Slope::rawToTime(m_StartupVoltageRamp),
+              Slope::rawToTime(m_VoltageRamp));
+
+    if (TC4SetVoltageSlopeRamp(m_StartupVoltageRamp, m_VoltageRamp) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set voltage slopes");
+    }
+    return true;
+}
+bool Readings::writeCurrentRamp() {
+    if (!Slope::checkRawValue(m_StartupCurrentRamp) ||
+        !Slope::checkRawValue(m_CurrentRamp)) {
+        LOG_WARN(
+            R"(setCurrentRamp: Parameters "{}" and "{}" must be >= {} and <= {}.)",
+            m_StartupCurrentRamp, m_CurrentRamp, Slope::MIN_RAW,
+            Slope::MAX_RAW);
+        return false;
+    }
+    LOG_TRACE(R"(Configuring current slope to ({},{}) aka ({},{})s)",
+              m_StartupCurrentRamp, m_CurrentRamp,
+              Slope::rawToTime(m_StartupCurrentRamp),
+              Slope::rawToTime(m_CurrentRamp));
+
+    if (TC4SetCurrentSlopeRamp(m_StartupCurrentRamp, m_CurrentRamp) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set current slopes");
+    }
+    return true;
+}
+
+std::string Readings::getVoltageRamp() {
+    unsigned int startupValue{};
+    unsigned int value{};
+
+    if (TC4GetVoltageSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+        throw CommException("failed to get voltage slope ramp values.");
+    }
+    return fmt::format("[{},{}]", Slope::rawToTime(startupValue),
+                       Slope::rawToTime(value));
+}
+std::string Readings::getCurrentRamp() {
+    unsigned int startupValue{};
+    unsigned int value{};
+    if (TC4GetCurrentSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+        throw CommException("failed to get current slope ramp values.");
+    }
+    return fmt::format("[{},{}]", Slope::rawToTime(startupValue),
+                       Slope::rawToTime(value));
+}
 
 void Readings::readModuleID() {
     if (TC4GetModuleID(&(this->m_moduleID)) != DLL_SUCCESS) {
@@ -305,10 +413,114 @@ void Readings::setSysOutVoltEnable(unsigned int state) {
     }
 }
 
-bool Readings::getSysOutVoltEnable() {
+int Readings::getSysOutVoltEnable() {
     if (TC4GetControlIn(&m_SysOutVoltEnable) != DLL_SUCCESS) {
         throw CommException("failed to get system output voltage state");
     }
-    return static_cast<bool>(m_SysOutVoltEnable);
+    return static_cast<int>(m_SysOutVoltEnable);
+}
+
+/**
+ * Read and convert IGBT, Rectifier and PCB temperatures.
+ * @throw CommException
+ */
+void Readings::readTemperature() {
+    int igbtTemp{0};
+    int rectTemp{0};
+    if (TC4GetTempDigital(&igbtTemp, &rectTemp) != DLL_SUCCESS) {
+        throw CommException("failed to read IGBT and Rectifier temperature.");
+    }
+    if (TC42GetTemperaturePCB(&m_PCBTempMon) != DLL_SUCCESS) {
+        throw CommException("failed to read PCB temperature.");
+    }
+    /*if (TCIBCGetInverterTemperatureHeatsink(&m_IBCInvHeatsinkTemp) !=
+        DLL_SUCCESS) {
+        throw CommException(
+            "failed to read IBC Inverter heatsink temperature.");
+    }*/
+    m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / NORM_MAX;
+    m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / NORM_MAX;
+}
+
+/**
+ * Get a string array representation of all temperatures.
+ * [0] IGBT Temp
+ * [1] Rect Temp
+ * [2] PCB  Temp
+ * @throws: CommException
+ * @return string in the format "[val1,...,valn]" */
+std::string Readings::getTemperatures() {
+    readTemperature();
+    std::ostringstream oss;
+    oss << '[' << m_IGBTTempMon << ',' << m_RectifierTempMon << ','
+        << m_PCBTempMon << ']';
+    return oss.str();
+}
+
+std::string Readings::getModReadings() {
+    readModule();
+    return fmt::format(R"([{},{},{},{},{}])", m_ModActualOutVoltageMon,
+                       m_ModActualOutCurrentMon, m_ModActualOutPowerMon,
+                       m_ModActualResMon, m_ModState);
+}
+
+std::string Readings::getSysReadings() {
+    readSystem();
+    return fmt::format(R"([{},{},{},{},{}])", m_SysActualOutVoltageMon,
+                       m_SysActualOutCurrentMon, m_SysActualOutPowerMon,
+                       m_SysActualResMon, m_SysState);
+}
+
+/**
+ * Read and convert to physical value DCLinkVoltage
+ * @throw CommException when dll fails
+ */
+void Readings::readDCLinkVoltage() {
+    int DCLinkVoltStd{0};
+
+    if (TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS) {
+        throw CommException("failed to read DCLink digital voltage.");
+    }
+    m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / NORM_MAX;
+}
+
+void Readings::readPrimaryCurrent() {
+    int primaryCurrent{0};
+    if (TC4GetIPrimDigital(&primaryCurrent) != DLL_SUCCESS) {
+        throw CommException("failed to read transformer primary current.");
+    }
+    m_PrimaryCurrentMon = (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
+}
+
+void Readings::readErrors() {
+    unsigned int number{0};
+    unsigned int startIndex{0};
+    if (TC4GetErrorHistoryHeader(&number, &startIndex) != DLL_SUCCESS) {
+        throw CommException("failed to read error history header.");
+    }
+    LOG_INFO("-----------------");
+    LOG_INFO("TC4 Error History");
+    LOG_INFO(R"(number={}, startIndex={})", number, startIndex);
+
+    unsigned int day{0};
+    unsigned int hour{0};
+    unsigned int minute{0};
+    unsigned int sec{0};
+    unsigned int counter50us{0};
+    unsigned int group{0};
+    unsigned int detail{0};
+
+    for (unsigned int idx = startIndex; idx < (startIndex + number); idx++) {
+
+        if (TC4GetErrorHistoryEntry(idx, &day, &hour, &minute, &sec,
+                                    &counter50us, &group, &detail
+                                    ) != DLL_SUCCESS) {
+            throw CommException("failed to read error history entry.");
+        }
+        LOG_INFO(
+            R"(number={}, day={}, hour={}, minute={}, sec={}, cournter50us={}, group={}, detail={})",
+            number, day, hour, minute, sec, counter50us, group, detail
+        );
+    }
 }
 } // namespace Regatron

@@ -2,13 +2,6 @@
 #include "Comm.hpp"
 
 namespace Regatron {
-constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
-constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 40;
-constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 40;
-constexpr const char* DEVICE_PREFIX = "/dev/ttyD";
-constexpr int          DLL_STATUS_OK                  = 0;
-constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
-constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
@@ -31,11 +24,46 @@ void Comm::disconnect() {
         R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
         result);
 }
+
+std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
+    if (m_CommStatus != CommStatus::Ok) {
+        LOG_ERROR(R"(getReadings failed with invalid comm status "{}")",
+                  static_cast<int>(m_CommStatus));
+        return {};
+    }
+    return {m_readings};
+}
+
+void Comm::autoConnect() {
+    if (m_AutoReconnect && !m_Connected) {
+        auto now       = std::chrono::system_clock::now();
+        auto timeDelta = now - m_AutoReconnectAttemptTime;
+
+        if (timeDelta < AUTOCONNECT_INTERVAL) {
+            LOG_TRACE(
+                R"(autoconnect: timeout is active for more "{} s", ignoring atempt.)",
+                (std::chrono::duration_cast<std::chrono::seconds>(
+                     AUTOCONNECT_INTERVAL - timeDelta))
+                    .count());
+            return;
+        }
+
+        LOG_TRACE(R"(autoconnect: attempting to connect after "{} s".)",
+                  std::chrono::duration_cast<std::chrono::seconds>(timeDelta)
+                      .count());
+        try {
+            m_AutoReconnectAttemptTime = now;
+            connect();
+        } catch (const CommException &e) {
+            LOG_ERROR(R"(autoconnect: Failed to connect "{}")", e.what());
+        }
+    }
+}
+
 void Comm::CheckDLLStatus() {
     int state{-1};
     int errorNo{0};
 
-    LOG_TRACE("Reading DLL status.");
     if (DllGetStatus(&state, &errorNo) != DLL_SUCCESS) {
         throw CommException("dll status: failed to get Dll status.",
                             CommStatus::DLLFail);
@@ -54,7 +82,15 @@ void Comm::CheckDLLStatus() {
         throw CommException("dll status: Invalid return status !.",
                             CommStatus::DLLFail);
     }
+    LOG_TRACE(R"(DLL status "{}".)", state);
 }
+CommStatus  Comm::getCommStatus() const { return m_CommStatus; }
+bool        Comm::getAutoReconnect() const { return m_AutoReconnect; }
+void        Comm::setAutoReconnect(bool autoReconnect) {
+    m_AutoReconnect = autoReconnect;
+    LOG_TRACE(R"(autoReconnect: "{}")", m_AutoReconnect);
+}
+
 void Comm::InitializeDLL() {
     LOG_TRACE("Initializing TCIO lib.");
     if (DllInit() != DLL_SUCCESS) {
@@ -94,7 +130,8 @@ bool Comm::connect(int fromPort, int toPort) {
    }
 
    // use this function for VM or rs232 over ethernet
-   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER)) {
+   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER) !=
+       DLL_SUCCESS) {
        throw CommException(R"("Failed to set DLL comm timeouts.")");
    }
    LOG_TRACE(R"(Dll Comm Timeouts "read={}" "write={}".)", READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
@@ -109,7 +146,7 @@ bool Comm::connect(int fromPort, int toPort) {
            DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
     LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}")", m_PortNrFound,
-              DEVICE_PREFIX, m_PortNrFound + 1);
+              DEVICE_PREFIX, m_PortNrFound - 1);
     m_Connected = true;
 
     // set remote control to RS232

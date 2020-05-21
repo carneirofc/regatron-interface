@@ -1,8 +1,11 @@
 #pragma once
 #include "log/Logger.hpp"
 #include "utils/Instrumentator.hpp"
+#include <algorithm>
 #include <fmt/format.h>
 #include <functional>
+#include <iterator>
+#include <sstream>
 #include <string>
 
 namespace Regatron {
@@ -37,6 +40,9 @@ class Match {
     Match(const std::string commandString, const std::string setFormat,
           std::function<std::string()>       getHandle,
           std::function<std::string(double)> setHandle);
+
+    template <class Container>
+    void split(const std::string &str, Container &cont);
 
   public:
     /** @note: get only constructor */
