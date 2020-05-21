@@ -491,4 +491,36 @@ void Readings::readPrimaryCurrent() {
     }
     m_PrimaryCurrentMon = (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
 }
+
+void Readings::readErrors() {
+    unsigned int number{0};
+    unsigned int startIndex{0};
+    if (TC4GetErrorHistoryHeader(&number, &startIndex) != DLL_SUCCESS) {
+        throw CommException("failed to read error history header.");
+    }
+    LOG_INFO("-----------------");
+    LOG_INFO("TC4 Error History");
+    LOG_INFO(R"(number={}, startIndex={})", number, startIndex);
+
+    unsigned int day{0};
+    unsigned int hour{0};
+    unsigned int minute{0};
+    unsigned int sec{0};
+    unsigned int counter50us{0};
+    unsigned int group{0};
+    unsigned int detail{0};
+
+    for (unsigned int idx = startIndex; idx < (startIndex + number); idx++) {
+
+        if (TC4GetErrorHistoryEntry(idx, &day, &hour, &minute, &sec,
+                                    &counter50us, &group, &detail
+                                    ) != DLL_SUCCESS) {
+            throw CommException("failed to read error history entry.");
+        }
+        LOG_INFO(
+            R"(number={}, day={}, hour={}, minute={}, sec={}, cournter50us={}, group={}, detail={})",
+            number, day, hour, minute, sec, counter50us, group, detail
+        );
+    }
+}
 } // namespace Regatron

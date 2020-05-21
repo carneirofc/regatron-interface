@@ -339,5 +339,7 @@ class Readings {
     void setSysResistanceRef(double);
     void setSysPowerRef(double);
     void setSysOutVoltEnable(unsigned int);
+
+    void readErrors();
 };
 } // namespace Regatron
