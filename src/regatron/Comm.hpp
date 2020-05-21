@@ -17,14 +17,14 @@
 namespace Regatron {
 
 class Comm {
-    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{15};
+    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{2};
     static constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
     static constexpr const char*  DEVICE_PREFIX = "/dev/ttyD";
     static constexpr int          DLL_STATUS_OK                  = 0;
     static constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
     static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
-    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER  = 100;
-    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER = 100;
+    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER                = 500;
+    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER               = 500;
 
   private:
     // Connection
@@ -61,48 +61,13 @@ class Comm {
     bool connect(int fromPort, int toPort);
     void disconnect();
 
-    CommStatus getCommStatus() const { return m_CommStatus; }
-    bool       getAutoReconnect() const { return m_AutoReconnect; };
-    void       setAutoReconnect(bool autoReconnect) {
-        m_AutoReconnect = autoReconnect;
-        LOG_TRACE(R"(autoReconnect: "{}")", m_AutoReconnect);
-    }
-    void inline autoConnect() {
-        if (m_AutoReconnect && !m_Connected) {
-            auto now = std::chrono::system_clock::now();
-            auto timeDelta = now - m_AutoReconnectAttemptTime;
-
-            if (timeDelta < AUTOCONNECT_INTERVAL) {
-                LOG_TRACE(
-                    R"(autoconnect: timeout is active for more "{} s", ignoring atempt.)",
-                    (std::chrono::duration_cast<std::chrono::seconds>(
-                         AUTOCONNECT_INTERVAL - timeDelta))
-                        .count());
-                return;
-            }
-
-            LOG_TRACE(
-                R"(autoconnect: attempting to connect after "{} s".)",
-                std::chrono::duration_cast<std::chrono::seconds>(timeDelta)
-                    .count());
-            try {
-                m_AutoReconnectAttemptTime = now;
-                connect();
-            } catch (const CommException &e) {
-                LOG_ERROR(R"(autoconnect: Failed to connect "{}")", e.what());
-            }
-        }
-    }
+    CommStatus  getCommStatus() const;
+    bool        getAutoReconnect() const;
+    void        setAutoReconnect(bool autoReconnect);
+    void        autoConnect();
 
     /** Regatron Readings */
-    std::optional<std::shared_ptr<Regatron::Readings>> getReadings() {
-        if (m_CommStatus != CommStatus::Ok) {
-            LOG_ERROR(R"(getReadings failed with invalid comm status "{}")",
-                      static_cast<int>(m_CommStatus));
-            return {};
-        }
-        return {m_readings};
-    };
+    std::optional<std::shared_ptr<Regatron::Readings>> getReadings();
 };
 
 } // namespace Regatron

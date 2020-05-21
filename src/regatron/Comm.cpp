@@ -24,6 +24,42 @@ void Comm::disconnect() {
         R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
         result);
 }
+
+std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
+    if (m_CommStatus != CommStatus::Ok) {
+        LOG_ERROR(R"(getReadings failed with invalid comm status "{}")",
+                  static_cast<int>(m_CommStatus));
+        return {};
+    }
+    return {m_readings};
+}
+
+void Comm::autoConnect() {
+    if (m_AutoReconnect && !m_Connected) {
+        auto now       = std::chrono::system_clock::now();
+        auto timeDelta = now - m_AutoReconnectAttemptTime;
+
+        if (timeDelta < AUTOCONNECT_INTERVAL) {
+            LOG_TRACE(
+                R"(autoconnect: timeout is active for more "{} s", ignoring atempt.)",
+                (std::chrono::duration_cast<std::chrono::seconds>(
+                     AUTOCONNECT_INTERVAL - timeDelta))
+                    .count());
+            return;
+        }
+
+        LOG_TRACE(R"(autoconnect: attempting to connect after "{} s".)",
+                  std::chrono::duration_cast<std::chrono::seconds>(timeDelta)
+                      .count());
+        try {
+            m_AutoReconnectAttemptTime = now;
+            connect();
+        } catch (const CommException &e) {
+            LOG_ERROR(R"(autoconnect: Failed to connect "{}")", e.what());
+        }
+    }
+}
+
 void Comm::CheckDLLStatus() {
     int state{-1};
     int errorNo{0};
@@ -48,6 +84,13 @@ void Comm::CheckDLLStatus() {
     }
     LOG_TRACE(R"(DLL status "{}".)", state);
 }
+CommStatus  Comm::getCommStatus() const { return m_CommStatus; }
+bool        Comm::getAutoReconnect() const { return m_AutoReconnect; }
+void        Comm::setAutoReconnect(bool autoReconnect) {
+    m_AutoReconnect = autoReconnect;
+    LOG_TRACE(R"(autoReconnect: "{}")", m_AutoReconnect);
+}
+
 void Comm::InitializeDLL() {
     LOG_TRACE("Initializing TCIO lib.");
     if (DllInit() != DLL_SUCCESS) {

@@ -419,4 +419,76 @@ int Readings::getSysOutVoltEnable() {
     }
     return static_cast<int>(m_SysOutVoltEnable);
 }
+
+/**
+ * Read and convert IGBT, Rectifier and PCB temperatures.
+ * @throw CommException
+ */
+void Readings::readTemperature() {
+    int igbtTemp{0};
+    int rectTemp{0};
+    if (TC4GetTempDigital(&igbtTemp, &rectTemp) != DLL_SUCCESS) {
+        throw CommException("failed to read IGBT and Rectifier temperature.");
+    }
+    if (TC42GetTemperaturePCB(&m_PCBTempMon) != DLL_SUCCESS) {
+        throw CommException("failed to read PCB temperature.");
+    }
+    /*if (TCIBCGetInverterTemperatureHeatsink(&m_IBCInvHeatsinkTemp) !=
+        DLL_SUCCESS) {
+        throw CommException(
+            "failed to read IBC Inverter heatsink temperature.");
+    }*/
+    m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / NORM_MAX;
+    m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / NORM_MAX;
+}
+
+/**
+ * Get a string array representation of all temperatures.
+ * [0] IGBT Temp
+ * [1] Rect Temp
+ * [2] PCB  Temp
+ * @throws: CommException
+ * @return string in the format "[val1,...,valn]" */
+std::string Readings::getTemperatures() {
+    readTemperature();
+    std::ostringstream oss;
+    oss << '[' << m_IGBTTempMon << ',' << m_RectifierTempMon << ','
+        << m_PCBTempMon << ']';
+    return oss.str();
+}
+
+std::string Readings::getModReadings() {
+    readModule();
+    return fmt::format(R"([{},{},{},{},{}])", m_ModActualOutVoltageMon,
+                       m_ModActualOutCurrentMon, m_ModActualOutPowerMon,
+                       m_ModActualResMon, m_ModState);
+}
+
+std::string Readings::getSysReadings() {
+    readSystem();
+    return fmt::format(R"([{},{},{},{},{}])", m_SysActualOutVoltageMon,
+                       m_SysActualOutCurrentMon, m_SysActualOutPowerMon,
+                       m_SysActualResMon, m_SysState);
+}
+
+/**
+ * Read and convert to physical value DCLinkVoltage
+ * @throw CommException when dll fails
+ */
+void Readings::readDCLinkVoltage() {
+    int DCLinkVoltStd{0};
+
+    if (TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS) {
+        throw CommException("failed to read DCLink digital voltage.");
+    }
+    m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / NORM_MAX;
+}
+
+void Readings::readPrimaryCurrent() {
+    int primaryCurrent{0};
+    if (TC4GetIPrimDigital(&primaryCurrent) != DLL_SUCCESS) {
+        throw CommException("failed to read transformer primary current.");
+    }
+    m_PrimaryCurrentMon = (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
+}
 } // namespace Regatron
