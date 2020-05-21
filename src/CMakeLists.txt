@@ -43,14 +43,14 @@ target_include_directories(
     regatron SYSTEM PRIVATE "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/asio-asio-1-16-1/asio/include"
                             "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/include")
 
-add_executable(main main.cpp)
-target_include_directories(main PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CONAN_INCLUDE_DIRS}")
+add_executable(cons_regatron_interface main.cpp)
+target_include_directories(cons_regatron_interface PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CONAN_INCLUDE_DIRS}")
 target_include_directories(
-    main SYSTEM PRIVATE "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/asio-asio-1-16-1/asio/include"
+    cons_regatron_interface SYSTEM PRIVATE "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/asio-asio-1-16-1/asio/include"
                         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/include")
 
 target_link_libraries(
-    main
+    cons_regatron_interface
     PRIVATE project_options
             project_warnings
             log
