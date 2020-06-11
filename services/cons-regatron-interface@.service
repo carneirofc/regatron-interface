@@ -1,0 +1,17 @@
+[Unit]
+Description=Regatron Interface %i - TCIO
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=always
+RestartSec=10
+Type=simple
+
+#WorkingDirectory=/opt/cas-rf-motor-driver/MotorDriverGPIO
+ExecStart=/opt/cons-regatron-interface/build/bin/cons_regatron_interface unix %i
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
