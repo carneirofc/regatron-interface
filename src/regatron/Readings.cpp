@@ -145,11 +145,11 @@ void Readings::readModuleErrorTree32() {
 void Readings::readModule() {
 
     selectMod();
-    if (TC4GetVoltageActSense(&m_ModActualOutVoltageMon) != DLL_SUCCESS) {
+    if (TC4GetVoltageAct(&m_ModActualOutVoltageMon) != DLL_SUCCESS) {
         throw CommException("failed to get module actual output voltage");
     }
 
-    if (TC4GetPowerActSense(&m_ModActualOutPowerMon) != DLL_SUCCESS) {
+    if (TC4GetPowerAct(&m_ModActualOutPowerMon) != DLL_SUCCESS) {
         throw CommException("failed to get module actual output power");
     }
 
@@ -178,11 +178,11 @@ void Readings::readSystemErrorTree32() {
 
 void Readings::readSystem() {
     selectSys();
-    if (TC4GetVoltageActSense(&m_SysActualOutVoltageMon) != DLL_SUCCESS) {
+    if (TC4GetVoltageAct(&m_SysActualOutVoltageMon) != DLL_SUCCESS) {
         throw CommException("failed to get system actual output voltage");
     }
 
-    if (TC4GetPowerActSense(&m_SysActualOutPowerMon) != DLL_SUCCESS) {
+    if (TC4GetPowerAct(&m_SysActualOutPowerMon) != DLL_SUCCESS) {
         throw CommException("failed to get system actual output power");
     }
 
