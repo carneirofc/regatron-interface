@@ -23,7 +23,7 @@ where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
 
     Usage:
-      main (tcp|unix) <endpoint> <regatron_port>
+      main (tcp|unix) <regatron_port>
       main (-h | --help)
       main --version
 
@@ -44,7 +44,8 @@ int main(const int argc, const char *argv[]) {
     int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
     int  tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
 
-    const std::string unixEndpoint = args.at("<endpoint>").asString();
+    const std::string unixEndpoint = fmt::format("/var/tmp/REG{:02}", regDevPort);//args.at("<endpoint>").asString();
+    LOG_INFO("Using unix endpoint at {}", unixEndpoint);
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);

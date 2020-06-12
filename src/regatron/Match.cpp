@@ -70,7 +70,7 @@ std::optional<std::string> Match::handle(const std::string &message) const {
         return {};
     }
 
-    LOG_DEBUG(R"(command: "{}" message: "{}")", m_CommandString,  message);
+    //LOG_DEBUG(R"(command: "{}" message: "{}")", m_CommandString,  message);
     INSTRUMENTATOR_PROFILE_SCOPE(m_CommandString.c_str());
     
     switch (commandType) {
