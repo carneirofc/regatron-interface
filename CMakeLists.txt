@@ -44,12 +44,8 @@ if(ENABLE_PCH)
         <utility>)
 endif()
 
-# https://think-async.com/Asio/asio-1.16.1/doc/asio/history.html#asio.history.asio_1_16_1 This build is not yet
-# available in conan ... https://github.com/conan-io/conan-center-index/pull/1521 set(CONAN_EXTRA_REQUIRES
-# "asio/1.16.1@")
-
 # Set up some extra Conan dependencies based on our needs before loading Conan
-set(CONAN_EXTRA_REQUIRES "")
+set(CONAN_EXTRA_REQUIRES "asio/1.16.1@")
 set(CONAN_EXTRA_OPTIONS "")
 
 include(cmake/Conan.cmake)

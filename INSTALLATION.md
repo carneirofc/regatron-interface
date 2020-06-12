@@ -33,7 +33,9 @@ $ source rh/devtoolset-9/activate
 ```
 $ https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar.gz
 $ tar zxvf cmake-3.*
+$ rm cmake-3.*.tar.gz
 $ cd cmake-3.*
+$ ./configure
 $ make -j$(nproc)
 $ make install
 ```
