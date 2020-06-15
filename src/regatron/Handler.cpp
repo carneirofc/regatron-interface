@@ -106,15 +106,15 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
 
           /*** Calling this on slaves will have no effect */
-          Match{"setStartupVoltageRampSeconds", SET_FUNC_DOUBLE(setStartupVoltageRampSeconds)},
-          Match{"setVoltageRampSeconds", SET_FUNC_DOUBLE(setVoltageRampSeconds)},
-          Match{"cmdWriteVoltageRamp", CMD_API(writeVoltageRamp)},
-          Match{"getVoltageRampSlope", GET_FUNC(getVoltageRamp())},
+         // Match{"setStartupVoltageRampSeconds", SET_FUNC_DOUBLE(setStartupVoltageRampSeconds)},
+         // Match{"setVoltageRampSeconds", SET_FUNC_DOUBLE(setVoltageRampSeconds)},
+         // Match{"cmdWriteVoltageRamp", CMD_API(writeVoltageRamp)},
+        //  Match{"getVoltageRampSlope", GET_FUNC(getVoltageRamp())},
 
-          Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
-          Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},
-          Match{"cmdWriteCurrentRamp", CMD_API(writeCurrentRamp)},
-          Match{"getCurrentRampSlope", GET_FUNC(getCurrentRamp())},
+        //  Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
+        //  Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},
+        //  Match{"cmdWriteCurrentRamp", CMD_API(writeCurrentRamp)},
+        //  Match{"getCurrentRampSlope", GET_FUNC(getCurrentRamp())},
 
 
           Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
