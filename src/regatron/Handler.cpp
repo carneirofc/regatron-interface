@@ -71,6 +71,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"cmdClearErrors", CMD_API(clearErrors)},
 
           // Simple readings
+          Match{"getModuleID", GET_FORMAT(getModuleID())},
           Match{"getDSPVersion", GET_FUNC(getVersion()->m_DSPVersionString)},
           Match{"getDLLVersion", GET_FUNC(getVersion()->m_DLLVersionString)},
           Match{"getBootloaderVersion", GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
