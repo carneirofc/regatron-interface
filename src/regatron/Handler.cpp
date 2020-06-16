@@ -106,9 +106,13 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
 
           /*** Calling this on slaves will have no effect */
-         // Match{"setStartupVoltageRampSeconds", SET_FUNC_DOUBLE(setStartupVoltageRampSeconds)},
-         // Match{"setVoltageRampSeconds", SET_FUNC_DOUBLE(setVoltageRampSeconds)},
-         // Match{"cmdWriteVoltageRamp", CMD_API(writeVoltageRamp)},
+          Match{"setSlopeVoltMs",           SET_FUNC_DOUBLE(SetSlopeVoltMs)},
+          Match{"SetSlopeStartupVoltMs",    SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
+
+          Match{"setSlopeVoltRaw",          SET_FUNC_DOUBLE(SetSlopeVoltRaw)},
+          Match{"SetSlopeStartupVoltRaw",   SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
+
+          Match{"cmdSlopeVoltWrite", CMD_API(WriteSlopeVolt)},
           Match{"getSlopeVolt", GET_FUNC(getSlopeVolt())},
 
         //  Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
