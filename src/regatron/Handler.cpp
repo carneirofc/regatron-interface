@@ -109,12 +109,12 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
          // Match{"setStartupVoltageRampSeconds", SET_FUNC_DOUBLE(setStartupVoltageRampSeconds)},
          // Match{"setVoltageRampSeconds", SET_FUNC_DOUBLE(setVoltageRampSeconds)},
          // Match{"cmdWriteVoltageRamp", CMD_API(writeVoltageRamp)},
-        //  Match{"getVoltageRampSlope", GET_FUNC(getVoltageRamp())},
+          Match{"getSlopeVolt", GET_FUNC(getSlopeVolt())},
 
         //  Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
         //  Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},
         //  Match{"cmdWriteCurrentRamp", CMD_API(writeCurrentRamp)},
-        //  Match{"getCurrentRampSlope", GET_FUNC(getCurrentRamp())},
+         Match{"getSlopeCurrent", GET_FUNC(getSlopeCurrent())},
 
 
           Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},

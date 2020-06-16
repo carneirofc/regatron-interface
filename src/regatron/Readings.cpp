@@ -1,35 +1,13 @@
 #include "Readings.hpp"
 
 namespace Regatron {
-
-/**
- 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
- 32000: fastest set value ramp: 0-100% (full scale) in 50us
- */
-unsigned int Slope::timeToRaw(double y /* [5e-5 to 1.6] s */) {
-    return static_cast<unsigned int>((y - Slope::SLOPE_B) / Slope::SLOPE_A);
-}
-
-/**
- 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
- 32000: fastest set value ramp: 0-100% (full scale) in 50us
- */
-double Slope::rawToTime(double x) {
-    return Slope::SLOPE_A * x + Slope::SLOPE_B;
-}
-bool inline Slope::checkTimeValue(double value) {
-    return value >= Slope::MIN_TIME && value <= Slope::MAX_TIME;
-}
-bool inline Slope::checkRawValue(unsigned int value) {
-    return value >= Slope::MIN_RAW && value <= Slope::MAX_RAW;
-}
+/*
 
 bool Readings::setStartupVoltageRampSeconds(double value) {
     if (!Slope::checkTimeValue(value)) {
         LOG_WARN(
-            R"(Invalid startupVoltageRamp value "{}". Must be between  must be >= {} and <= {}.)",
-            value, Slope::MIN_TIME, Slope::MAX_TIME);
-        return false;
+            R"(Invalid startupVoltageRamp value "{}". Must be between  must be
+>= {} and <= {}.)", value, Slope::MIN_TIME, Slope::MAX_TIME); return false;
     }
     m_StartupVoltageRamp = Slope::timeToRaw(value);
     return true;
@@ -37,9 +15,8 @@ bool Readings::setStartupVoltageRampSeconds(double value) {
 bool Readings::setVoltageRampSeconds(double value) {
     if (!Slope::checkTimeValue(value)) {
         LOG_WARN(
-            R"(Invalid VoltageRamp value "{}". Must be between  must be >= {} and <= {}.)",
-            value, Slope::MIN_TIME, Slope::MAX_TIME);
-        return false;
+            R"(Invalid VoltageRamp value "{}". Must be between  must be >= {}
+and <= {}.)", value, Slope::MIN_TIME, Slope::MAX_TIME); return false;
     }
     m_VoltageRamp = Slope::timeToRaw(value);
     return true;
@@ -47,9 +24,8 @@ bool Readings::setVoltageRampSeconds(double value) {
 bool Readings::setStartupCurrentRampSeconds(double value) {
     if (!Slope::checkTimeValue(value)) {
         LOG_WARN(
-            R"(Invalid startupCurrentRamp value "{}". Must be between  must be >= {} and <= {}.)",
-            value, Slope::MIN_TIME, Slope::MAX_TIME);
-        return false;
+            R"(Invalid startupCurrentRamp value "{}". Must be between  must be
+>= {} and <= {}.)", value, Slope::MIN_TIME, Slope::MAX_TIME); return false;
     }
     m_StartupCurrentRamp = Slope::timeToRaw(value);
     return true;
@@ -57,9 +33,8 @@ bool Readings::setStartupCurrentRampSeconds(double value) {
 bool Readings::setCurrentRampSeconds(double value) {
     if (!Slope::checkTimeValue(value)) {
         LOG_WARN(
-            R"(Invalid CurrentRamp value "{}". Must be between  must be >= {} and <= {}.)",
-            value, Slope::MIN_TIME, Slope::MAX_TIME);
-        return false;
+            R"(Invalid CurrentRamp value "{}". Must be between  must be >= {}
+and <= {}.)", value, Slope::MIN_TIME, Slope::MAX_TIME); return false;
     }
     m_CurrentRamp = Slope::timeToRaw(value);
     return true;
@@ -69,9 +44,8 @@ bool Readings::writeVoltageRamp() {
     if (!Slope::checkRawValue(m_StartupVoltageRamp) ||
         !Slope::checkRawValue(m_VoltageRamp)) {
         LOG_WARN(
-            R"(setVoltageRamp: Parameters "{}" and "{}" must be >= {} and <= {}.)",
-            m_StartupVoltageRamp, m_VoltageRamp, Slope::MIN_RAW,
-            Slope::MAX_RAW);
+            R"(setVoltageRamp: Parameters "{}" and "{}" must be >= {} and <=
+{}.)", m_StartupVoltageRamp, m_VoltageRamp, Slope::MIN_RAW, Slope::MAX_RAW);
         return false;
     }
     LOG_TRACE(R"(Configuring voltage slope to ({},{}) aka ({},{})s)",
@@ -89,9 +63,8 @@ bool Readings::writeCurrentRamp() {
     if (!Slope::checkRawValue(m_StartupCurrentRamp) ||
         !Slope::checkRawValue(m_CurrentRamp)) {
         LOG_WARN(
-            R"(setCurrentRamp: Parameters "{}" and "{}" must be >= {} and <= {}.)",
-            m_StartupCurrentRamp, m_CurrentRamp, Slope::MIN_RAW,
-            Slope::MAX_RAW);
+            R"(setCurrentRamp: Parameters "{}" and "{}" must be >= {} and <=
+{}.)", m_StartupCurrentRamp, m_CurrentRamp, Slope::MIN_RAW, Slope::MAX_RAW);
         return false;
     }
     LOG_TRACE(R"(Configuring current slope to ({},{}) aka ({},{})s)",
@@ -124,6 +97,37 @@ std::string Readings::getCurrentRamp() {
     }
     return fmt::format("[{},{}]", Slope::rawToTime(startupValue),
                        Slope::rawToTime(value));
+}
+*/
+
+/**
+ * @return: String formatted as an array containing:
+ * [rawStartup,raw,V/ms statup,V/ms]
+ * */
+std::string Readings::getSlopeVolt() {
+    unsigned int startupValue{};
+    unsigned int value{};
+    if (TC4GetCurrentSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+        throw CommException("failed to get voltage slope ramp values.");
+    }
+    return fmt::format("[{},{},{},{}]", startupValue, value,
+                       SlopeRawToVms(static_cast<double>(startupValue)),
+                       SlopeRawToVms(static_cast<double>(value)));
+}
+
+/**
+ * @return: String formatted as an array containing:
+ * [rawStartup,raw,A/ms statup,A/ms]
+ * */
+std::string Readings::getSlopeCurrent() {
+    unsigned int startupValue{};
+    unsigned int value{};
+    if (TC4GetCurrentSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+        throw CommException("failed to get current slope ramp values.");
+    }
+    return fmt::format("[{},{},{},{}]", startupValue, value,
+                       SlopeRawToAms(static_cast<double>(startupValue)),
+                       SlopeRawToAms(static_cast<double>(value)));
 }
 
 void Readings::readModuleID() {
