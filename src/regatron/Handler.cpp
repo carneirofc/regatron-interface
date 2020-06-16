@@ -107,13 +107,13 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 
           /*** Calling this on slaves will have no effect */
           Match{"setSlopeVoltMs",           SET_FUNC_DOUBLE(SetSlopeVoltMs)},
-          Match{"SetSlopeStartupVoltMs",    SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
+          Match{"setSlopeStartupVoltMs",    SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
 
           Match{"setSlopeVoltRaw",          SET_FUNC_DOUBLE(SetSlopeVoltRaw)},
-          Match{"SetSlopeStartupVoltRaw",   SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
+          Match{"setSlopeStartupVoltRaw",   SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
 
-          Match{"cmdSlopeVoltWrite", CMD_API(WriteSlopeVolt)},
-          Match{"getSlopeVolt", GET_FUNC(getSlopeVolt())},
+          Match{"cmdSlopeVoltWrite",        CMD_API(WriteSlopeVolt)},
+          Match{"getSlopeVolt",             GET_FUNC(getSlopeVolt())},
 
         //  Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
         //  Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},

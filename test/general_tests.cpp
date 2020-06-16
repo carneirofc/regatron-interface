@@ -51,7 +51,7 @@ TEST_CASE("Testing Slope calculation", "[slope]") {
     readings.SlopeVmsToRaw(0.73);
     readings.SlopeVmsToRaw(1);
 
-    readings.m_SysVoltagePhysMax = 130.;
+    readings.m_SysVoltagePhysMax = 800.;
     LOG_TRACE("MAX = {}", readings.m_SysVoltagePhysMax);
     readings.SlopeRawToVms(0);
     readings.SlopeRawToVms(1);

@@ -171,31 +171,32 @@ class Readings {
         return b;
     }
 
-    double SlopeVmsToRaw(double voltms) {
-        double response = GetSlopeA(m_SysVoltagePhysMax) * voltms +
-                          GetSlopeB(m_SysVoltagePhysMax);
-        LOG_TRACE("V/ms={} Raw={}", voltms,
-                  static_cast<unsigned int>(response));
+    unsigned int SlopeVmsToRaw(double voltms) {
+        unsigned int response = static_cast<unsigned int>(
+            GetSlopeA(m_SysVoltagePhysMax) * voltms + GetSlopeB(m_SysVoltagePhysMax)
+        );
+        LOG_TRACE("V/ms={} Raw={}", voltms, response);
+                  
         return response;
     }
 
-    double SlopeAmsToRaw(double currentms) {
-        double response = GetSlopeA(m_SysCurrentPhysMax) * currentms +
-                          GetSlopeB(m_SysCurrentPhysMax);
-        LOG_TRACE("A/ms={} Raw={}", currentms,
-                  static_cast<unsigned int>(response));
+    unsigned int SlopeAmsToRaw(double currentms) {
+        unsigned int response = static_cast<unsigned int>(
+           GetSlopeA(m_SysCurrentPhysMax) * currentms + GetSlopeB(m_SysCurrentPhysMax)
+        );
+        LOG_TRACE("A/ms={} Raw={}", currentms, response);
         return response;
     }
 
     double SlopeRawToVms(unsigned int raw) {
-        double response = (raw - GetSlopeB(m_SysVoltagePhysMax)) /
+        double response = (static_cast<double>(raw) - GetSlopeB(m_SysVoltagePhysMax)) /
                           GetSlopeA(m_SysVoltagePhysMax);
         LOG_TRACE("Raw={} V/ms={}", raw, response);
         return response;
     }
 
     double SlopeRawToAms(unsigned int raw) {
-        double response = (raw - GetSlopeB(m_SysCurrentPhysMax)) /
+        double response = (static_cast<double>(raw) - GetSlopeB(m_SysCurrentPhysMax)) /
                           GetSlopeA(m_SysCurrentPhysMax);
         LOG_TRACE("Raw={} A/ms={}", raw, response);
         return response;

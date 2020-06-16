@@ -3,7 +3,7 @@
 namespace Regatron {
 
 bool Readings::SetSlopeVoltRaw(double voltraw) {
-    unsigned int rawVolt = static_cast<unsigned int>(voltraw);
+    unsigned int rawVolt = voltraw;
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope, raw conversion is out of range "{}".)",
@@ -15,7 +15,7 @@ bool Readings::SetSlopeVoltRaw(double voltraw) {
 }
 
 bool Readings::SetSlopeStartupVoltRaw(double voltms) {
-    unsigned int rawVolt = static_cast<unsigned int>(SlopeVmsToRaw(voltms));
+    unsigned int rawVolt = SlopeVmsToRaw(voltms);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup, raw conversion is out of range "{}".)",
@@ -27,7 +27,7 @@ bool Readings::SetSlopeStartupVoltRaw(double voltms) {
 }
 
 bool Readings::SetSlopeVoltMs(double voltms) {
-    unsigned int rawVoltMs = static_cast<unsigned int>(SlopeVmsToRaw(voltms));
+    unsigned int rawVoltMs = SlopeVmsToRaw(voltms);
     if (rawVoltMs < SLOPE_MIN_RAW || rawVoltMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope V/ms to "{}", raw conversion is out of range "{}".)",
@@ -35,17 +35,19 @@ bool Readings::SetSlopeVoltMs(double voltms) {
         return false;
     }
     m_SlopeVolt = rawVoltMs;
+    LOG_INFO(R"(Slope {}V/ms = {})", voltms, m_SlopeVolt);
     return true;
 }
 
 bool Readings::SetSlopeStartupVoltMs(double voltms) {
-    unsigned int rawVoltMs = static_cast<unsigned int>(SlopeVmsToRaw(voltms));
+    unsigned int rawVoltMs = SlopeVmsToRaw(voltms);
     if (rawVoltMs < SLOPE_MIN_RAW || rawVoltMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup slope V/ms to "{}", raw conversion is out of range "{}".)",
             voltms, rawVoltMs);
         return false;
     }
+    LOG_INFO(R"(Startup Slope {}V/ms = {})", voltms, m_SlopeVolt);
     m_SlopeStartupVolt = rawVoltMs;
     return true;
 }
@@ -67,6 +69,7 @@ bool Readings::WriteSlopeVolt() {
         DLL_SUCCESS) {
         throw CommException("Failed to set voltage slopes");
     }
+    LOG_TRACE(R"(Voltage slope results are: "{}" "{}".)", m_SlopeStartupVolt, m_SlopeVolt);
     return true;
 }
 
@@ -77,7 +80,7 @@ bool Readings::WriteSlopeVolt() {
 std::string Readings::getSlopeVolt() {
     unsigned int startupValue{};
     unsigned int value{};
-    if (TC4GetCurrentSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+    if (TC4GetVoltageSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
         throw CommException("failed to get voltage slope ramp values.");
     }
     return fmt::format("[{},{},{},{}]", startupValue, value,
