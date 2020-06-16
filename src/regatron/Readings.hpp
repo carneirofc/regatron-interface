@@ -124,10 +124,10 @@ class Readings {
     double       m_PCBTempMon;        // [°C] PCB Controller board temperature
 
     // Master only ...
-    // double m_StartupVoltageRampSeconds; // Seconds from 0% to 100%
-    // double m_StartupCurrentRampSeconds; // Seconds from 0% to 100%
-    // double m_VoltageRampSeconds;
-    // double m_CurrentRampSeconds;
+    unsigned int m_SlopeStartupVolt;
+    unsigned int m_SlopeStartupCurrent;
+    unsigned int m_SlopeVolt;
+    unsigned int m_SlopeCurrent;
 
     /*unsigned int m_StartupVoltageRamp;
     unsigned int m_VoltageRamp;
@@ -179,13 +179,6 @@ class Readings {
         return response;
     }
 
-    double SlopeRawToVms(double raw) {
-        double response = (raw - GetSlopeB(m_SysVoltagePhysMax)) /
-                          GetSlopeA(m_SysVoltagePhysMax);
-        LOG_TRACE("Raw={} V/ms={}", raw, response);
-        return response;
-    }
-
     double SlopeAmsToRaw(double currentms) {
         double response = GetSlopeA(m_SysCurrentPhysMax) * currentms +
                           GetSlopeB(m_SysCurrentPhysMax);
@@ -194,7 +187,14 @@ class Readings {
         return response;
     }
 
-    double SlopeRawToAms(double raw) {
+    double SlopeRawToVms(unsigned int raw) {
+        double response = (raw - GetSlopeB(m_SysVoltagePhysMax)) /
+                          GetSlopeA(m_SysVoltagePhysMax);
+        LOG_TRACE("Raw={} V/ms={}", raw, response);
+        return response;
+    }
+
+    double SlopeRawToAms(unsigned int raw) {
         double response = (raw - GetSlopeB(m_SysCurrentPhysMax)) /
                           GetSlopeA(m_SysCurrentPhysMax);
         LOG_TRACE("Raw={} A/ms={}", raw, response);
@@ -203,20 +203,20 @@ class Readings {
 
     auto getModuleID() const { return m_moduleID; }
     auto getVersion() const { return m_Version; }
-    /*
-        bool setSlopeStartupVoltMs(double valMs);
-        bool setSlopeVoltMs(double valMs);
-        bool setSlopeStartupRaw(double valRaw);
-        bool setSlopeVoltRaw(double valRaw);
 
-        bool setSlopeStartupCurrentMs(double valMs);
-        bool setSlopeCurrentMs(double valMs);
-        bool setSlopeStartupCurrentRaw(double valRaw);
-        bool setSlopeCurrentRaw(double valRaw);
+    bool SetSlopeStartupVoltMs(double valMs);
+    bool SetSlopeVoltMs(double valMs);
+    bool SetSlopeStartupVoltRaw(double valRaw);
+    bool SetSlopeVoltRaw(double valRaw);
 
-        bool writeVoltageRamp();
-        bool writeCurrentRamp();
-    */
+    bool SetSlopeStartupCurrentMs(double valMs);
+    bool SetSlopeCurrentMs(double valMs);
+    bool SetSlopeStartupCurrentRaw(double valRaw);
+    bool SetSlopeCurrentRaw(double valRaw);
+
+    bool WriteSlopeVolt();
+    bool writeCurrentRamp();
+
     std::string getSlopeVolt();
     std::string getSlopeCurrent();
 
