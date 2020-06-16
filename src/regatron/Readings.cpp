@@ -2,8 +2,9 @@
 
 namespace Regatron {
 
-bool Readings::SetSlopeVoltRaw(double voltraw) {
-    unsigned int rawVolt = voltraw;
+// ----------------------- Slope Voltage ---------------------------
+bool Readings::SetSlopeVoltRaw(double dRaw) {
+    unsigned int rawVolt = static_cast<unsigned int>(dRaw);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope, raw conversion is out of range "{}".)",
@@ -87,6 +88,81 @@ std::string Readings::getSlopeVolt() {
                        SlopeRawToVms(startupValue), SlopeRawToVms(value));
 }
 
+// ----------------------- Slope Current ---------------------------
+bool Readings::SetSlopeCurrentRaw(double raw) {
+    unsigned int rawCurrent = static_cast<unsigned int>(raw);
+    if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
+        LOG_CRITICAL(
+            R"(Failed to set slope, raw conversion is out of range "{}".)",
+            rawCurrent);
+        return false;
+    }
+    m_SlopeCurrent = rawCurrent;
+    return true;
+}
+
+bool Readings::SetSlopeStartupCurrentRaw(double val) {
+    unsigned int rawCurrent = SlopeAmsToRaw(val);
+    if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
+        LOG_CRITICAL(
+            R"(Failed to set startup, raw conversion is out of range "{}".)",
+            val, rawCurrent);
+        return false;
+    }
+    m_SlopeStartupCurrent = rawCurrent;
+    return true;
+}
+
+bool Readings::SetSlopeCurrentMs(double currentms) {
+    unsigned int rawCurrentMs = SlopeAmsToRaw(currentms);
+    if (rawCurrentMs < SLOPE_MIN_RAW || rawCurrentMs > SLOPE_MAX_RAW) {
+        LOG_CRITICAL(
+            R"(Failed to set slope A/ms to "{}", raw conversion is out of range "{}".)",
+            currentms, rawCurrentMs);
+        return false;
+    }
+    m_SlopeCurrent = rawCurrentMs;
+    LOG_INFO(R"(Slope {}V/ms = {})", currentms, m_SlopeCurrent);
+    return true;
+}
+
+bool Readings::SetSlopeStartupCurrentMs(double currentms) {
+    unsigned int rawCurrentMs = SlopeAmsToRaw(currentms);
+    if (rawCurrentMs < SLOPE_MIN_RAW || rawCurrentMs > SLOPE_MAX_RAW) {
+        LOG_CRITICAL(
+            R"(Failed to set startup slope A/ms to "{}", raw conversion is out of range "{}".)",
+            currentms, rawCurrentMs);
+        return false;
+    }
+    LOG_INFO(R"(Startup Slope {}V/ms = {})", currentms, m_SlopeCurrent);
+    m_SlopeStartupCurrent = rawCurrentMs;
+    return true;
+}
+
+bool Readings::WriteSlopeCurrent() {
+    if (m_SlopeCurrent < SLOPE_MIN_RAW || m_SlopeCurrent > SLOPE_MAX_RAW ||
+        m_SlopeStartupCurrent < SLOPE_MIN_RAW ||
+        m_SlopeStartupCurrent > SLOPE_MAX_RAW) {
+        LOG_CRITICAL(
+            R"(setCurrentRamp: Parameters "{}" and "{}" must be >= {} and <={}.)",
+            m_SlopeStartupCurrent, m_SlopeCurrent, SLOPE_MIN_RAW,
+            SLOPE_MAX_RAW);
+        return false;
+    }
+    LOG_TRACE(R"(Configuring current slope to ({},{}) aka ({},{})V/ms)",
+              m_SlopeStartupCurrent, m_SlopeCurrent,
+              SlopeRawToAms(m_SlopeStartupCurrent),
+              SlopeRawToAms(m_SlopeCurrent));
+
+    if (TC4SetCurrentSlopeRamp(m_SlopeStartupCurrent, m_SlopeCurrent) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set current slopes");
+    }
+    LOG_TRACE(R"(Currentage slope results are: "{}" "{}".)",
+              m_SlopeStartupCurrent, m_SlopeCurrent);
+    return true;
+}
+
 /**
  * @return: String formatted as an array containing:
  * [rawStartup,raw,A/ms statup,A/ms]
@@ -100,6 +176,8 @@ std::string Readings::getSlopeCurrent() {
     return fmt::format("[{},{},{},{}]", startupValue, value,
                        SlopeRawToAms(startupValue), SlopeRawToAms(value));
 }
+
+// -----------------------------------------------------------------------
 
 void Readings::readModuleID() {
     if (TC4GetModuleID(&(this->m_moduleID)) != DLL_SUCCESS) {

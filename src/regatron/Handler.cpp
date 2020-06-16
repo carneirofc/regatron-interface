@@ -106,6 +106,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
 
           /*** Calling this on slaves will have no effect */
+          // Slopes Voltage
           Match{"setSlopeVoltMs",           SET_FUNC_DOUBLE(SetSlopeVoltMs)},
           Match{"setSlopeStartupVoltMs",    SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
 
@@ -114,12 +115,16 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 
           Match{"cmdSlopeVoltWrite",        CMD_API(WriteSlopeVolt)},
           Match{"getSlopeVolt",             GET_FUNC(getSlopeVolt())},
+          // Slopes Current
+          Match{"setSlopeCurrentMs",           SET_FUNC_DOUBLE(SetSlopeCurrentMs)},
+          Match{"setSlopeStartupCurrentMs",    SET_FUNC_DOUBLE(SetSlopeStartupCurrentMs)},
 
-        //  Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
-        //  Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},
-        //  Match{"cmdWriteCurrentRamp", CMD_API(writeCurrentRamp)},
-         Match{"getSlopeCurrent", GET_FUNC(getSlopeCurrent())},
+          Match{"setSlopeCurrentRaw",          SET_FUNC_DOUBLE(SetSlopeCurrentRaw)},
+          Match{"setSlopeStartupCurrentRaw",   SET_FUNC_DOUBLE(SetSlopeStartupCurrentRaw)},
 
+          Match{"cmdSlopeCurrentWrite",        CMD_API(WriteSlopeCurrent)},
+          Match{"getSlopeCurrent",             GET_FUNC(getSlopeCurrent())},
+          // -------------------------------------------------------------------------------
 
           Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
           Match{"setSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},

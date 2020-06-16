@@ -216,7 +216,7 @@ class Readings {
     bool SetSlopeCurrentRaw(double valRaw);
 
     bool WriteSlopeVolt();
-    bool writeCurrentRamp();
+    bool WriteSlopeCurrent();
 
     std::string getSlopeVolt();
     std::string getSlopeCurrent();
