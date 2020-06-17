@@ -36,7 +36,7 @@ bool Readings::SetSlopeVoltMs(double voltms) {
         return false;
     }
     m_SlopeVolt = rawVoltMs;
-    LOG_INFO(R"(Slope {}V/ms = {})", voltms, m_SlopeVolt);
+    LOG_INFO(R"(Voltage Slope: {}V/ms = {})", voltms, m_SlopeVolt);
     return true;
 }
 
@@ -48,8 +48,8 @@ bool Readings::SetSlopeStartupVoltMs(double voltms) {
             voltms, rawVoltMs);
         return false;
     }
-    LOG_INFO(R"(Startup Slope {}V/ms = {})", voltms, m_SlopeVolt);
     m_SlopeStartupVolt = rawVoltMs;
+    LOG_INFO(R"(Voltage Startup Slope: {}V/ms = {})", voltms, m_SlopeVolt);
     return true;
 }
 
@@ -58,15 +58,15 @@ bool Readings::WriteSlopeVolt() {
         m_SlopeStartupVolt < SLOPE_MIN_RAW ||
         m_SlopeStartupVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
-            R"(setVoltageRamp: Parameters "{}" and "{}" must be >= {} and <={}.)",
-            m_SlopeStartupVolt, m_SlopeVolt, SLOPE_MIN_RAW, SLOPE_MAX_RAW);
+            R"(setVoltageRamp: Parameters must be >= {} and <={}.)",
+            SLOPE_MIN_RAW, SLOPE_MAX_RAW);
         return false;
     }
     LOG_TRACE(R"(Configuring voltage slope to ({},{}) aka ({},{})V/ms)",
               m_SlopeStartupVolt, m_SlopeVolt,
               SlopeRawToVms(m_SlopeStartupVolt), SlopeRawToVms(m_SlopeVolt));
 
-    if (TC4SetVoltageSlopeRamp(m_SlopeStartupVolt, m_SlopeVolt) !=
+    if (TC4SetVoltageSlopeRamp(m_SlopeVolt, m_SlopeStartupVolt) !=
         DLL_SUCCESS) {
         throw CommException("Failed to set voltage slopes");
     }
@@ -81,7 +81,7 @@ bool Readings::WriteSlopeVolt() {
 std::string Readings::getSlopeVolt() {
     unsigned int startupValue{};
     unsigned int value{};
-    if (TC4GetVoltageSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+    if (TC4GetVoltageSlopeRamp(&value, &startupValue) != DLL_SUCCESS) {
         throw CommException("failed to get voltage slope ramp values.");
     }
     return fmt::format("[{},{},{},{}]", startupValue, value,
@@ -122,7 +122,7 @@ bool Readings::SetSlopeCurrentMs(double currentms) {
         return false;
     }
     m_SlopeCurrent = rawCurrentMs;
-    LOG_INFO(R"(Slope {}V/ms = {})", currentms, m_SlopeCurrent);
+    LOG_INFO(R"(Current Slope: {}A/ms = {})", currentms, m_SlopeCurrent);
     return true;
 }
 
@@ -134,8 +134,8 @@ bool Readings::SetSlopeStartupCurrentMs(double currentms) {
             currentms, rawCurrentMs);
         return false;
     }
-    LOG_INFO(R"(Startup Slope {}V/ms = {})", currentms, m_SlopeCurrent);
     m_SlopeStartupCurrent = rawCurrentMs;
+    LOG_INFO(R"(Current Startup Slope: {}A/ms = {})", currentms, m_SlopeCurrent);
     return true;
 }
 
@@ -149,12 +149,12 @@ bool Readings::WriteSlopeCurrent() {
             SLOPE_MAX_RAW);
         return false;
     }
-    LOG_TRACE(R"(Configuring current slope to ({},{}) aka ({},{})V/ms)",
+    LOG_TRACE(R"(Configuring current slope to ({},{}) aka ({},{})A/ms)",
               m_SlopeStartupCurrent, m_SlopeCurrent,
               SlopeRawToAms(m_SlopeStartupCurrent),
               SlopeRawToAms(m_SlopeCurrent));
 
-    if (TC4SetCurrentSlopeRamp(m_SlopeStartupCurrent, m_SlopeCurrent) !=
+    if (TC4SetCurrentSlopeRamp(m_SlopeCurrent, m_SlopeStartupCurrent) !=
         DLL_SUCCESS) {
         throw CommException("Failed to set current slopes");
     }
@@ -170,7 +170,7 @@ bool Readings::WriteSlopeCurrent() {
 std::string Readings::getSlopeCurrent() {
     unsigned int startupValue{};
     unsigned int value{};
-    if (TC4GetCurrentSlopeRamp(&startupValue, &value) != DLL_SUCCESS) {
+    if (TC4GetCurrentSlopeRamp(&value, &startupValue) != DLL_SUCCESS) {
         throw CommException("failed to get current slope ramp values.");
     }
     return fmt::format("[{},{},{},{}]", startupValue, value,
