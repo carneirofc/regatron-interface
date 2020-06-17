@@ -4,40 +4,12 @@
 #include "log/Logger.hpp"
 #include "serialiolib.h" // NOLINT
 #include <sstream>
+#include <cmath>
 
 namespace Regatron {
 
 constexpr unsigned int SYS_VALUES = 64;
 constexpr unsigned int MOD_VALUES = 0;
-
-namespace Slope {
-constexpr double MIN_TIME = 50e-6;
-constexpr double MAX_TIME = 1.6;
-constexpr double MIN_RAW  = 1.;
-constexpr double MAX_RAW  = 32000.;
-
-// constexpr double B        = (MIN_TIME - MAX_RAW * MAX_TIME) / (-MAX_RAW + 1);
-// constexpr double A        = MAX_TIME - B;
-
-constexpr double SLOPE_B =
-    (MIN_TIME - (MAX_RAW * MAX_TIME)) / (MIN_RAW - MAX_RAW);
-constexpr double SLOPE_A = MAX_TIME - SLOPE_B;
-
-/**
- 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
- 32000: fastest set value ramp: 0-100% (full scale) in 50us
- @param y [5e-5 to 1.6] s
- */
-unsigned int timeToRaw(double y);
-/**
- 1:     slowest set value ramp: 0-100% (full scale) in 1.6 seconds<br>
- 32000: fastest set value ramp: 0-100% (full scale) in 50us
- @param x [1 32000] raw
- */
-double rawToTime(double x);
-bool   checkTimeValue(double);
-bool   checkRawValue(unsigned int);
-} // namespace Slope
 
 namespace State {
 constexpr unsigned int POWERUP = 2;
@@ -88,7 +60,9 @@ class Readings {
     int m_TemperaturePhysNom;    // [°C]
 
     // System
+  public:
     double m_SysVoltagePhysMax;    // [V]
+  private:
     double m_SysCurrentPhysMax;    // [A]
     double m_SysPowerPhysMax;      // [kW]
     double m_SysResistancePhysMax; // [mOhm]
@@ -151,34 +125,121 @@ class Readings {
     double       m_PCBTempMon;        // [°C] PCB Controller board temperature
 
     // Master only ...
-    // double m_StartupVoltageRampSeconds; // Seconds from 0% to 100%
-    // double m_StartupCurrentRampSeconds; // Seconds from 0% to 100%
-    // double m_VoltageRampSeconds;
-    // double m_CurrentRampSeconds;
+    unsigned int m_SlopeStartupVolt;
+    unsigned int m_SlopeStartupCurrent;
+    unsigned int m_SlopeVolt;
+    unsigned int m_SlopeCurrent;
 
-    unsigned int m_StartupVoltageRamp;
+    /*unsigned int m_StartupVoltageRamp;
     unsigned int m_VoltageRamp;
     unsigned int m_StartupCurrentRamp;
     unsigned int m_CurrentRamp;
-
+*/
     // Regatron
     unsigned int m_moduleID = 0;
 
   public:
+    // Slope
+    static constexpr double SLOPE_MIN_TIME_MS = 0.05;
+    static constexpr double SLOPE_MAX_TIME_MS = 1600.;
+    static constexpr double SLOPE_MIN_RAW     = 1.;
+    static constexpr double SLOPE_MAX_RAW = 32000.;
+
+    /**
+     * 1:     slowest set value ramp: (Min V/ms) 0-100% (full scale) in 1.6s
+     * 32000: fastest set value ramp: (Max V/ms) 0-100% (full scale) in 50us
+     *
+     * SLOPE_MIN_RAW = a*MIN_VOLT_MS + b
+     * SLOPE_MAX_RAW = a*MAX_VOLT_MS + b
+     *
+     * a=(SLOPE_MIN_RAW-SLOPE_MAX_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
+     * b=(SLOPE_MAX_RAW*MIN_VOLT_MS-MAX_VOLT_MS*SLOPE_MIN_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
+     */
+    double GetSlopeA(double fullScaleValue) {
+        const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
+        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
+        const double a =
+            (SLOPE_MIN_RAW - SLOPE_MAX_RAW) / (MIN_VALUE_MS - MAX_VALUE_MS);
+        return a;
+    }
+
+    double GetSlopeB(double fullScaleValue) {
+        const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
+        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
+        const double b =
+            (SLOPE_MAX_RAW * MIN_VALUE_MS - MAX_VALUE_MS * SLOPE_MIN_RAW) /
+            (MIN_VALUE_MS - MAX_VALUE_MS);
+        return b;
+    }
+
+    unsigned int SlopeVmsToRaw(double voltms) {
+        unsigned int response = static_cast<unsigned int>(
+            std::round(GetSlopeA(m_SysVoltagePhysMax) * voltms + GetSlopeB(m_SysVoltagePhysMax))
+        );
+        return response;
+    }
+
+    unsigned int SlopeAmsToRaw(double currentms) {
+        unsigned int response = static_cast<unsigned int>(
+           std::round(GetSlopeA(m_SysCurrentPhysMax) * currentms + GetSlopeB(m_SysCurrentPhysMax))
+        );
+        return response;
+    }
+
+    double SlopeRawToVms(unsigned int raw) {
+        double response = (static_cast<double>(raw) - GetSlopeB(m_SysVoltagePhysMax)) /
+                          GetSlopeA(m_SysVoltagePhysMax);
+        return response;
+    }
+
+    double SlopeRawToAms(unsigned int raw) {
+        double response = (static_cast<double>(raw) - GetSlopeB(m_SysCurrentPhysMax)) /
+                          GetSlopeA(m_SysCurrentPhysMax);
+        return response;
+    }
+
     auto getModuleID() const { return m_moduleID; }
     auto getVersion() const { return m_Version; }
 
-    bool setStartupVoltageRampSeconds(double value);
-    bool setVoltageRampSeconds(double value);
+    // -------------- Slopes -------------------
+    bool SetSlopeStartupVoltMs(double valMs);
+    bool SetSlopeVoltMs(double valMs);
+    bool SetSlopeStartupVoltRaw(double valRaw);
+    bool SetSlopeVoltRaw(double valRaw);
 
-    bool setStartupCurrentRampSeconds(double value);
-    bool setCurrentRampSeconds(double value);
+    bool SetSlopeStartupCurrentMs(double valMs);
+    bool SetSlopeCurrentMs(double valMs);
+    bool SetSlopeStartupCurrentRaw(double valRaw);
+    bool SetSlopeCurrentRaw(double valRaw);
 
-    bool writeVoltageRamp();
-    bool writeCurrentRamp();
+    inline double GetSlopeVoltSp() { return SlopeRawToVms(m_SlopeVolt); }
+    inline double GetSlopeStartupVoltSp() { return SlopeRawToVms(m_SlopeStartupVolt); }
+    inline double GetSlopeVoltMin() {
+        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MIN_RAW));
+    }
+    inline double GetSlopeVoltMax() {
+        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MAX_RAW));
+    }
 
-    std::string getVoltageRamp();
-    std::string getCurrentRamp();
+    inline double GetSlopeCurrentSp() {
+        return SlopeRawToAms(m_SlopeCurrent);
+    }
+    inline double GetSlopeStartupCurrentSp() {
+        return SlopeRawToAms(m_SlopeStartupCurrent);
+    }
+    inline double GetSlopeCurrentMin() {
+        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MIN_RAW));
+    }
+    inline double GetSlopeCurrentMax() {
+        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MAX_RAW));
+    }
+
+    bool WriteSlopeVolt();
+    bool WriteSlopeCurrent();
+    // -----------------------------------------
+
+    std::string getSlopeVolt();
+    std::string getSlopeCurrent();
 
     /** Monitor readings */
     Readings()

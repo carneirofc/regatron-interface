@@ -44,91 +44,103 @@ namespace Regatron {
         return NACK;                                                           \
     }
 
-// @fixme: Do this in a way that does not require a macros.
+// @fixme: Do this in a way that does not require macros.
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_RegatronComm(regatronComm),
       m_Matchers({
           // clang-format off
-          Match{"cmdReadErrors", CMD_API(readErrors)},
           Match{"cmdConnect", [this](){ return (this->m_RegatronComm->connect()) ? ACK : NACK; }},
           Match{"cmdDisconnect", [this](){ this->m_RegatronComm->disconnect(); return ACK;}},
-          Match{"getCommStatus", [this](){
-                  auto commStatus = this->m_RegatronComm->getCommStatus();
-                  return fmt::format("{}", commStatus);
-              }
-          },
-          Match{"getAutoReconnect", [this](){
-              return fmt::format("{}", static_cast<int>(this->m_RegatronComm->getAutoReconnect()));
-          }},
-          Match{"setAutoReconnect", [this](float autoReconnect){
-              this->m_RegatronComm->setAutoReconnect(autoReconnect != 0);
-              return ACK;
-          }},
+          Match{"getCommStatus", [this](){ return fmt::format("{}", this->m_RegatronComm->getCommStatus()); }},
+          Match{"getAutoReconnect", [this](){ return fmt::format("{}", static_cast<int>(this->m_RegatronComm->getAutoReconnect())); }},
+          Match{"setAutoReconnect", [this](float autoReconnect){ this->m_RegatronComm->setAutoReconnect(autoReconnect != 0); return ACK; }},
 
+          Match{"cmdReadErrors",                CMD_API(readErrors)},
 
           // Commands with no response
-          Match{"cmdStoreParam", CMD_API(storeParameters)},
-          Match{"cmdClearErrors", CMD_API(clearErrors)},
+          Match{"cmdStoreParam",                CMD_API(storeParameters)},
+          Match{"cmdClearErrors",               CMD_API(clearErrors)},
 
           // Simple readings
-          Match{"getModuleID", GET_FORMAT(getModuleID())},
-          Match{"getDSPVersion", GET_FUNC(getVersion()->m_DSPVersionString)},
-          Match{"getDLLVersion", GET_FUNC(getVersion()->m_DLLVersionString)},
-          Match{"getBootloaderVersion", GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
-          Match{"getModulatorVersion", GET_FUNC(getVersion()->m_ModulatorDSPVersionString)},
-          Match{"getPheripherieVersion", GET_FUNC(getVersion()->m_PeripherieDSPVersionString)},
+          Match{"getModuleID",                  GET_FORMAT(getModuleID())},
+          Match{"getDSPVersion",                GET_FUNC(getVersion()->m_DSPVersionString)},
+          Match{"getDLLVersion",                GET_FUNC(getVersion()->m_DLLVersionString)},
+          Match{"getBootloaderVersion",         GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
+          Match{"getModulatorVersion",          GET_FUNC(getVersion()->m_ModulatorDSPVersionString)},
+          Match{"getPheripherieVersion",        GET_FUNC(getVersion()->m_PeripherieDSPVersionString)},
 
-          Match{"getDCLinkVoltage", GET_FUNC(getDCLinkVoltage())},
-          Match{"getPrimaryCurrent", GET_FUNC(getPrimaryCurrent())},
+          Match{"getDCLinkVoltage",             GET_FUNC(getDCLinkVoltage())},
+          Match{"getPrimaryCurrent",            GET_FUNC(getPrimaryCurrent())},
 
-          Match{"getControlInput", GET_FUNC(getRemoteControlInput())},
-          Match{"getModControlMode", GET_FUNC(getModControlMode())},
-          Match{"getModMinMaxNom", GET_FUNC(getModMinMaxNom())},
-          Match{"getModReadings", GET_FUNC(getModReadings())},
-          Match{"getSysControlMode", GET_FUNC(getSysControlMode())},
-          Match{"getSysMinMaxNom", GET_FUNC(getSysMinMaxNom())},
-          Match{"getSysReadings", GET_FUNC(getSysReadings())},
-          Match{"getTemperatures", GET_FUNC(getTemperatures())},
+          Match{"getControlInput",              GET_FUNC(getRemoteControlInput())},
+          Match{"getModControlMode",            GET_FUNC(getModControlMode())},
+          Match{"getModMinMaxNom",              GET_FUNC(getModMinMaxNom())},
+          Match{"getModReadings",               GET_FUNC(getModReadings())},
+          Match{"getSysControlMode",            GET_FUNC(getSysControlMode())},
+          Match{"getSysMinMaxNom",              GET_FUNC(getSysMinMaxNom())},
+          Match{"getSysReadings",               GET_FUNC(getSysReadings())},
+          Match{"getTemperatures",              GET_FUNC(getTemperatures())},
 
           // Error + Warning T_ErrorTree32
-          Match{"getModTree", GET_FUNC(getModTree())},
-          Match{"getSysTree", GET_FUNC(getSysTree())},
+          Match{"getModTree",                   GET_FUNC(getModTree())},
+          Match{"getSysTree",                   GET_FUNC(getSysTree())},
 
-          Match{"getModCurrentRef", GET_FORMAT(getModCurrentRef())},
-          Match{"getModVoltageRef", GET_FORMAT(getModVoltageRef())},
-          Match{"getModResistanceRef", GET_FORMAT(getModResistanceRef())},
-          Match{"getModPowerRef", GET_FORMAT(getModPowerRef())},
+          Match{"getModCurrentRef",             GET_FORMAT(getModCurrentRef())},
+          Match{"getModVoltageRef",             GET_FORMAT(getModVoltageRef())},
+          Match{"getModResistanceRef",          GET_FORMAT(getModResistanceRef())},
+          Match{"getModPowerRef",               GET_FORMAT(getModPowerRef())},
 
-          Match{"getSysCurrentRef", GET_FORMAT(getSysCurrentRef())},
-          Match{"getSysVoltageRef", GET_FORMAT(getSysVoltageRef())},
-          Match{"getSysResistanceRef", GET_FORMAT(getSysResistanceRef())},
-          Match{"getSysPowerRef", GET_FORMAT(getSysPowerRef())},
-          Match{"getSysOutVoltEnable", GET_FORMAT(getSysOutVoltEnable())},
+          Match{"getSysCurrentRef",             GET_FORMAT(getSysCurrentRef())},
+          Match{"getSysVoltageRef",             GET_FORMAT(getSysVoltageRef())},
+          Match{"getSysResistanceRef",          GET_FORMAT(getSysResistanceRef())},
+          Match{"getSysPowerRef",               GET_FORMAT(getSysPowerRef())},
+          Match{"getSysOutVoltEnable",          GET_FORMAT(getSysOutVoltEnable())},
+
+          Match{"setSysCurrentRef",             SET_FUNC_DOUBLE(setSysCurrentRef)},
+          Match{"setSysVoltageRef",             SET_FUNC_DOUBLE(setSysVoltageRef)},
+          Match{"setSysResistanceRef",          SET_FUNC_DOUBLE(setSysResistanceRef)},
+          Match{"setSysPowerRef",               SET_FUNC_DOUBLE(setSysPowerRef)},
+          Match{"setSysOutVoltEnable",          SET_FUNC_UINT(setSysOutVoltEnable)},
 
           /*** Calling this on slaves will have no effect */
-         // Match{"setStartupVoltageRampSeconds", SET_FUNC_DOUBLE(setStartupVoltageRampSeconds)},
-         // Match{"setVoltageRampSeconds", SET_FUNC_DOUBLE(setVoltageRampSeconds)},
-         // Match{"cmdWriteVoltageRamp", CMD_API(writeVoltageRamp)},
-        //  Match{"getVoltageRampSlope", GET_FUNC(getVoltageRamp())},
+          // Slopes Voltage
+          Match{"setSlopeVoltMs",               SET_FUNC_DOUBLE(SetSlopeVoltMs)},
+          Match{"setSlopeStartupVoltMs",        SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
 
-        //  Match{"setStartupCurrentRampSeconds", SET_FUNC_DOUBLE(setStartupCurrentRampSeconds)},
-        //  Match{"setCurrentRampSeconds", SET_FUNC_DOUBLE(setCurrentRampSeconds)},
-        //  Match{"cmdWriteCurrentRamp", CMD_API(writeCurrentRamp)},
-        //  Match{"getCurrentRampSlope", GET_FUNC(getCurrentRamp())},
+          Match{"setSlopeVoltRaw",              SET_FUNC_DOUBLE(SetSlopeVoltRaw)},
+          Match{"setSlopeStartupVoltRaw",       SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
 
+          Match{"cmdSlopeVoltWrite",            CMD_API(WriteSlopeVolt)},
+          Match{"getSlopeVolt",                 GET_FUNC(getSlopeVolt())},
+          Match{"getSlopeVoltMin",              GET_FORMAT(GetSlopeVoltMin())},
+          Match{"getSlopeVoltMax",              GET_FORMAT(GetSlopeVoltMax())},
+          Match{"getSlopeStartupVoltSp",        GET_FORMAT(GetSlopeStartupVoltSp())},
+          Match{"getSlopeVoltSp",               GET_FORMAT(GetSlopeVoltSp())},
 
-          Match{"setSysCurrentRef", SET_FUNC_DOUBLE(setSysCurrentRef)},
-          Match{"setSysVoltageRef", SET_FUNC_DOUBLE(setSysVoltageRef)},
-          Match{"setSysResistanceRef", SET_FUNC_DOUBLE(setSysResistanceRef)},
-          Match{"setSysPowerRef", SET_FUNC_DOUBLE(setSysPowerRef)},
-          Match{"setSysOutVoltEnable", SET_FUNC_UINT(setSysOutVoltEnable)},
+          // Slopes Current
+          Match{"setSlopeCurrentMs",            SET_FUNC_DOUBLE(SetSlopeCurrentMs)},
+          Match{"setSlopeStartupCurrentMs",     SET_FUNC_DOUBLE(SetSlopeStartupCurrentMs)},
 
+          Match{"setSlopeCurrentRaw",           SET_FUNC_DOUBLE(SetSlopeCurrentRaw)},
+          Match{"setSlopeStartupCurrentRaw",    SET_FUNC_DOUBLE(SetSlopeStartupCurrentRaw)},
+
+          Match{"cmdSlopeCurrentWrite",         CMD_API(WriteSlopeCurrent)},
+          Match{"getSlopeCurrent",              GET_FUNC(getSlopeCurrent())},
+          Match{"getSlopeCurrentMin",           GET_FORMAT(GetSlopeCurrentMin())},
+          Match{"getSlopeCurrentMax",           GET_FORMAT(GetSlopeCurrentMax())},
+          Match{"getSlopeStartupCurrentSp",     GET_FORMAT(GetSlopeStartupCurrentSp())},
+          Match{"getSlopeCurrentSp",            GET_FORMAT(GetSlopeCurrentSp())},
+          // -------------------------------------------------------------------------------
+          //
           // clang-format on
       }) {}
 
+#undef CMD_API
+#undef GET_FORMAT
 #undef GET_FUNC
 #undef GET_MEMBER
-#undef CMD_API
+#undef SET_FUNC_DOUBLE
+#undef SET_FUNC_UINT
 
 std::string Handler::handle(const std::string &message) {
     try {
