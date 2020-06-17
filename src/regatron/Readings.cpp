@@ -135,7 +135,8 @@ bool Readings::SetSlopeStartupCurrentMs(double currentms) {
         return false;
     }
     m_SlopeStartupCurrent = rawCurrentMs;
-    LOG_INFO(R"(Current Startup Slope: {}A/ms = {})", currentms, m_SlopeCurrent);
+    LOG_INFO(R"(Current Startup Slope: {}A/ms = {})", currentms,
+             m_SlopeStartupCurrent);
     return true;
 }
 
