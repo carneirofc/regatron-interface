@@ -4,7 +4,7 @@ namespace Regatron {
 
 // ----------------------- Slope Voltage ---------------------------
 bool Readings::SetSlopeVoltRaw(double dRaw) {
-    unsigned int rawVolt = static_cast<unsigned int>(dRaw);
+    auto rawVolt = static_cast<unsigned int>(dRaw);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope, raw conversion is out of range "{}".)",
@@ -16,7 +16,7 @@ bool Readings::SetSlopeVoltRaw(double dRaw) {
 }
 
 bool Readings::SetSlopeStartupVoltRaw(double voltms) {
-    unsigned int rawVolt = SlopeVmsToRaw(voltms);
+    auto rawVolt = static_cast<unsigned int>(voltms);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup, raw conversion is out of range "{}".)",
@@ -90,7 +90,7 @@ std::string Readings::getSlopeVolt() {
 
 // ----------------------- Slope Current ---------------------------
 bool Readings::SetSlopeCurrentRaw(double raw) {
-    unsigned int rawCurrent = static_cast<unsigned int>(raw);
+    auto rawCurrent = static_cast<unsigned int>(raw);
     if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope, raw conversion is out of range "{}".)",
@@ -102,7 +102,7 @@ bool Readings::SetSlopeCurrentRaw(double raw) {
 }
 
 bool Readings::SetSlopeStartupCurrentRaw(double val) {
-    unsigned int rawCurrent = SlopeAmsToRaw(val);
+    auto rawCurrent = static_cast<unsigned int>(val);
     if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup, raw conversion is out of range "{}".)",

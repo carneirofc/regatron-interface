@@ -114,8 +114,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSlopeVolt",                 GET_FUNC(getSlopeVolt())},
           Match{"getSlopeVoltMin",              GET_FORMAT(GetSlopeVoltMin())},
           Match{"getSlopeVoltMax",              GET_FORMAT(GetSlopeVoltMax())},
-          Match{"GetSlopeStartupVoltSp",        GET_FORMAT(GetSlopeStartupVoltSp())},
-          Match{"GetSlopeVoltSp",               GET_FORMAT(GetSlopeVoltSp())},
+          Match{"getSlopeStartupVoltSp",        GET_FORMAT(GetSlopeStartupVoltSp())},
+          Match{"getSlopeVoltSp",               GET_FORMAT(GetSlopeVoltSp())},
 
           // Slopes Current
           Match{"setSlopeCurrentMs",            SET_FUNC_DOUBLE(SetSlopeCurrentMs)},
@@ -128,8 +128,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSlopeCurrent",              GET_FUNC(getSlopeCurrent())},
           Match{"getSlopeCurrentMin",           GET_FORMAT(GetSlopeCurrentMin())},
           Match{"getSlopeCurrentMax",           GET_FORMAT(GetSlopeCurrentMax())},
-          Match{"GetSlopeStartupCurrentSp",     GET_FORMAT(GetSlopeStartupCurrentSp())},
-          Match{"GetSlopeCurrentSp",            GET_FORMAT(GetSlopeCurrentSp())},
+          Match{"getSlopeStartupCurrentSp",     GET_FORMAT(GetSlopeStartupCurrentSp())},
+          Match{"getSlopeCurrentSp",            GET_FORMAT(GetSlopeCurrentSp())},
           // -------------------------------------------------------------------------------
           //
           // clang-format on

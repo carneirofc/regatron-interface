@@ -4,6 +4,7 @@
 #include "log/Logger.hpp"
 #include "serialiolib.h" // NOLINT
 #include <sstream>
+#include <cmath>
 
 namespace Regatron {
 
@@ -173,14 +174,14 @@ class Readings {
 
     unsigned int SlopeVmsToRaw(double voltms) {
         unsigned int response = static_cast<unsigned int>(
-            GetSlopeA(m_SysVoltagePhysMax) * voltms + GetSlopeB(m_SysVoltagePhysMax)
+            std::round(GetSlopeA(m_SysVoltagePhysMax) * voltms + GetSlopeB(m_SysVoltagePhysMax))
         );
         return response;
     }
 
     unsigned int SlopeAmsToRaw(double currentms) {
         unsigned int response = static_cast<unsigned int>(
-           GetSlopeA(m_SysCurrentPhysMax) * currentms + GetSlopeB(m_SysCurrentPhysMax)
+           std::round(GetSlopeA(m_SysCurrentPhysMax) * currentms + GetSlopeB(m_SysCurrentPhysMax))
         );
         return response;
     }
@@ -212,7 +213,7 @@ class Readings {
     bool SetSlopeCurrentRaw(double valRaw);
 
     inline double GetSlopeVoltSp() { return SlopeRawToVms(m_SlopeVolt); }
-    inline double GetSlopeStartupVoltSp() { return SlopeRawToVms(m_SlopeVolt); }
+    inline double GetSlopeStartupVoltSp() { return SlopeRawToVms(m_SlopeStartupVolt); }
     inline double GetSlopeVoltMin() {
         return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MIN_RAW));
     }
@@ -221,7 +222,7 @@ class Readings {
     }
 
     inline double GetSlopeCurrentSp() {
-        return SlopeRawToAms(m_SlopeStartupCurrent);
+        return SlopeRawToAms(m_SlopeCurrent);
     }
     inline double GetSlopeStartupCurrentSp() {
         return SlopeRawToAms(m_SlopeStartupCurrent);
