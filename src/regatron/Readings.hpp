@@ -205,6 +205,7 @@ class Readings {
     auto getModuleID() const { return m_moduleID; }
     auto getVersion() const { return m_Version; }
 
+    // -------------- Slopes -------------------
     bool SetSlopeStartupVoltMs(double valMs);
     bool SetSlopeVoltMs(double valMs);
     bool SetSlopeStartupVoltRaw(double valRaw);
@@ -215,8 +216,31 @@ class Readings {
     bool SetSlopeStartupCurrentRaw(double valRaw);
     bool SetSlopeCurrentRaw(double valRaw);
 
+    inline double GetSlopeVoltSp() { return SlopeRawToVms(m_SlopeVolt); }
+    inline double GetSlopeStartupVoltSp() { return SlopeRawToVms(m_SlopeVolt); }
+    inline double GetSlopeVoltMin() {
+        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MIN_RAW));
+    }
+    inline double GetSlopeVoltMax() {
+        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MAX_RAW));
+    }
+
+    inline double GetSlopeCurrentSp() {
+        return SlopeRawToAms(m_SlopeStartupCurrent);
+    }
+    inline double GetSlopeStartupCurrentSp() {
+        return SlopeRawToAms(m_SlopeStartupCurrent);
+    }
+    inline double GetSlopeCurrentMin() {
+        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MIN_RAW));
+    }
+    inline double GetSlopeCurrentMax() {
+        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MAX_RAW));
+    }
+
     bool WriteSlopeVolt();
     bool WriteSlopeCurrent();
+    // -----------------------------------------
 
     std::string getSlopeVolt();
     std::string getSlopeCurrent();
