@@ -55,7 +55,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getAutoReconnect", [this](){ return fmt::format("{}", static_cast<int>(this->m_RegatronComm->getAutoReconnect())); }},
           Match{"setAutoReconnect", [this](float autoReconnect){ this->m_RegatronComm->setAutoReconnect(autoReconnect != 0); return ACK; }},
 
-          Match{"cmdReadErrors",                CMD_API(readErrors)},
+          Match{"getFlashErrorHistory",         GET_FUNC(GetFlashErrorHistoryEntries())},
+          Match{"setFlashErrorHistoryMax",      SET_FUNC_UINT(SetFlashErrorHistoryMaxEntries)},
 
           // Commands with no response
           Match{"cmdStoreParam",                CMD_API(storeParameters)},

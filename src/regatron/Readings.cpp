@@ -546,40 +546,44 @@ void Readings::readPrimaryCurrent() {
     m_PrimaryCurrentMon = (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
 }
 
-/*
-struct T_ErrorHistoryEntry {
-  unsigned long entryCounter;
-  unsigned int  day;
-  unsigned int  hour;
-  unsigned int  minute;
-  unsigned int  second;
-  unsigned int  counter50us;
-  unsigned int  group;
-  unsigned int  detail;
-  unsigned int  reserved[4];
-  unsigned int  identifier;
-};
-*/
 std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry){
     return fmt::format(R"(T_ErrorHistoryEntry(entryCounter={},day={},hour={},minute={},second={},counter50us={},group={},detail={},identifier={}))",
         entry->entryCounter, entry->day,  entry->hour,
         entry->minute, entry->second, entry->counter50us, 
         entry->group, entry->detail, entry->identifier);
 }
-void Readings::readErrors() {
-    T_ErrorHistoryEntry entry;
+
+void Readings::SetFlashErrorHistoryMaxEntries(unsigned int maxEntries) {
+
+    // @todo: Fix this harcoded limit ....
+    if (maxEntries > 300) {
+        maxEntries = 300;
+    }
+
+    if (maxEntries == 0) {
+        maxEntries = 1;
+    }
+    m_FlashErrorHistoryMaxEntries = maxEntries;
+}
+
+std::string Readings::GetFlashErrorHistoryEntries() {
+
+    T_ErrorHistoryEntry entry{};
     unsigned int nEntries{0};
     signed int error{0};
 
-    LOG_INFO("-----------------");
-    LOG_INFO("TC4 Error History");
-    // * 0.05
+    std::ostringstream oss;
+    oss << '[';
+
     if (TC4GetFlashErrorHistorySize(&nEntries) != DLL_SUCCESS) {
         throw CommException("failed to read error history entries.");
     }
-    LOG_INFO(R"(Total entries: {})", nEntries);
+    LOG_INFO(R"(TC4ErrorHistory: Total entries: {}, Max entries read: {})",
+             nEntries, m_FlashErrorHistoryMaxEntries);
 
-    for(unsigned int nEntry = 0; nEntry < nEntries; nEntry ++){
+    for (unsigned int nEntry = 0;
+         ((nEntry < nEntries) && (nEntry < m_FlashErrorHistoryMaxEntries));
+         nEntry++) {
         if(nEntry == 0){
             if (TC4GetFlashErrorHistoryFirstEntry(&entry, &error) != DLL_SUCCESS) {
                 throw CommException("failed to read entry.");
@@ -589,13 +593,18 @@ void Readings::readErrors() {
                 throw CommException("failed to read entry.");
             }
         }
-        LOG_INFO("{},{},{},{},{},{},{},{}",
-                entry.entryCounter,
-                entry.day, entry.hour, entry.minute, entry.second,
-                static_cast<double>(entry.counter50us) * 0.05,
-                entry.group, entry.detail);
+        oss << fmt::format("{} {} {} {} {} {:.2f} {} {}", entry.entryCounter,
+                           entry.day, entry.hour, entry.minute, entry.second,
+                           static_cast<float>(entry.counter50us) * 0.05f,
+                           entry.group, entry.detail);
+
+        if (((nEntry + 1) != nEntries) &&
+            ((nEntry + 1) != m_FlashErrorHistoryMaxEntries)) {
+            oss << ',';
+        }
     }
 
-    
+    oss << ']';
+    return oss.str();
 }
 } // namespace Regatron
