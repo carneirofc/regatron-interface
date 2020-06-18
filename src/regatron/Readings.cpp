@@ -546,35 +546,56 @@ void Readings::readPrimaryCurrent() {
     m_PrimaryCurrentMon = (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
 }
 
+/*
+struct T_ErrorHistoryEntry {
+  unsigned long entryCounter;
+  unsigned int  day;
+  unsigned int  hour;
+  unsigned int  minute;
+  unsigned int  second;
+  unsigned int  counter50us;
+  unsigned int  group;
+  unsigned int  detail;
+  unsigned int  reserved[4];
+  unsigned int  identifier;
+};
+*/
+std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry){
+    return fmt::format(R"(T_ErrorHistoryEntry(entryCounter={},day={},hour={},minute={},second={},counter50us={},group={},detail={},identifier={}))",
+        entry->entryCounter, entry->day,  entry->hour,
+        entry->minute, entry->second, entry->counter50us, 
+        entry->group, entry->detail, entry->identifier);
+}
 void Readings::readErrors() {
-    unsigned int number{0};
-    unsigned int startIndex{0};
-    if (TC4GetErrorHistoryHeader(&number, &startIndex) != DLL_SUCCESS) {
-        throw CommException("failed to read error history header.");
-    }
+    T_ErrorHistoryEntry entry;
+    unsigned int nEntries{0};
+    signed int error{0};
+
     LOG_INFO("-----------------");
     LOG_INFO("TC4 Error History");
-    LOG_INFO(R"(number={}, startIndex={})", number, startIndex);
-
-    unsigned int day{0};
-    unsigned int hour{0};
-    unsigned int minute{0};
-    unsigned int sec{0};
-    unsigned int counter50us{0};
-    unsigned int group{0};
-    unsigned int detail{0};
-
-    for (unsigned int idx = startIndex; idx < (startIndex + number); idx++) {
-
-        if (TC4GetErrorHistoryEntry(idx, &day, &hour, &minute, &sec,
-                                    &counter50us, &group, &detail
-                                    ) != DLL_SUCCESS) {
-            throw CommException("failed to read error history entry.");
-        }
-        LOG_INFO(
-            R"(number={}, day={}, hour={}, minute={}, sec={}, cournter50us={}, group={}, detail={})",
-            number, day, hour, minute, sec, counter50us, group, detail
-        );
+    // * 0.05
+    if (TC4GetFlashErrorHistorySize(&nEntries) != DLL_SUCCESS) {
+        throw CommException("failed to read error history entries.");
     }
+    LOG_INFO(R"(Total entries: {})", nEntries);
+
+    for(unsigned int nEntry = 0; nEntry < nEntries; nEntry ++){
+        if(nEntry == 0){
+            if (TC4GetFlashErrorHistoryFirstEntry(&entry, &error) != DLL_SUCCESS) {
+                throw CommException("failed to read entry.");
+            }
+        }else{
+            if (TC4GetFlashErrorHistoryNextEntry(&entry, &error) != DLL_SUCCESS) {
+                throw CommException("failed to read entry.");
+            }
+        }
+        LOG_INFO("{},{},{},{},{},{},{},{}",
+                entry.entryCounter,
+                entry.day, entry.hour, entry.minute, entry.second,
+                static_cast<double>(entry.counter50us) * 0.05,
+                entry.group, entry.detail);
+    }
+
+    
 }
 } // namespace Regatron

@@ -138,6 +138,7 @@ class Readings {
     // Regatron
     unsigned int m_moduleID = 0;
 
+    std::string ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry);
   public:
     // Slope
     static constexpr double SLOPE_MIN_TIME_MS = 0.05;
