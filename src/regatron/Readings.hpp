@@ -145,7 +145,7 @@ class Readings {
 
     Readings()
         : m_Version(std::make_shared<Regatron::Version>()),
-          m_FlashErrorHistoryMaxEntries(300) {}
+          m_FlashErrorHistoryMaxEntries(30) {}
 
     /**
      * 1:     slowest set value ramp: (Min V/ms) 0-100% (full scale) in 1.6s
@@ -321,6 +321,7 @@ class Readings {
     void readModuleErrorTree32();
 
     void        SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
+    double      GetFlashErrorHistoryMaxEntries(){ return m_FlashErrorHistoryMaxEntries; }
     std::string GetFlashErrorHistoryEntries();
 
     /** Set Module/System calls */

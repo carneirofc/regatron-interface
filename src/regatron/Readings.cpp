@@ -593,15 +593,17 @@ std::string Readings::GetFlashErrorHistoryEntries() {
                 throw CommException("failed to read entry.");
             }
         }
-        oss << fmt::format("{} {} {} {} {} {:.2f} {} {}", entry.entryCounter,
+        oss << fmt::format("{},{},{},{},{},{:.2f},{},{}", entry.entryCounter,
                            entry.day, entry.hour, entry.minute, entry.second,
                            static_cast<float>(entry.counter50us) * 0.05f,
                            entry.group, entry.detail);
 
-        if (((nEntry + 1) != nEntries) &&
-            ((nEntry + 1) != m_FlashErrorHistoryMaxEntries)) {
-            oss << ',';
-        }
+        LOG_INFO("{}) {}", nEntry, ErrorHistoryEntryToString(&entry));
+
+        //if (((nEntry + 1) != nEntries) &&
+        //    ((nEntry + 1) != m_FlashErrorHistoryMaxEntries)) {
+            oss << ' ';
+        //}
     }
 
     oss << ']';
