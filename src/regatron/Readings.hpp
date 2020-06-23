@@ -241,8 +241,8 @@ class Readings {
 
     // -----------------------------------------
 
-    std::string getSlopeVolt();
-    std::string getSlopeCurrent();
+    std::string GetSlopeVolt();
+    std::string GetSlopeCurrent();
 
 
     std::string getModTree();

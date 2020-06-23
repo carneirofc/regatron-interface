@@ -66,10 +66,11 @@ bool Readings::WriteSlopeVolt() {
               m_SlopeStartupVolt, m_SlopeVolt,
               SlopeRawToVms(m_SlopeStartupVolt), SlopeRawToVms(m_SlopeVolt));
 
-    if (TC4SetVoltageSlopeRamp(m_SlopeVolt, m_SlopeStartupVolt) !=
-        DLL_SUCCESS) {
-        throw CommException("Failed to set voltage slopes");
-    }
+    LOG_CRITICAL("Not available");
+    //if (TC4SetVoltageSlopeRamp(m_SlopeVolt, m_SlopeStartupVolt) !=
+    //    DLL_SUCCESS) {
+    //    throw CommException("Failed to set voltage slopes");
+    //}
     LOG_TRACE(R"(Voltage slope results are: "{}" "{}".)", m_SlopeStartupVolt, m_SlopeVolt);
     return true;
 }
@@ -78,7 +79,7 @@ bool Readings::WriteSlopeVolt() {
  * @return: String formatted as an array containing:
  * [rawStartup,raw,V/ms statup,V/ms]
  * */
-std::string Readings::getSlopeVolt() {
+std::string Readings::GetSlopeVolt() {
     unsigned int startupValue{};
     unsigned int value{};
     if (TC4GetVoltageSlopeRamp(&value, &startupValue) != DLL_SUCCESS) {
@@ -155,10 +156,11 @@ bool Readings::WriteSlopeCurrent() {
               SlopeRawToAms(m_SlopeStartupCurrent),
               SlopeRawToAms(m_SlopeCurrent));
 
-    if (TC4SetCurrentSlopeRamp(m_SlopeCurrent, m_SlopeStartupCurrent) !=
-        DLL_SUCCESS) {
-        throw CommException("Failed to set current slopes");
-    }
+    LOG_CRITICAL("Not available");
+    //if (TC4SetCurrentSlopeRamp(m_SlopeCurrent, m_SlopeStartupCurrent) !=
+    //    DLL_SUCCESS) {
+    //    throw CommException("Failed to set current slopes");
+    //}
     LOG_TRACE(R"(Currentage slope results are: "{}" "{}".)",
               m_SlopeStartupCurrent, m_SlopeCurrent);
     return true;
@@ -168,7 +170,7 @@ bool Readings::WriteSlopeCurrent() {
  * @return: String formatted as an array containing:
  * [rawStartup,raw,A/ms statup,A/ms]
  * */
-std::string Readings::getSlopeCurrent() {
+std::string Readings::GetSlopeCurrent() {
     unsigned int startupValue{};
     unsigned int value{};
     if (TC4GetCurrentSlopeRamp(&value, &startupValue) != DLL_SUCCESS) {
