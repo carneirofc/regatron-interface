@@ -23,8 +23,8 @@ class Comm {
     static constexpr int          DLL_STATUS_OK                  = 0;
     static constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
     static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
-    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER                = 500;
-    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER               = 500;
+    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER                = 10;
+    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER               = 10;
 
   private:
     // Connection

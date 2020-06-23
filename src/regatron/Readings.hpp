@@ -130,13 +130,11 @@ class Readings {
     unsigned int m_SlopeVolt;
     unsigned int m_SlopeCurrent;
 
-    /*unsigned int m_StartupVoltageRamp;
-    unsigned int m_VoltageRamp;
-    unsigned int m_StartupCurrentRamp;
-    unsigned int m_CurrentRamp;
-*/
     // Regatron
     unsigned int m_moduleID = 0;
+
+    std::string ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry);
+    unsigned int m_FlashErrorHistoryMaxEntries;
 
   public:
     // Slope
@@ -144,6 +142,10 @@ class Readings {
     static constexpr double SLOPE_MAX_TIME_MS = 1600.;
     static constexpr double SLOPE_MIN_RAW     = 1.;
     static constexpr double SLOPE_MAX_RAW = 32000.;
+
+    Readings()
+        : m_Version(std::make_shared<Regatron::Version>()),
+          m_FlashErrorHistoryMaxEntries(30) {}
 
     /**
      * 1:     slowest set value ramp: (Min V/ms) 0-100% (full scale) in 1.6s
@@ -236,14 +238,12 @@ class Readings {
 
     bool WriteSlopeVolt();
     bool WriteSlopeCurrent();
+
     // -----------------------------------------
 
     std::string getSlopeVolt();
     std::string getSlopeCurrent();
 
-    /** Monitor readings */
-    Readings()
-        : m_Version(std::make_shared<Regatron::Version>()) {}
 
     std::string getModTree();
     std::string getSysTree();
@@ -265,6 +265,7 @@ class Readings {
         readDCLinkVoltage();
         return fmt::format("{}", m_DCLinkVoltageMon);
     }
+
     /**
      * Read and convert to physical value oif transformer primary current
      * @throw CommException when dll fails
@@ -318,6 +319,10 @@ class Readings {
      * */
     void readSystemErrorTree32();
     void readModuleErrorTree32();
+
+    void        SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
+    double      GetFlashErrorHistoryMaxEntries(){ return m_FlashErrorHistoryMaxEntries; }
+    std::string GetFlashErrorHistoryEntries();
 
     /** Set Module/System calls */
     inline void selectSys() { this->selectMod(SYS_VALUES); }
@@ -401,6 +406,5 @@ class Readings {
     void setSysPowerRef(double);
     void setSysOutVoltEnable(unsigned int);
 
-    void readErrors();
 };
 } // namespace Regatron
