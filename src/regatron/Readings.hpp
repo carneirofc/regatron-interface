@@ -132,6 +132,8 @@ class Readings {
 
     // Regatron
     unsigned int m_moduleID = 0;
+    unsigned long m_OperatingSeconds;
+    unsigned long m_PowerupTimeSeconds;
 
     std::string ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry);
     unsigned int m_FlashErrorHistoryMaxEntries;
@@ -146,6 +148,9 @@ class Readings {
     Readings()
         : m_Version(std::make_shared<Regatron::Version>()),
           m_FlashErrorHistoryMaxEntries(30) {}
+
+    unsigned long GetOperatingSeconds();
+    unsigned long GetPowerupTimeSeconds();
 
     /**
      * 1:     slowest set value ramp: (Min V/ms) 0-100% (full scale) in 1.6s

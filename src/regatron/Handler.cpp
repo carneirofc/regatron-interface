@@ -58,6 +58,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getFlashErrorHistory",         GET_FUNC(GetFlashErrorHistoryEntries())},
           Match{"setFlashErrorHistoryMax",      SET_FUNC_UINT(SetFlashErrorHistoryMaxEntries)},
           Match{"getFlashErrorHistoryMax",      GET_FORMAT(GetFlashErrorHistoryMaxEntries())},
+          Match{"getOperatingSeconds",          GET_FORMAT(GetOperatingSeconds())},
+          Match{"getPowerupTimeSeconds",        GET_FORMAT(GetPowerupTimeSeconds())},
 
           // Commands with no response
           Match{"cmdStoreParam",                CMD_API(storeParameters)},
