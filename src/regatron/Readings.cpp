@@ -611,4 +611,24 @@ std::string Readings::GetFlashErrorHistoryEntries() {
     oss << ']';
     return oss.str();
 }
+
+/***
+ * function to read actual operating hour counter (counts seconds)
+ * */
+unsigned long Readings::GetOperatingSeconds() {
+    if (TC4GetOperatingSeconds(&m_OperatingSeconds) != DLL_SUCCESS) {
+        throw CommException("failed to read operating seconds.");
+    }
+    return m_OperatingSeconds;
+}
+/***
+ * function to get operating hour counter (in seconds) at powerup
+ * */
+unsigned long Readings::GetPowerupTimeSeconds() {
+    if (TC4GetPowerupTime(&m_PowerupTimeSeconds) != DLL_SUCCESS) {
+        throw CommException("failed to read poweruptime seconds.");
+    }
+    return m_PowerupTimeSeconds;
+}
+
 } // namespace Regatron
