@@ -28,6 +28,7 @@ class Version {
     std::string  m_DLLVersionString; // (xx.xx.xx)
     char         m_DLLString[128];
 
+    std::string m_DeviceDSPID;                    // DSP Chip information
     std::string m_DSPVersionString;               // Main.Sub.Revision
     std::string m_PeripherieDSPVersionString;     //  (e.g. 10, read as 0.10)
     std::string m_ModulatorDSPVersionString;      //  (e.g. 23, read as 0.24)
