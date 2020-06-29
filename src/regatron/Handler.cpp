@@ -69,9 +69,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getModuleID",                  GET_FORMAT(getModuleID())},
           Match{"getDSPVersion",                GET_FUNC(getVersion()->m_DSPVersionString)},
           Match{"getDLLVersion",                GET_FUNC(getVersion()->m_DLLVersionString)},
-          Match{"getBootloaderVersion",         GET_FUNC(getVersion()->m_MainDSPBootloaderVersionString)},
-          Match{"getModulatorVersion",          GET_FUNC(getVersion()->m_ModulatorDSPVersionString)},
-          Match{"getPheripherieVersion",        GET_FUNC(getVersion()->m_PeripherieDSPVersionString)},
+          Match{"getPLDVersion",                GET_FUNC(getVersion()->m_PLDVersionString)},
+          Match{"getIBCVersion",                GET_FUNC(getVersion()->m_IBCVersionString)},
 
           Match{"getDCLinkVoltage",             GET_FUNC(getDCLinkVoltage())},
           Match{"getPrimaryCurrent",            GET_FUNC(getPrimaryCurrent())},

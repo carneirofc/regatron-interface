@@ -98,7 +98,7 @@ void Comm::InitializeDLL() {
                             CommStatus::DLLFail);
     }
     CheckDLLStatus();
-    m_readings->getVersion()->readDllVersion();
+    m_readings->getVersion()->ReadDllVersion();
 }
 bool Comm::connect() { return connect(m_Port, m_Port); }
 bool Comm::connect(int port) { return connect(port, port); }
@@ -185,7 +185,7 @@ bool Comm::connect(int fromPort, int toPort) {
     }
     m_readings->readModulePhys();
 
-    m_readings->getVersion()->readDSPVersion();
+    m_readings->getVersion()->ReadDSPVersion();
 
     // Default is to keep system selected !
     m_readings->selectSys();
