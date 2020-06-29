@@ -27,7 +27,7 @@ void Comm::disconnect() {
 
 std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
     if (m_CommStatus != CommStatus::Ok) {
-        LOG_ERROR(R"(getReadings failed with invalid comm status "{}")",
+        LOG_ERROR(R"(Invalid DC-Link communication status "{}")",
                   static_cast<int>(m_CommStatus));
         return {};
     }
@@ -117,50 +117,50 @@ bool Comm::connect(int fromPort, int toPort) {
 
     if (DllSetSearchDevice2ttyDIGI() != DLL_SUCCESS) {
         throw CommException("failed to set ttyDIGI string pattern.");
-     }
+    }
 
-   if (fromPort == toPort) {
+    if (fromPort == toPort) {
        LOG_INFO(R"(searching DIGI RealPort device "{}{:02}")",
                DEVICE_PREFIX,
                fromPort);
-   } else {
+    } else {
        LOG_INFO(
            R"(searching DIGI RealPort device in range "{}{:02}" to "{}{:02}")",
            DEVICE_PREFIX,fromPort,DEVICE_PREFIX,toPort);
-   }
+    }
 
-   // use this function for VM or rs232 over ethernet
-   unsigned int readTout{0};
-   unsigned int writeTout{0};
+    // use this function for VM or rs232 over ethernet
+    unsigned int readTout{0};
+    unsigned int writeTout{0};
+    if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER) !=
+        DLL_SUCCESS) {
+        throw CommException(R"("Failed to set DLL comm timeouts.")");
+    }
 
-   if(DllGetCommTimeouts(&readTout, &writeTout) != DLL_SUCCESS){
-       throw CommException(R"("Failed to get actual DLL comm timeouts.")");
-   }
-   LOG_TRACE(R"(Dll Comm Timeout "read={}" "write={}".)", readTout, writeTout);
+    if(DllGetCommTimeouts(&readTout, &writeTout) != DLL_SUCCESS){
+        throw CommException(R"("Failed to get actual DLL comm timeouts.")");
+    }
+    LOG_TRACE(R"(Timeoute after configuration: "read={}" "write={}".)", readTout, writeTout);
 
-   if (DllSetCommTimeouts(READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER) !=
-       DLL_SUCCESS) {
-       throw CommException(R"("Failed to set DLL comm timeouts.")");
-   }
-   /// LOG_TRACE(R"(Dll Comm Timeouts "read={}" "write={}".)", READ_TIMEOUT_MULTIPLIER, WRITE_TIMEOUT_MULTIPLIER);
+    // hack: while eth and rs232 at the same tc device: wait 2 sec
+    std::this_thread::sleep_for(DELAY_RS232);
 
-   if(DllGetCommTimeouts(&readTout, &writeTout) != DLL_SUCCESS){
-       throw CommException(R"("Failed to get actual DLL comm timeouts.")");
-   }
-   LOG_TRACE(R"(Dll Comm Timeout "read={}" "write={}".)", readTout, writeTout);
-
-   // hack: while eth and rs232 at the same tc device: wait 2 sec
-   std::this_thread::sleep_for(DELAY_RS232);
-
-   if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
+    m_PortNrFound = -1; // Zero m_PortNrFound
+    if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
            DLL_SUCCESS || m_PortNrFound == -1) {
        throw CommException(fmt::format(
-           R"(failed to connect to a device in range "{}{:02}" to "{}{:02}", PortNrFound "{}".)",
+           R"(Failed to connect to a device in range "{}{:02}" to "{}{:02}" (pPortNrFound={}).)",
            DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
-    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}")", m_PortNrFound,
+    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}.")", m_PortNrFound,
               DEVICE_PREFIX, m_PortNrFound - 1);
     m_Connected = true;
+
+    int pActBaudRate{0};
+    if(DllGetCommBaudrate(&pActBaudRate)){
+       throw CommException("Failed read baudrate");
+    }
+    LOG_INFO("Baudrate: {}.", pActBaudRate);
 
     // set remote control to RS232
     if (TC4SetRemoteControlInput(2) != DLL_SUCCESS) {
