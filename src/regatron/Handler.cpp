@@ -67,6 +67,8 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 
           // Simple readings
           Match{"getModuleID",                  GET_FORMAT(getModuleID())},
+
+          Match{"getDSPID",                     GET_FUNC(getVersion()->m_DeviceDSPID)},
           Match{"getDSPVersion",                GET_FUNC(getVersion()->m_DSPVersionString)},
           Match{"getDLLVersion",                GET_FUNC(getVersion()->m_DLLVersionString)},
           Match{"getPLDVersion",                GET_FUNC(getVersion()->m_PLDVersionString)},

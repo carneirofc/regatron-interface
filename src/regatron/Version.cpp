@@ -11,23 +11,38 @@ void Version::ReadDllVersion() {
     }
     m_DLLVersionString = fmt::format("{}.{}.{}", (pDLLMajorMinor >> 16),
                                      (pDLLMajorMinor & 0xff), pDLLBuild);
-    LOG_INFO("Dll version: {}, {}", m_DLLVersionString, m_DLLString);
+    LOG_INFO("DLL version: {}, {}", m_DLLVersionString, m_DLLString);
 }
 
 void Version::ReadDSPVersion() {
-    // -- DSP Firwmare
-    unsigned int vDSPMain;
-    unsigned int vDSPSub;
-    unsigned int vDSPRevision;
+    // ------------- DSP Firwmare ------------
+    unsigned int vDSPMain{0};
+    unsigned int vDSPSub{0};
+    unsigned int vDSPRevision{0};
 
-    if (TC4GetDeviceDSPID(&vDSPMain, &vDSPSub, &vDSPRevision) != DLL_SUCCESS) {
-        throw CommException("failed to read DSP firmware version.");
+    if (TC4GetDeviceVersion(&vDSPMain, &vDSPSub, &vDSPRevision) !=
+        DLL_SUCCESS) {
+        throw CommException("failed to read Main-DSP firmware version.");
     }
 
     m_DSPVersionString =
         fmt::format("{}.{}.{}", vDSPMain, vDSPSub, vDSPRevision);
     LOG_INFO("DSP Version: {}", m_DSPVersionString);
 
+    // ------------- DSP Chip ------------
+    unsigned int pChipID{0};
+    unsigned int pChipRev{0};
+    unsigned int pChipSubID{0};
+
+    if (TC4GetDeviceDSPID(&pChipID, &pChipRev, &pChipSubID) !=
+        DLL_SUCCESS) {
+        throw CommException("failed to read DSP ID.");
+    }
+    m_DeviceDSPID = fmt::format("ChipID: {} ChipRev: {} ChipSubID: {}", pChipID,
+            pChipRev, pChipSubID);
+    LOG_INFO(m_DeviceDSPID);
+
+    // ------------- PLD Firmware Version ------------
     unsigned short pVersionPLD{0};
     if (TC42GetFirmwareVersionPLD(&pVersionPLD) != DLL_SUCCESS) {
         throw CommException("Failed to read FirmwareVersionPLD");
@@ -37,6 +52,7 @@ void Version::ReadDSPVersion() {
 
     LOG_INFO("Firmware Version PLD: {}", m_PLDVersionString);
 
+    // ------------- IBC Firmware Version ------------
     unsigned short pVersion;
     if (TC42GetFirmwareVersionIBC(&pVersion) != DLL_SUCCESS) {
         throw CommException("Failed to read IBC Firmware Version.");
