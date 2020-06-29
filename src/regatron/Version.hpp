@@ -20,6 +20,7 @@ class Version {
     std::string m_DSPVersionString; // Main.Sub.Revision
     std::string m_PLDVersionString; // vA.BC
     std::string m_IBCVersionString; // vA.BC
+    std::string m_BootloaderVersionString; // vA.BC
 
     void ReadDllVersion();
     void ReadDSPVersion();

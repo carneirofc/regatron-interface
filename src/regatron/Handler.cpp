@@ -73,6 +73,7 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getDLLVersion",                GET_FUNC(getVersion()->m_DLLVersionString)},
           Match{"getPLDVersion",                GET_FUNC(getVersion()->m_PLDVersionString)},
           Match{"getIBCVersion",                GET_FUNC(getVersion()->m_IBCVersionString)},
+          Match{"getBootloaderVersion",         GET_FUNC(getVersion()->m_BootloaderVersionString)},
 
           Match{"getDCLinkVoltage",             GET_FUNC(getDCLinkVoltage())},
           Match{"getPrimaryCurrent",            GET_FUNC(getPrimaryCurrent())},
