@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../lib/libregatron.a  CMakeFiles/regatron.dir/regatron/Comm.cpp.o CMakeFiles/regatron.dir/regatron/Handler.cpp.o CMakeFiles/regatron.dir/regatron/IBC.cpp.o CMakeFiles/regatron.dir/regatron/Match.cpp.o CMakeFiles/regatron.dir/regatron/Readings.cpp.o CMakeFiles/regatron.dir/regatron/Version.cpp.o
+/usr/bin/ranlib ../lib/libregatron.a

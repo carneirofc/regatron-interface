@@ -1,27 +1,35 @@
 #include "Version.hpp"
 
 namespace Regatron {
-void Version::readDllVersion() {
-    if (DllReadVersion(&m_DLLMajorMinor, &m_DLLBuild, m_DLLString) !=
+void Version::ReadDllVersion() {
+    unsigned int pDLLMajorMinor{0}; // (xx.68.00) and (03.xx.00)
+    unsigned int pDLLBuild{0};      // (03.68.xx)
+
+    if (DllReadVersion(&pDLLMajorMinor, &pDLLBuild, m_DLLString) !=
         DLL_SUCCESS) {
         throw CommException("failed to initialize tcio lib.");
     }
-    m_DLLVersionString = fmt::format("{}.{}.{}", (m_DLLMajorMinor >> 16),
-                                     (m_DLLMajorMinor & 0xff), m_DLLBuild);
-    LOG_INFO("Dll version: {}, {}", m_DLLVersionString, m_DLLString);
+    m_DLLVersionString = fmt::format("{}.{}.{}", (pDLLMajorMinor >> 16),
+                                     (pDLLMajorMinor & 0xff), pDLLBuild);
+    LOG_INFO("DLL version: {}, {}", m_DLLVersionString, m_DLLString);
 }
 
-void Version::readDSPVersion() {
+void Version::ReadDSPVersion() {
+    // ------------- DSP Firwmare ------------
+    unsigned int vDSPMain{0};
+    unsigned int vDSPSub{0};
+    unsigned int vDSPRevision{0};
 
-    if (TC4GetDeviceVersion(&m_DSPMain, &m_DSPSub, &m_DSPRevision) !=
+    if (TC4GetDeviceVersion(&vDSPMain, &vDSPSub, &vDSPRevision) !=
         DLL_SUCCESS) {
         throw CommException("failed to read Main-DSP firmware version.");
     }
 
     m_DSPVersionString =
-        fmt::format("{}.{}.{}", m_DSPMain, m_DSPSub, m_DSPRevision);
+        fmt::format("{}.{}.{}", vDSPMain, vDSPSub, vDSPRevision);
     LOG_INFO("DSP Version: {}", m_DSPVersionString);
 
+    // ------------- DSP Chip ------------
     unsigned int pChipID{0};
     unsigned int pChipRev{0};
     unsigned int pChipSubID{0};
@@ -34,35 +42,23 @@ void Version::readDSPVersion() {
             pChipRev, pChipSubID);
     LOG_INFO(m_DeviceDSPID);
 
-    unsigned int aux{0};
-    if (TC4GetPDSPVersion(&aux) != DLL_SUCCESS) {
-        throw CommException("Failed TC4GetPDSPVersion");
+    // ------------- PLD Firmware Version ------------
+    unsigned short pVersionPLD{0};
+    if (TC42GetFirmwareVersionPLD(&pVersionPLD) != DLL_SUCCESS) {
+        throw CommException("Failed to read FirmwareVersionPLD");
     }
-    LOG_INFO("TC4GetPDSPVersion: {}", aux);
+    m_PLDVersionString =
+        fmt::format("v{:.02}", static_cast<float>(pVersionPLD) / 100.f);
 
-    if (TC4GetPeripherieVersion(&m_PeripherieDSPVersion, &m_ModulatorDSPVersion,
-                                &m_MainDSPBootloaderVersion) != DLL_SUCCESS) {
-        throw CommException("failed to read auxiliary DSP module version "
-                                 "(peripherie, modulator and bootloader).");
+    LOG_INFO("Firmware Version PLD: {}", m_PLDVersionString);
+
+    // ------------- IBC Firmware Version ------------
+    unsigned short pVersion;
+    if (TC42GetFirmwareVersionIBC(&pVersion) != DLL_SUCCESS) {
+        throw CommException("Failed to read IBC Firmware Version.");
     }
-    m_MainDSPBootloaderVersionString =
-        fmt::format("0.{:02}", m_MainDSPBootloaderVersion);
-    m_PeripherieDSPVersionString =
-        fmt::format("0.{:02}", m_PeripherieDSPVersion);
-    m_ModulatorDSPVersionString = fmt::format("0.{:02}", m_ModulatorDSPVersion);
-
-    LOG_INFO("Main DSP Bootloader: {}", m_MainDSPBootloaderVersionString);
-    LOG_INFO("Pheripherie DSP: {}", m_PeripherieDSPVersionString);
-    LOG_INFO("Modulator DSP: {}", m_ModulatorDSPVersionString);
-
-//DLL_RESULT TCIBCGetFirmwareVersion(unsigned short* pVersion);
-//DLL_RESULT TC42GetFirmwareVersionIBC(unsigned short* pVersion);
-//DLL_RESULT TC42GetFirmwareVersionPLD(unsigned short* pVersionPLD);
-//DLL_RESULT TC4GetSASControlVersion(unsigned int *pversion);
-//DLL_RESULT TC4GetAccuControlVersion(unsigned int *pversion);
-//DLL_RESULT TC4GetTCLINInterfaceVersion(unsigned int *pinterfaceversion);
-//DLL_RESULT TC4GetTCLINSystemInterfaceVersion(unsigned int *pinterfaceversion);
-//DLL_RESULT TC4GetOfflinScopeVersion(unsigned int *pversion);
-//DLL_RESULT TC4GetAuxilaryFunctionsInterfaceVersion(unsigned int *pinterfaceversion);
+    m_IBCVersionString =
+        fmt::format("{:.02}", static_cast<float>(pVersion) / 100.f);
+    LOG_INFO("Firmware Version IBC: {}", m_IBCVersionString);
 }
 } // namespace Regatron
