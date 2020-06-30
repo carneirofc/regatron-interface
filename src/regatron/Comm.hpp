@@ -17,12 +17,12 @@
 namespace Regatron {
 
 class Comm {
-    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{2};
-    static constexpr auto         DELAY_RS232              = std::chrono::seconds{2};
-    static constexpr const char*  DEVICE_PREFIX = "/dev/ttyD";
-    static constexpr int          DLL_STATUS_OK                  = 0;
-    static constexpr int          DLL_STATUS_COMMUNICATION_ERROR = -10;
-    static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
+    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{15};
+    static constexpr std::chrono::seconds DELAY_RS232{5};
+    static constexpr const char *         DEVICE_PREFIX = "/dev/ttyD";
+    static constexpr int                  DLL_STATUS_OK = 0;
+    static constexpr int                  DLL_STATUS_COMMUNICATION_ERROR = -10;
+    static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR     = -100;
     static constexpr unsigned int READ_TIMEOUT_MULTIPLIER                = 10;
     static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER               = 10;
 
@@ -48,7 +48,7 @@ class Comm {
     bool       m_AutoReconnect;
     bool       m_Connected;
     std::chrono::time_point<std::chrono::system_clock>
-        m_AutoReconnectAttemptTime;
+         m_AutoReconnectAttemptTime;
     void CheckDLLStatus();
     void InitializeDLL();
 
@@ -61,10 +61,33 @@ class Comm {
     bool connect(int fromPort, int toPort);
     void disconnect();
 
-    CommStatus  getCommStatus() const;
-    bool        getAutoReconnect() const;
-    void        setAutoReconnect(bool autoReconnect);
-    void        autoConnect();
+    /** This method will signal if a new initialization is required
+     * @return true if DLL is OK otherwise false*/
+    bool IsCommOk() {
+
+        int pState{-1};
+        int pErrorNo{0};
+
+        if (DllGetStatus(&pState, &pErrorNo) != DLL_SUCCESS) {
+            LOG_WARN("Failed to get DLL status.");
+            return false;
+        }
+        if (pState == DLL_STATUS_COMMUNICATION_ERROR) {
+            LOG_WARN(R"(DLL Communication Error. State="{}", ErrorNo="{}")",
+                     pState, pErrorNo);
+            return false;
+        }
+        if (pState == DLL_STATUS_COMMAND_EXECUTION_ERROR) {
+            LOG_WARN(R"(DLL Command Execution Error. State="{}", ErrorNo="{}")",
+                     pState, pErrorNo);
+            return false;
+        }
+        return true;
+    }
+    CommStatus getCommStatus() const;
+    bool       getAutoReconnect() const;
+    void       setAutoReconnect(bool autoReconnect);
+    void       autoConnect();
 
     /** Regatron Readings */
     std::optional<std::shared_ptr<Regatron::Readings>> getReadings();

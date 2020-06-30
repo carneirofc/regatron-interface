@@ -1,55 +1,56 @@
 #include "Readings.hpp"
 
 namespace Regatron {
-
+static constexpr int HISTORY_MAX_ENTRIES = 300;
+static constexpr float HISTORY_NANO_MILLI_CTE = 0.05F;
 // ----------------------- Slope Voltage ---------------------------
-bool Readings::SetSlopeVoltRaw(double dRaw) {
-    auto rawVolt = static_cast<unsigned int>(dRaw);
+bool Readings::SetSlopeVoltRaw(double valRaw) {
+    auto rawVolt = static_cast<unsigned int>(valRaw);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
-            R"(Failed to set slope, raw conversion is out of range "{}".)",
-            rawVolt);
+            R"(Failed to set voltage slope, "{}" is out of range "{}"<=x<="{}.)",
+            rawVolt, SLOPE_MIN_RAW, SLOPE_MAX_RAW);
         return false;
     }
     m_SlopeVolt = rawVolt;
     return true;
 }
 
-bool Readings::SetSlopeStartupVoltRaw(double voltms) {
-    auto rawVolt = static_cast<unsigned int>(voltms);
+bool Readings::SetSlopeStartupVoltRaw(double valRaw) {
+    auto rawVolt = static_cast<unsigned int>(valRaw);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
-            R"(Failed to set startup, raw conversion is out of range "{}".)",
-            voltms, rawVolt);
+            R"(Failed to set startup voltage slope, "{}" is out of range "{}"<=x<="{}.)",
+            rawVolt, SLOPE_MIN_RAW, SLOPE_MAX_RAW);
         return false;
     }
     m_SlopeStartupVolt = rawVolt;
     return true;
 }
 
-bool Readings::SetSlopeVoltMs(double voltms) {
-    unsigned int rawVoltMs = SlopeVmsToRaw(voltms);
+bool Readings::SetSlopeVoltMs(double valMs) {
+    unsigned int rawVoltMs = SlopeVmsToRaw(valMs);
     if (rawVoltMs < SLOPE_MIN_RAW || rawVoltMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope V/ms to "{}", raw conversion is out of range "{}".)",
-            voltms, rawVoltMs);
+            valMs, rawVoltMs);
         return false;
     }
     m_SlopeVolt = rawVoltMs;
-    LOG_INFO(R"(Voltage Slope: {}V/ms = {})", voltms, m_SlopeVolt);
+    LOG_INFO(R"(Voltage Slope: {}V/ms = {})", valMs, m_SlopeVolt);
     return true;
 }
 
-bool Readings::SetSlopeStartupVoltMs(double voltms) {
-    unsigned int rawVoltMs = SlopeVmsToRaw(voltms);
+bool Readings::SetSlopeStartupVoltMs(double valMs) {
+    unsigned int rawVoltMs = SlopeVmsToRaw(valMs);
     if (rawVoltMs < SLOPE_MIN_RAW || rawVoltMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup slope V/ms to "{}", raw conversion is out of range "{}".)",
-            voltms, rawVoltMs);
+            valMs, rawVoltMs);
         return false;
     }
     m_SlopeStartupVolt = rawVoltMs;
-    LOG_INFO(R"(Voltage Startup Slope: {}V/ms = {})", voltms, m_SlopeVolt);
+    LOG_INFO(R"(Voltage Startup Slope: {}V/ms = {})", valMs, m_SlopeVolt);
     return true;
 }
 
@@ -89,53 +90,53 @@ std::string Readings::getSlopeVolt() {
 }
 
 // ----------------------- Slope Current ---------------------------
-bool Readings::SetSlopeCurrentRaw(double raw) {
-    auto rawCurrent = static_cast<unsigned int>(raw);
+bool Readings::SetSlopeCurrentRaw(double valRaw) {
+    auto rawCurrent = static_cast<unsigned int>(valRaw);
     if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
-            R"(Failed to set slope, raw conversion is out of range "{}".)",
-            rawCurrent);
+            R"(Failed to set current slope, "{}" is out of range "{}"<=x<="{}.)",
+            rawCurrent, SLOPE_MIN_RAW, SLOPE_MAX_RAW);
         return false;
     }
     m_SlopeCurrent = rawCurrent;
     return true;
 }
 
-bool Readings::SetSlopeStartupCurrentRaw(double val) {
-    auto rawCurrent = static_cast<unsigned int>(val);
+bool Readings::SetSlopeStartupCurrentRaw(double valRaw) {
+    auto rawCurrent = static_cast<unsigned int>(valRaw);
     if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
-            R"(Failed to set startup, raw conversion is out of range "{}".)",
-            val, rawCurrent);
+            R"(Failed to set current startup slope, "{}" is out of range "{}"<=x<="{}.)",
+            rawCurrent, SLOPE_MIN_RAW, SLOPE_MAX_RAW);
         return false;
     }
     m_SlopeStartupCurrent = rawCurrent;
     return true;
 }
 
-bool Readings::SetSlopeCurrentMs(double currentms) {
-    unsigned int rawCurrentMs = SlopeAmsToRaw(currentms);
+bool Readings::SetSlopeCurrentMs(double valMs) {
+    unsigned int rawCurrentMs = SlopeAmsToRaw(valMs);
     if (rawCurrentMs < SLOPE_MIN_RAW || rawCurrentMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope A/ms to "{}", raw conversion is out of range "{}".)",
-            currentms, rawCurrentMs);
+            valMs, rawCurrentMs);
         return false;
     }
     m_SlopeCurrent = rawCurrentMs;
-    LOG_INFO(R"(Current Slope: {}A/ms = {})", currentms, m_SlopeCurrent);
+    LOG_INFO(R"(Current Slope: {}A/ms = {})", valMs, m_SlopeCurrent);
     return true;
 }
 
-bool Readings::SetSlopeStartupCurrentMs(double currentms) {
-    unsigned int rawCurrentMs = SlopeAmsToRaw(currentms);
+bool Readings::SetSlopeStartupCurrentMs(double valMs) {
+    unsigned int rawCurrentMs = SlopeAmsToRaw(valMs);
     if (rawCurrentMs < SLOPE_MIN_RAW || rawCurrentMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup slope A/ms to "{}", raw conversion is out of range "{}".)",
-            currentms, rawCurrentMs);
+            valMs, rawCurrentMs);
         return false;
     }
     m_SlopeStartupCurrent = rawCurrentMs;
-    LOG_INFO(R"(Current Startup Slope: {}A/ms = {})", currentms,
+    LOG_INFO(R"(Current Startup Slope: {}A/ms = {})", valMs,
              m_SlopeStartupCurrent);
     return true;
 }
@@ -556,8 +557,8 @@ std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry){
 void Readings::SetFlashErrorHistoryMaxEntries(unsigned int maxEntries) {
 
     // @todo: Fix this harcoded limit ....
-    if (maxEntries > 300) {
-        maxEntries = 300;
+    if (maxEntries > HISTORY_MAX_ENTRIES) {
+        maxEntries = HISTORY_MAX_ENTRIES;
     }
 
     if (maxEntries == 0) {
@@ -595,7 +596,8 @@ std::string Readings::GetFlashErrorHistoryEntries() {
         }
         oss << fmt::format("{},{},{},{},{},{:.2f},{},{}", entry.entryCounter,
                            entry.day, entry.hour, entry.minute, entry.second,
-                           static_cast<float>(entry.counter50us) * 0.05f,
+                           static_cast<float>(entry.counter50us) *
+                               HISTORY_NANO_MILLI_CTE,
                            entry.group, entry.detail);
 
         LOG_INFO("{}) {}", nEntry, ErrorHistoryEntryToString(&entry));

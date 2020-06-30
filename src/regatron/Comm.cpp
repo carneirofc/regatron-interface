@@ -157,8 +157,8 @@ bool Comm::connect(int fromPort, int toPort) {
     m_Connected = true;
 
     int pActBaudRate{0};
-    if(DllGetCommBaudrate(&pActBaudRate)){
-       throw CommException("Failed read baudrate");
+    if (DllGetCommBaudrate(&pActBaudRate) != DLL_SUCCESS) {
+        throw CommException("Failed read baudrate");
     }
     LOG_INFO("Baudrate: {}.", pActBaudRate);
 

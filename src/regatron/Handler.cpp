@@ -161,10 +161,16 @@ std::string Handler::handle(const std::string &message) {
         LOG_WARN(R"(No match for message "{}")", message);
         return NACK;
     } catch (const CommException &e) {
+
+        // Try to identify if we should disconnect
         LOG_CRITICAL(
             R"(CommException: Regatron communication exception "{}" when handling message "{}". Device TCIO will be closed.)",
             e.what(), message);
-        m_RegatronComm->disconnect();
+
+        if (!m_RegatronComm->IsCommOk()) {
+            LOG_CRITICAL(R"(Device TCIO will be closed.)", e.what(), message);
+            m_RegatronComm->disconnect();
+        }
 
     } catch (const std::invalid_argument &e) {
         LOG_CRITICAL(
