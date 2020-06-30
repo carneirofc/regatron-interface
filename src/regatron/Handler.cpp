@@ -167,8 +167,10 @@ std::string Handler::handle(const std::string &message) {
             R"(CommException: Regatron communication exception "{}" when handling message "{}". Device TCIO will be closed.)",
             e.what(), message);
 
-        if (!m_RegatronComm->IsCommOk()) {
-            LOG_CRITICAL(R"(Device TCIO will be closed.)", e.what(), message);
+        m_RegatronComm->ReadCommStatus();
+
+        if (m_RegatronComm->getCommStatus() == CommStatus::IOCCommmandFail) {
+            LOG_CRITICAL(R"(Device TCIO will be closed)");
             m_RegatronComm->disconnect();
         }
 

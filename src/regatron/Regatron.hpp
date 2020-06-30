@@ -4,7 +4,13 @@
 #include <string>
 
 namespace Regatron {
-enum class CommStatus { Ok, CommFail, DLLFail, DLLCommFail, Disconncted };
+enum class CommStatus {
+    Ok,
+    IOCCommmandFail,
+    DLLCommunicationFail,
+    DLLCommandExecutionFail,
+    Disconncted
+};
 
 class CommException : public std::runtime_error {
   protected:
@@ -18,17 +24,17 @@ class CommException : public std::runtime_error {
 
     CommException(std::string message)
         : std::runtime_error(""), m_Message(std::move(message)),
-          m_CommStatus(CommStatus::CommFail) {}
+          m_CommStatus(CommStatus::IOCCommmandFail) {}
 
     CommException(CommStatus commstatus)
         : std::runtime_error(""), m_CommStatus(commstatus) {
         if (commstatus == CommStatus::Disconncted) {
-            m_Message = "comm is disconnected";
-        } else if (commstatus == CommStatus::CommFail) {
-            m_Message = "comm operation failed";
-        } else if (commstatus == CommStatus::DLLFail) {
+            m_Message = "Regatron communication is disconnected";
+        } else if (commstatus == CommStatus::IOCCommmandFail) {
+            m_Message = "ioc: failed to execute an IOC command";
+        } else if (commstatus == CommStatus::DLLCommunicationFail) {
             m_Message = "dll status report: communication error";
-        } else if (commstatus == CommStatus::DLLCommFail) {
+        } else if (commstatus == CommStatus::DLLCommandExecutionFail) {
             m_Message =
                 "dll status report: device reported command execution error";
         } else {

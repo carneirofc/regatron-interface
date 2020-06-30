@@ -60,30 +60,6 @@ void Comm::autoConnect() {
     }
 }
 
-void Comm::CheckDLLStatus() {
-    int state{-1};
-    int errorNo{0};
-
-    if (DllGetStatus(&state, &errorNo) != DLL_SUCCESS) {
-        throw CommException("dll status: failed to get Dll status.",
-                            CommStatus::DLLFail);
-    }
-    switch (state) {
-    case DLL_STATUS_OK:
-        m_CommStatus = CommStatus::Ok;
-        break;
-    case DLL_STATUS_COMMUNICATION_ERROR:
-        m_CommStatus = CommStatus::DLLFail;
-        break;
-    case DLL_STATUS_COMMAND_EXECUTION_ERROR:
-        m_CommStatus = CommStatus::DLLCommFail;
-    }
-    if (state != DLL_STATUS_OK) {
-        throw CommException("dll status: Invalid return status !.",
-                            CommStatus::DLLFail);
-    }
-    LOG_TRACE(R"(DLL status "{}".)", state);
-}
 CommStatus  Comm::getCommStatus() const { return m_CommStatus; }
 bool        Comm::getAutoReconnect() const { return m_AutoReconnect; }
 void        Comm::setAutoReconnect(bool autoReconnect) {
@@ -94,10 +70,12 @@ void        Comm::setAutoReconnect(bool autoReconnect) {
 void Comm::InitializeDLL() {
     LOG_TRACE("Initializing TCIO lib.");
     if (DllInit() != DLL_SUCCESS) {
-        throw CommException("Failed to initialize TCIO lib.",
-                            CommStatus::DLLFail);
+        throw CommException("Failed to initialize TCIO lib.");
     }
-    CheckDLLStatus();
+    ReadCommStatus();
+    if (m_CommStatus != CommStatus::Ok) {
+        throw CommException("dll status: Invalid return status.", m_CommStatus);
+    }
     m_readings->getVersion()->ReadDllVersion();
 }
 bool Comm::connect() { return connect(m_Port, m_Port); }
