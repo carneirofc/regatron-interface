@@ -11,15 +11,6 @@ namespace Regatron {
 constexpr unsigned int SYS_VALUES = 64;
 constexpr unsigned int MOD_VALUES = 0;
 
-namespace State {
-constexpr unsigned int POWERUP = 2;
-constexpr unsigned int READY   = 4;
-constexpr unsigned int RUN     = 8;
-constexpr unsigned int WARNING = 10;
-constexpr unsigned int ERROR   = 12;
-constexpr unsigned int STOP    = 14;
-} // namespace State
-
 namespace ControlMode {
 /**
 0: no controller selected (output voltage is disabled)

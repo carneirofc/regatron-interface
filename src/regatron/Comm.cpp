@@ -1,5 +1,6 @@
 
 #include "Comm.hpp"
+#include <optional>
 
 namespace Regatron {
 
@@ -92,10 +93,11 @@ bool Comm::connect(int fromPort, int toPort) {
     }
 
     InitializeDLL();
-
+#if __linux__
     if (DllSetSearchDevice2ttyDIGI() != DLL_SUCCESS) {
         throw CommException("failed to set ttyDIGI string pattern.");
     }
+#endif
 
     if (fromPort == toPort) {
        LOG_INFO(R"(searching DIGI RealPort device "{}{:02}")",
@@ -124,14 +126,22 @@ bool Comm::connect(int fromPort, int toPort) {
     std::this_thread::sleep_for(DELAY_RS232);
 
     m_PortNrFound = -1; // Zero m_PortNrFound
+#if __linux__
     if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
+#else
+    if (DllSearchDevice(fromPort, toPort, &m_PortNrFound) !=
+#endif
            DLL_SUCCESS || m_PortNrFound == -1) {
        throw CommException(fmt::format(
            R"(Failed to connect to a device in range "{}{:02}" to "{}{:02}" (pPortNrFound={}).)",
            DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
-    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}.")", m_PortNrFound,
-              DEVICE_PREFIX, m_PortNrFound - 1);
+    
+#if __linux__
+    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}.")", m_PortNrFound, DEVICE_PREFIX, m_PortNrFound - 1);
+#else
+    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}.")", m_PortNrFound, DEVICE_PREFIX, m_PortNrFound);
+#endif
     m_Connected = true;
 
     int pActBaudRate{0};

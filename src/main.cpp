@@ -23,7 +23,13 @@ where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
 
     Usage:
-      main (tcp|unix) <regatron_port>
+)"
+#if __linux__
+R"(      main (tcp|unix) <regatron_port>)"
+#else
+R"(      main tcp <regatron_port>)"
+#endif
+R"(
       main (-h | --help)
       main --version
 
@@ -42,10 +48,15 @@ int main(const int argc, const char *argv[]) {
 
     bool tcp        = args.at("tcp").asBool();
     int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
-    int  tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
-
-    const std::string unixEndpoint = fmt::format("/var/tmp/REG{:02}", regDevPort);//args.at("<endpoint>").asString();
-    LOG_INFO("Using unix endpoint at {}", unixEndpoint);
+    #if __linux__
+    if (!tcp) {
+        const std::string unixEndpoint =
+            fmt::format("/var/tmp/REG{:02}",
+                        regDevPort); // args.at("<endpoint>").asString();
+        LOG_INFO("Using unix endpoint at {}", unixEndpoint);
+    }
+    #endif
+    
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
@@ -71,11 +82,15 @@ int main(const int argc, const char *argv[]) {
     };
     signal(SIGINT, sighandler);
 
+    #if __linux__
     if (tcp) {
-        server = std::make_shared<Net::Server>(handler, tcpPort);
+        server = std::make_shared<Net::Server>(handler, regDevPort);
     } else {
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
+    #else
+    server = std::make_shared<Net::Server>(handler, regDevPort);
+    #endif
     INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "regatron_interface_results.json");
     server->listen();
     INSTRUMENTATOR_PROFILE_END_SESSION();

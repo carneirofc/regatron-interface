@@ -13,14 +13,19 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <optional>
 
 namespace Regatron {
 
 class Comm {
     static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{15};
     static constexpr std::chrono::seconds DELAY_RS232{5};
+#if __linux__
     static constexpr const char *         DEVICE_PREFIX = "/dev/ttyD";
-    static constexpr int                  DLL_STATUS_OK = 0;
+#else
+    static constexpr const char *         DEVICE_PREFIX = "COM";
+#endif
+    static constexpr int DLL_STATUS_OK = 0;
     static constexpr int                  DLL_STATUS_COMMUNICATION_ERROR = -10;
     static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR     = -100;
     static constexpr unsigned int READ_TIMEOUT_MULTIPLIER                = 10;
