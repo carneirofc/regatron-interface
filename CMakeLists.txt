@@ -54,8 +54,6 @@ if(MSVC)
     SET(REGATRON_LIBRARIES
         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.lib"
         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.lib"
-        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.dll"
-        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.dll"
     )
     SET(REGATRON_INCLUDE
         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/include"

@@ -63,7 +63,7 @@ function(set_project_warnings project_name)
         -extra-arg=-Wno-unknown-warning-option)
 
     if(MSVC)
-        set(PROJECT_WARNINGS ${MSVC_WARNINGS})
+        # set(PROJECT_WARNINGS ${MSVC_WARNINGS})
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         set(PROJECT_WARNINGS ${CLANG_WARNINGS})
     else()
