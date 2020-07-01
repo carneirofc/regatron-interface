@@ -3,6 +3,7 @@
 namespace Regatron {
 static constexpr int HISTORY_MAX_ENTRIES = 300;
 static constexpr float HISTORY_NANO_MILLI_CTE = 0.05F;
+
 // ----------------------- Slope Voltage ---------------------------
 bool Readings::SetSlopeVoltRaw(double valRaw) {
     auto rawVolt = static_cast<unsigned int>(valRaw);
