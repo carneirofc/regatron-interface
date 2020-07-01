@@ -21,6 +21,7 @@ Only one client is supported at time. Use Regatron's serialiolib.
 Tries to connect to the device defined by the pattern /dev/ttyUSBx,
 where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
+When using TCP connections, the port will be 20000 + regatron_port.
 
     Usage:
 )"
@@ -48,6 +49,7 @@ int main(const int argc, const char *argv[]) {
 
     bool tcp        = args.at("tcp").asBool();
     int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
+    int  tcpServerPort = 20000 + regDevPort;
     #if __linux__
     if (!tcp) {
         const std::string unixEndpoint =
@@ -89,7 +91,7 @@ int main(const int argc, const char *argv[]) {
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
     #else
-    server = std::make_shared<Net::Server>(handler, regDevPort);
+    server = std::make_shared<Net::Server>(handler, tcpServerPort);
     #endif
     INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "regatron_interface_results.json");
     server->listen();

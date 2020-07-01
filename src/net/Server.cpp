@@ -19,7 +19,7 @@ Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
     }
     m_UNIXAcceptor = std::make_shared<asio::local::stream_protocol::acceptor>(
         *m_IOContext, asio::local::stream_protocol::endpoint{unixEndpoint});
-    LOG_INFO("Server at endpoint {}", unixEndpoint);
+    LOG_INFO("UNIX Server at endpoint {}", unixEndpoint);
 #endif
 }
 Server::Server(std::shared_ptr<Net::Handler> handler,
@@ -34,7 +34,7 @@ Server::Server(std::shared_ptr<Net::Handler> handler,
       m_TCPAcceptor(std::make_shared<asio::ip::tcp::acceptor>(
           *m_IOContext, asio::ip::tcp::endpoint{asio::ip::tcp::v4(), tcpPort})),
       m_Run{false} {
-    LOG_INFO("Server at port \"{}\"", tcpPort);
+    LOG_INFO("TCP Server at port \"{}\"", tcpPort);
 }
 
 Server::~Server() {
