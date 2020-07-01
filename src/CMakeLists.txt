@@ -33,18 +33,19 @@ target_link_libraries(
             project_warnings
             log
             net
-            "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/Linux/x64/libtcio.so"
+            ${REGATRON_LIBRARIES}
             CONAN_PKG::asio
             CONAN_PKG::spdlog
             CONAN_PKG::fmt)
 target_include_directories(regatron PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CONAN_INCLUDE_DIRS}")
+
 target_include_directories(
-    regatron SYSTEM PRIVATE "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/include")
+    regatron SYSTEM PRIVATE ${REGATRON_INCLUDE})
 
 add_executable(cons_regatron_interface main.cpp)
 target_include_directories(cons_regatron_interface PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CONAN_INCLUDE_DIRS}")
 target_include_directories(
-    cons_regatron_interface SYSTEM PRIVATE "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/include")
+    cons_regatron_interface SYSTEM PRIVATE ${REGATRON_INCLUDE})
 
 target_link_libraries(
     cons_regatron_interface
