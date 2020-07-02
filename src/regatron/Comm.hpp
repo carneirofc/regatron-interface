@@ -109,7 +109,11 @@ class Comm {
     void       setAutoReconnect(bool autoReconnect);
     void       autoConnect();
 
-    /** Regatron Readings */
+    /**
+    *   Regatron Readings
+    * This method will return the Redings object if the
+    * actual communication state is valid.
+    */
     std::optional<std::shared_ptr<Regatron::Readings>> getReadings();
 };
 
