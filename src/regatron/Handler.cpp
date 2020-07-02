@@ -170,7 +170,9 @@ std::string Handler::handle(const std::string &message) {
         m_RegatronComm->ReadCommStatus();
 
         // When the communication con no longer be used
-        if (m_RegatronComm->getCommStatus() != CommStatus::Ok && m_RegatronComm->getCommStatus() != CommStatus::Disconncted ) {
+        if (m_RegatronComm->getCommStatus() != CommStatus::Ok &&
+            m_RegatronComm->getCommStatus() != CommStatus::Disconncted) {
+
             LOG_CRITICAL(R"(Device TCIO will be closed)");
             m_RegatronComm->disconnect();
         }
