@@ -23,7 +23,6 @@ void Comm::disconnect() {
 
     /** Reset DLL Variables */
     // Connection
-    m_Port        = 0;
     m_PortNrFound = -1;
     // Increment (internal usage)
     incDevVoltage    = 0.0;
