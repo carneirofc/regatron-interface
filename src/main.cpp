@@ -48,15 +48,7 @@ int main(const int argc, const char *argv[]) {
 
     bool tcp           = args.at("tcp").asBool();
     int  regDevPort    = static_cast<int>(args.at("<regatron_port>").asLong());
-    int  tcpServerPort = 20000 + regDevPort;
-#if __linux__
-    if (!tcp) {
-        const std::string unixEndpoint =
-            fmt::format("/var/tmp/REG{:02}",
-                        regDevPort); // args.at("<endpoint>").asString();
-        LOG_INFO("Using unix endpoint at {}", unixEndpoint);
-    }
-#endif
+
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
@@ -82,15 +74,20 @@ int main(const int argc, const char *argv[]) {
     };
     signal(SIGINT, sighandler);
 
+
 #if __linux__
-    if (tcp) {
-        server = std::make_shared<Net::Server>(handler, tcpServerPort);
-    } else {
+    if (!tcp) {
+        const std::string unixEndpoint =
+            fmt::format("/var/tmp/REG{:02}", regDevPort);
+        LOG_INFO("Using unix endpoint at {}", unixEndpoint);
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
-#else
-    server = std::make_shared<Net::Server>(handler, tcpServerPort);
 #endif
+
+    if (tcp) {
+        int  tcpServerPort = 20000 + regDevPort;
+        server = std::make_shared<Net::Server>(handler, tcpServerPort);
+    }
     INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen",
                                          "regatron_interface_results.json");
     server->listen();
