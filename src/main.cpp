@@ -14,16 +14,23 @@
 #include "regatron/Handler.hpp"
 #include "utils/Instrumentator.hpp"
 
-static const char *USAGE =
+constexpr const char * VERSION_STRING = "CONS - Regatron Interface v1.0";
+constexpr const char * USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands.
-Only one client is supported at time. Use Regatron's serialiolib.
-Tries to connect to the device defined by the pattern /dev/ttyUSBx,
+Only one client is supported at time. Tries to connect to the device defined by the pattern /dev/ttyUSBx,
 where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
+When using TCP connections, the port will be 20000 + regatron_port.
 
     Usage:
-      main (tcp|unix) <regatron_port>
+)"
+#if __linux__
+    R"(      main (tcp|unix) <regatron_port>)"
+#else
+    R"(      main tcp <regatron_port>)"
+#endif
+    R"(
       main (-h | --help)
       main --version
 
@@ -36,16 +43,13 @@ int main(const int argc, const char *argv[]) {
     std::map<std::string, docopt::value> args =
         docopt::docopt(USAGE, {argv + 1, argv + argc},
                        true, // show help if requested
-                       "CONS - Regatron Interface v1.0"); // version string
+                       VERSION_STRING); // version string
 
     Utils::Logger::Init();
 
-    bool tcp        = args.at("tcp").asBool();
-    int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
-    int  tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
+    bool tcp           = args.at("tcp").asBool();
+    int  regDevPort    = static_cast<int>(args.at("<regatron_port>").asLong());
 
-    const std::string unixEndpoint = fmt::format("/var/tmp/REG{:02}", regDevPort);//args.at("<endpoint>").asString();
-    LOG_INFO("Using unix endpoint at {}", unixEndpoint);
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
@@ -59,7 +63,7 @@ int main(const int argc, const char *argv[]) {
          * The shutdown function is being called twice.
          * Once by this and once at a try{} block inside Server::listen().
          * */
-        LOG_ERROR("Capture signal \"{}\", gracefully shutting down...", signum);
+        LOG_WARN("Capture signal \"{}\", gracefully shutting down...", signum);
         if (server != nullptr) {
             regatron->setAutoReconnect(false);
             regatron->disconnect();
@@ -67,16 +71,28 @@ int main(const int argc, const char *argv[]) {
             server->stop();
             server->shutdown();
         }
+
+        INSTRUMENTATOR_PROFILE_END_SESSION();
         exit(SIGINT);
     };
     signal(SIGINT, sighandler);
 
-    if (tcp) {
-        server = std::make_shared<Net::Server>(handler, tcpPort);
-    } else {
+
+#if __linux__
+    if (!tcp) {
+        const std::string unixEndpoint =
+            fmt::format("/var/tmp/REG{:02}", regDevPort);
+        LOG_INFO("Using unix endpoint at {}", unixEndpoint);
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
-    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "regatron_interface_results.json");
+#endif
+
+    if (tcp) {
+        int  tcpServerPort = 20000 + regDevPort;
+        server = std::make_shared<Net::Server>(handler, tcpServerPort);
+    }
+    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen",
+                                         "regatron_interface_results.json");
     server->listen();
     INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;
