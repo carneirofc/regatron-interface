@@ -14,7 +14,8 @@
 #include "regatron/Handler.hpp"
 #include "utils/Instrumentator.hpp"
 
-static const char *USAGE =
+constexpr const char * VERSION_STRING = "CONS - Regatron Interface v1.0";
+constexpr const char * USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands.
 Only one client is supported at time. Tries to connect to the device defined by the pattern /dev/ttyUSBx,
@@ -42,7 +43,7 @@ int main(const int argc, const char *argv[]) {
     std::map<std::string, docopt::value> args =
         docopt::docopt(USAGE, {argv + 1, argv + argc},
                        true, // show help if requested
-                       "CONS - Regatron Interface v1.0"); // version string
+                       VERSION_STRING); // version string
 
     Utils::Logger::Init();
 
@@ -70,6 +71,8 @@ int main(const int argc, const char *argv[]) {
             server->stop();
             server->shutdown();
         }
+
+        INSTRUMENTATOR_PROFILE_END_SESSION();
         exit(SIGINT);
     };
     signal(SIGINT, sighandler);
