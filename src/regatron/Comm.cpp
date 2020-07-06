@@ -13,7 +13,7 @@ Comm::Comm() : Comm(1) {}
 
 Comm::~Comm() {
     disconnect();
-    LOG_TRACE("Comm destroyed!");
+    LOG_DEBUG("Comm object destroyed!");
 }
 
 void Comm::disconnect() {

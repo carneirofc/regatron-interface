@@ -62,7 +62,7 @@ int main(const int argc, const char *argv[]) {
          * The shutdown function is being called twice.
          * Once by this and once at a try{} block inside Server::listen().
          * */
-        LOG_ERROR("Capture signal \"{}\", gracefully shutting down...", signum);
+        LOG_WARN("Capture signal \"{}\", gracefully shutting down...", signum);
         if (server != nullptr) {
             regatron->setAutoReconnect(false);
             regatron->disconnect();
