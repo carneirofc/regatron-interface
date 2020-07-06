@@ -52,10 +52,22 @@ include(cmake/Conan.cmake)
 run_conan()
 if(MSVC)
     SET(REGATRON_LIBRARIES
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release/tcio.lib"
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release_Stdcall/tcio_stdcall.lib"
         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.lib"
         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.lib"
+
     )
+    SET(REGATRON_TCIO_DLL
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release/tcio.dll"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.dll"        
+    )
+    SET(REGATRON_TCIO_STDCALL_DLL
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release_Stdcall/tcio_stdcall.dll"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.dll"    )
+    
     SET(REGATRON_INCLUDE
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/include"
         "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/include"
     )
 else()

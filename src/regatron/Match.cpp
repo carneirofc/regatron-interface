@@ -5,8 +5,8 @@ namespace Regatron {
 Match::Match(const std::string commandString, const std::string setFormat,
              std::function<std::string()>       getHandle,
              std::function<std::string(double)> setHandle)
-    : m_CommandString(std::move(commandString)),
-      m_SetFormat(std::move(setFormat)),
+    : m_CommandString(commandString),
+      m_SetFormat(setFormat),
       m_GetPattern(fmt::format("{}\n", m_CommandString)),
       m_SetPattern(fmt::format("{} {}\n", m_CommandString, m_SetFormat)),
       m_GetHandleFunc(std::move(getHandle)),

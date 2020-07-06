@@ -61,7 +61,8 @@ target_link_libraries(
 if (MSVC)
     add_custom_command(TARGET cons_regatron_interface POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-            "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.dll"
-            "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.dll"
-            $<TARGET_FILE_DIR:cons_regatron_interface>)
+           ${REGATRON_TCIO_DLL}
+           ${REGATRON_TCIO_STDCALL_DLL}
+           $<TARGET_FILE_DIR:cons_regatron_interface>)
 endif ()
+
