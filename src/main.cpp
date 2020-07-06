@@ -17,13 +17,19 @@
 static const char *USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands.
-Only one client is supported at time. Use Regatron's serialiolib.
-Tries to connect to the device defined by the pattern /dev/ttyUSBx,
+Only one client is supported at time. Tries to connect to the device defined by the pattern /dev/ttyUSBx,
 where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
+When using TCP connections, the port will be 20000 + regatron_port.
 
     Usage:
-      main (tcp|unix) <regatron_port>
+)"
+#if __linux__
+    R"(      main (tcp|unix) <regatron_port>)"
+#else
+    R"(      main tcp <regatron_port>)"
+#endif
+    R"(
       main (-h | --help)
       main --version
 
@@ -40,12 +46,9 @@ int main(const int argc, const char *argv[]) {
 
     Utils::Logger::Init();
 
-    bool tcp        = args.at("tcp").asBool();
-    int  regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
-    int  tcpPort = tcp ? static_cast<int>(args.at("<endpoint>").asLong()) : -1;
+    bool tcp           = args.at("tcp").asBool();
+    int  regDevPort    = static_cast<int>(args.at("<regatron_port>").asLong());
 
-    const std::string unixEndpoint = fmt::format("/var/tmp/REG{:02}", regDevPort);//args.at("<endpoint>").asString();
-    LOG_INFO("Using unix endpoint at {}", unixEndpoint);
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
@@ -71,12 +74,22 @@ int main(const int argc, const char *argv[]) {
     };
     signal(SIGINT, sighandler);
 
-    if (tcp) {
-        server = std::make_shared<Net::Server>(handler, tcpPort);
-    } else {
+
+#if __linux__
+    if (!tcp) {
+        const std::string unixEndpoint =
+            fmt::format("/var/tmp/REG{:02}", regDevPort);
+        LOG_INFO("Using unix endpoint at {}", unixEndpoint);
         server = std::make_shared<Net::Server>(handler, unixEndpoint.c_str());
     }
-    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen", "regatron_interface_results.json");
+#endif
+
+    if (tcp) {
+        int  tcpServerPort = 20000 + regDevPort;
+        server = std::make_shared<Net::Server>(handler, tcpServerPort);
+    }
+    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen",
+                                         "regatron_interface_results.json");
     server->listen();
     INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;

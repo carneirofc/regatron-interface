@@ -27,7 +27,9 @@ class Server {
     std::shared_ptr<Net::Handler>                                  m_handler;
     std::shared_ptr<asio::io_context>                              m_IOContext;
     std::shared_ptr<asio::generic::stream_protocol::socket>        m_Socket;
+#if __linux__
     std::shared_ptr<asio::local::stream_protocol::acceptor> m_UNIXAcceptor;
+#endif
     std::shared_ptr<asio::ip::tcp::acceptor>                m_TCPAcceptor;
     void              write(const std::string &message, std::error_code &ec);
     void write(const std::string &message);

@@ -28,7 +28,7 @@ enable_doxygen()
 include(cmake/StaticAnalyzers.cmake)
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
-option(ENABLE_TESTING "Enable Test Builds" ON)
+option(ENABLE_TESTING "Enable Test Builds" OFF)
 
 # Very basic PCH example
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
@@ -50,12 +50,40 @@ set(CONAN_EXTRA_OPTIONS "")
 
 include(cmake/Conan.cmake)
 run_conan()
+if(MSVC)
+    SET(REGATRON_LIBRARIES
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release/tcio.lib"
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release_Stdcall/tcio_stdcall.lib"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.lib"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.lib"
+
+    )
+    SET(REGATRON_TCIO_DLL
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release/tcio.dll"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.dll"        
+    )
+    SET(REGATRON_TCIO_STDCALL_DLL
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/Windows/x64/Release_Stdcall/tcio_stdcall.dll"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.dll"    )
+    
+    SET(REGATRON_INCLUDE
+        #"${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014/include"
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/include"
+    )
+else()
+    SET(REGATRON_LIBRARIES
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/Linux/x64/libtcio.so"
+    )
+    SET(REGATRON_INCLUDE
+        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/include"
+    )
+endif()
 
 if(ENABLE_TESTING)
     enable_testing()
     message("Building Tests. Be sure to check out test/constexpr_tests for constexpr testing")
     add_subdirectory(test)
+    add_subdirectory(test_tcio)
 endif()
 
-add_subdirectory(test_tcio)
 add_subdirectory(src)

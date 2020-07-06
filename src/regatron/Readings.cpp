@@ -3,6 +3,7 @@
 namespace Regatron {
 static constexpr int HISTORY_MAX_ENTRIES = 300;
 static constexpr float HISTORY_NANO_MILLI_CTE = 0.05F;
+
 // ----------------------- Slope Voltage ---------------------------
 bool Readings::SetSlopeVoltRaw(double valRaw) {
     auto rawVolt = static_cast<unsigned int>(valRaw);
@@ -493,8 +494,8 @@ void Readings::readTemperature() {
         throw CommException(
             "failed to read IBC Inverter heatsink temperature.");
     }*/
-    m_IGBTTempMon      = (igbtTemp * m_TemperaturePhysNom) / NORM_MAX;
-    m_RectifierTempMon = (rectTemp * m_TemperaturePhysNom) / NORM_MAX;
+    m_IGBTTempMon      = (static_cast<double>(igbtTemp) * static_cast<double>(m_TemperaturePhysNom)) / NORM_MAX;
+    m_RectifierTempMon = (static_cast<double>(rectTemp) * static_cast<double>(m_TemperaturePhysNom)) / NORM_MAX;
 }
 
 /**
@@ -536,7 +537,7 @@ void Readings::readDCLinkVoltage() {
     if (TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS) {
         throw CommException("failed to read DCLink digital voltage.");
     }
-    m_DCLinkVoltageMon = (DCLinkVoltStd * m_DCLinkPhysNom) / NORM_MAX;
+    m_DCLinkVoltageMon = (static_cast<double>(DCLinkVoltStd) * static_cast<double>(m_DCLinkPhysNom)) / NORM_MAX;
 }
 
 void Readings::readPrimaryCurrent() {
@@ -544,7 +545,7 @@ void Readings::readPrimaryCurrent() {
     if (TC4GetIPrimDigital(&primaryCurrent) != DLL_SUCCESS) {
         throw CommException("failed to read transformer primary current.");
     }
-    m_PrimaryCurrentMon = (primaryCurrent * m_PrimaryCurrentPhysNom) / NORM_MAX;
+    m_PrimaryCurrentMon = (static_cast<double>(primaryCurrent) * static_cast<double>(m_PrimaryCurrentPhysNom)) / NORM_MAX;
 }
 
 std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry){

@@ -1,13 +1,13 @@
 
 #include "Comm.hpp"
+#include <optional>
 
 namespace Regatron {
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
       m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(true),
-      m_Connected(false) {
-}
+      m_Connected(false) {}
 
 Comm::Comm() : Comm(1) {}
 
@@ -17,9 +17,23 @@ Comm::~Comm() {
 }
 
 void Comm::disconnect() {
-    auto result = DllClose();
-    m_Connected = false;
+    auto result  = DllClose();
+    m_Connected  = false;
     m_CommStatus = CommStatus::Disconncted;
+
+    /** Reset DLL Variables */
+    // Connection
+    m_PortNrFound = -1;
+    // Increment (internal usage)
+    incDevVoltage    = 0.0;
+    incDevCurrent    = 0.0;
+    incDevPower      = 0.0;
+    incDevResistance = 0.0;
+    incSysVoltage    = 0.0;
+    incSysCurrent    = 0.0;
+    incSysPower      = 0.0;
+    incSysResistance = 0.0;
+
     LOG_WARN(
         R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
         result);
@@ -60,9 +74,9 @@ void Comm::autoConnect() {
     }
 }
 
-CommStatus  Comm::getCommStatus() const { return m_CommStatus; }
-bool        Comm::getAutoReconnect() const { return m_AutoReconnect; }
-void        Comm::setAutoReconnect(bool autoReconnect) {
+CommStatus Comm::getCommStatus() const { return m_CommStatus; }
+bool       Comm::getAutoReconnect() const { return m_AutoReconnect; }
+void       Comm::setAutoReconnect(bool autoReconnect) {
     m_AutoReconnect = autoReconnect;
     LOG_TRACE(R"(autoReconnect: "{}")", m_AutoReconnect);
 }
@@ -82,7 +96,8 @@ bool Comm::connect() { return connect(m_Port, m_Port); }
 bool Comm::connect(int port) { return connect(port, port); }
 bool Comm::connect(int fromPort, int toPort) {
     if (m_Connected) {
-        LOG_WARN(R"(Already connected to a device, consider using "cmdDisconnect")");
+        LOG_WARN(
+            R"(Already connected to a device, consider using "cmdDisconnect")");
         return false;
     }
 
@@ -92,19 +107,19 @@ bool Comm::connect(int fromPort, int toPort) {
     }
 
     InitializeDLL();
-
+#if __linux__
     if (DllSetSearchDevice2ttyDIGI() != DLL_SUCCESS) {
         throw CommException("failed to set ttyDIGI string pattern.");
     }
+#endif
 
     if (fromPort == toPort) {
-       LOG_INFO(R"(searching DIGI RealPort device "{}{:02}")",
-               DEVICE_PREFIX,
-               fromPort);
+        LOG_INFO(R"(searching DIGI RealPort device "{}{:02}")", DEVICE_PREFIX,
+                 fromPort);
     } else {
-       LOG_INFO(
-           R"(searching DIGI RealPort device in range "{}{:02}" to "{}{:02}")",
-           DEVICE_PREFIX,fromPort,DEVICE_PREFIX,toPort);
+        LOG_INFO(
+            R"(searching DIGI RealPort device in range "{}{:02}" to "{}{:02}")",
+            DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort);
     }
 
     // use this function for VM or rs232 over ethernet
@@ -115,23 +130,35 @@ bool Comm::connect(int fromPort, int toPort) {
         throw CommException(R"("Failed to set DLL comm timeouts.")");
     }
 
-    if(DllGetCommTimeouts(&readTout, &writeTout) != DLL_SUCCESS){
+    if (DllGetCommTimeouts(&readTout, &writeTout) != DLL_SUCCESS) {
         throw CommException(R"("Failed to get actual DLL comm timeouts.")");
     }
-    LOG_TRACE(R"(Timeoute after configuration: "read={}" "write={}".)", readTout, writeTout);
+    LOG_TRACE(R"(Timeoute after configuration: "read={}" "write={}".)",
+              readTout, writeTout);
 
     // hack: while eth and rs232 at the same tc device: wait 2 sec
     std::this_thread::sleep_for(DELAY_RS232);
 
     m_PortNrFound = -1; // Zero m_PortNrFound
+#if __linux__
     if (DllSearchDevice(fromPort + 1, toPort + 1, &m_PortNrFound) !=
-           DLL_SUCCESS || m_PortNrFound == -1) {
-       throw CommException(fmt::format(
-           R"(Failed to connect to a device in range "{}{:02}" to "{}{:02}" (pPortNrFound={}).)",
-           DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
+#else
+    if (DllSearchDevice(fromPort, toPort, &m_PortNrFound) !=
+#endif
+            DLL_SUCCESS ||
+        m_PortNrFound == -1) {
+        throw CommException(fmt::format(
+            R"(Failed to connect to a device in range "{}{:02}" to "{}{:02}" (pPortNrFound={}).)",
+            DEVICE_PREFIX, fromPort, DEVICE_PREFIX, toPort, m_PortNrFound));
     }
+
+#if __linux__
     LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}.")", m_PortNrFound,
               DEVICE_PREFIX, m_PortNrFound - 1);
+#else
+    LOG_TRACE(R"(Connected to device number "{}" at "{}{:02}.")", m_PortNrFound,
+              DEVICE_PREFIX, m_PortNrFound);
+#endif
     m_Connected = true;
 
     int pActBaudRate{0};
