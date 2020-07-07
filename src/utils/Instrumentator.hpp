@@ -147,7 +147,7 @@ class InstrumentationTimer {
 };
 } // namespace utils
 
-#define INSTRUMENTATOR_PROFILE
+//#define INSTRUMENTATOR_PROFILE
 #ifdef INSTRUMENTATOR_PROFILE
 #define INSTRUMENTATOR_FUNC_SIG __func__
 #define INSTRUMENTATOR_PROFILE_BEGIN_SESSION(name, filepath)                   \
