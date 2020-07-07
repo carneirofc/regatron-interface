@@ -17,18 +17,18 @@
 constexpr const char * VERSION_STRING = "CONS - Regatron Interface v1.0";
 constexpr const char * USAGE =
     R"(Regatron Interface.
-Will start a TCP or an UNIX server and listen to commands.
-Only one client is supported at time. Tries to connect to the device defined by the pattern /dev/ttyUSBx,
+Will start a TCP or an UNIX server and listen to commands. On windows, as to be expected, only TCP servers are available.
+Only one client is supported at time. Tries to connect to the device defined by the pattern /dev/ttyUSBxx or COMx,
 where xx is a zero padded integer defined by the <regatron_port> argument.
 <endpoint> may be a port or a file, according to the socket type (tcp|unix).
-When using TCP connections, the port will be 20000 + regatron_port.
+When using TCP connections, the port will be 20000 + <regatron_port>.
 
     Usage:
 )"
 #if __linux__
     R"(      main (tcp|unix) <regatron_port>)"
 #else
-    R"(      main tcp <regatron_port>)"
+    R"(      main <regatron_port>)"
 #endif
     R"(
       main (-h | --help)
@@ -46,8 +46,11 @@ int main(const int argc, const char *argv[]) {
                        VERSION_STRING); // version string
 
     Utils::Logger::Init();
-
+#if __linux__
     bool tcp           = args.at("tcp").asBool();
+#else
+    bool tcp = true;
+#endif
     int  regDevPort    = static_cast<int>(args.at("<regatron_port>").asLong());
 
 
@@ -63,7 +66,7 @@ int main(const int argc, const char *argv[]) {
          * The shutdown function is being called twice.
          * Once by this and once at a try{} block inside Server::listen().
          * */
-        LOG_WARN("Capture signal \"{}\", gracefully shutting down...", signum);
+        LOG_WARN(R"(Capture signal "{}", gracefully shutting down...)", signum);
         if (server != nullptr) {
             regatron->setAutoReconnect(false);
             regatron->disconnect();
@@ -92,7 +95,7 @@ int main(const int argc, const char *argv[]) {
         server = std::make_shared<Net::Server>(handler, tcpServerPort);
     }
     INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen",
-                                         "regatron_interface_results.json");
+                                         "cons_regatron_interface_results.json");
     server->listen();
     INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;

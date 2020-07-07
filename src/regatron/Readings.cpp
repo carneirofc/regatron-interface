@@ -69,10 +69,10 @@ bool Readings::WriteSlopeVolt() {
               SlopeRawToVms(m_SlopeStartupVolt), SlopeRawToVms(m_SlopeVolt));
 
     LOG_CRITICAL("Not available");
-    //if (TC4SetVoltageSlopeRamp(m_SlopeVolt, m_SlopeStartupVolt) !=
-    //    DLL_SUCCESS) {
-    //    throw CommException("Failed to set voltage slopes");
-    //}
+    if (TC4SetVoltageSlopeRamp(m_SlopeVolt, m_SlopeStartupVolt) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set voltage slopes");
+    }
     LOG_TRACE(R"(Voltage slope results are: "{}" "{}".)", m_SlopeStartupVolt, m_SlopeVolt);
     return true;
 }
@@ -159,10 +159,10 @@ bool Readings::WriteSlopeCurrent() {
               SlopeRawToAms(m_SlopeCurrent));
 
     LOG_CRITICAL("Not available");
-    //if (TC4SetCurrentSlopeRamp(m_SlopeCurrent, m_SlopeStartupCurrent) !=
-    //    DLL_SUCCESS) {
-    //    throw CommException("Failed to set current slopes");
-    //}
+    if (TC4SetCurrentSlopeRamp(m_SlopeCurrent, m_SlopeStartupCurrent) !=
+        DLL_SUCCESS) {
+        throw CommException("Failed to set current slopes");
+    }
     LOG_TRACE(R"(Currentage slope results are: "{}" "{}".)",
               m_SlopeStartupCurrent, m_SlopeCurrent);
     return true;

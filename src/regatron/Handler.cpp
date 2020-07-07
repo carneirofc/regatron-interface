@@ -110,13 +110,13 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
 
           /*** Calling this on slaves will have no effect */
           // Slopes Voltage
-       // Match{"setSlopeVoltMs",               SET_FUNC_DOUBLE(SetSlopeVoltMs)},
-       // Match{"setSlopeStartupVoltMs",        SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
+          Match{"setSlopeVoltMs",               SET_FUNC_DOUBLE(SetSlopeVoltMs)},
+          Match{"setSlopeStartupVoltMs",        SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
 
-       // Match{"setSlopeVoltRaw",              SET_FUNC_DOUBLE(SetSlopeVoltRaw)},
-       // Match{"setSlopeStartupVoltRaw",       SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
+          Match{"setSlopeVoltRaw",              SET_FUNC_DOUBLE(SetSlopeVoltRaw)},
+          Match{"setSlopeStartupVoltRaw",       SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
 
-       // Match{"cmdSlopeVoltWrite",            CMD_API(WriteSlopeVolt)},
+          Match{"cmdSlopeVoltWrite",            CMD_API(WriteSlopeVolt)},
           Match{"getSlopeVolt",                 GET_FUNC(GetSlopeVolt())},
           Match{"getSlopeVoltMin",              GET_FORMAT(GetSlopeVoltMin())},
           Match{"getSlopeVoltMax",              GET_FORMAT(GetSlopeVoltMax())},
@@ -124,13 +124,13 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSlopeVoltSp",               GET_FORMAT(GetSlopeVoltSp())},
 
           // Slopes Current
-        //Match{"setSlopeCurrentMs",            SET_FUNC_DOUBLE(SetSlopeCurrentMs)},
-        //Match{"setSlopeStartupCurrentMs",     SET_FUNC_DOUBLE(SetSlopeStartupCurrentMs)},
+          Match{"setSlopeCurrentMs",            SET_FUNC_DOUBLE(SetSlopeCurrentMs)},
+          Match{"setSlopeStartupCurrentMs",     SET_FUNC_DOUBLE(SetSlopeStartupCurrentMs)},
 
-        //Match{"setSlopeCurrentRaw",           SET_FUNC_DOUBLE(SetSlopeCurrentRaw)},
-        //Match{"setSlopeStartupCurrentRaw",    SET_FUNC_DOUBLE(SetSlopeStartupCurrentRaw)},
+          Match{"setSlopeCurrentRaw",           SET_FUNC_DOUBLE(SetSlopeCurrentRaw)},
+          Match{"setSlopeStartupCurrentRaw",    SET_FUNC_DOUBLE(SetSlopeStartupCurrentRaw)},
 
-        //Match{"cmdSlopeCurrentWrite",         CMD_API(WriteSlopeCurrent)},
+          Match{"cmdSlopeCurrentWrite",         CMD_API(WriteSlopeCurrent)},
           Match{"getSlopeCurrent",              GET_FUNC(GetSlopeCurrent())},
           Match{"getSlopeCurrentMin",           GET_FORMAT(GetSlopeCurrentMin())},
           Match{"getSlopeCurrentMax",           GET_FORMAT(GetSlopeCurrentMax())},
