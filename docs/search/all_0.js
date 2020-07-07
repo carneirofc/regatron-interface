@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['actual_20values_0',['Actual Values',['../group__ActualValues.html',1,'']]]
+  ['comm_0',['Comm',['../classRegatron_1_1Comm.html',1,'Regatron']]],
+  ['commexception_1',['CommException',['../classRegatron_1_1CommException.html',1,'Regatron']]]
 ];

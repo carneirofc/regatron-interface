@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.19"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>REGATRON_INTERFACE: /opt/cons-regatron-interface/src/regatron/Comm.hpp Source File</title>
+<title>REGATRON_INTERFACE: src/regatron/Comm.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -141,7 +141,7 @@ $(function() {
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordtype">int</span> pState{-1};</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordtype">int</span> pErrorNo{0};</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Initialization.html#gaeb0f830f46424ee529648b1a85bb9b82">DllGetStatus</a>(&amp;pState, &amp;pErrorNo) != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">if</span> (DllGetStatus(&amp;pState, &amp;pErrorNo) != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            LOG_WARN(<span class="stringliteral">&quot;DLL: Failed to get DLL status.&quot;</span>);</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            m_CommStatus = CommStatus::IOCCommmandFail;</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <span class="keywordflow">return</span> m_CommStatus;</div>
@@ -182,7 +182,6 @@ $(function() {
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;} <span class="comment">// namespace Regatron</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassRegatron_1_1Comm_html_ac8b716bf0ec05e70d8c2d110f4168f34"><div class="ttname"><a href="classRegatron_1_1Comm.html#ac8b716bf0ec05e70d8c2d110f4168f34">Regatron::Comm::disconnect</a></div><div class="ttdeci">void disconnect()</div><div class="ttdef"><b>Definition:</b> Comm.cpp:19</div></div>
-<div class="ttc" id="agroup__Initialization_html_gaeb0f830f46424ee529648b1a85bb9b82"><div class="ttname"><a href="group__Initialization.html#gaeb0f830f46424ee529648b1a85bb9b82">DllGetStatus</a></div><div class="ttdeci">DLL_RESULT DllGetStatus(int *pState, int *pErrorNo)</div><div class="ttdoc">Reads actual state of communication and DLL.  This function reports the status of the low level inter...</div></div>
 <div class="ttc" id="aclassRegatron_1_1Comm_html_a560b78f0df8bef7f4d0239c9410d457f"><div class="ttname"><a href="classRegatron_1_1Comm.html#a560b78f0df8bef7f4d0239c9410d457f">Regatron::Comm::ReadCommStatus</a></div><div class="ttdeci">CommStatus ReadCommStatus()</div><div class="ttdef"><b>Definition:</b> Comm.hpp:72</div></div>
 <div class="ttc" id="aclassRegatron_1_1Comm_html_ae1376090ab728c32ec8bc14da7cf41fa"><div class="ttname"><a href="classRegatron_1_1Comm.html#ae1376090ab728c32ec8bc14da7cf41fa">Regatron::Comm::getReadings</a></div><div class="ttdeci">std::optional&lt; std::shared_ptr&lt; Regatron::Readings &gt; &gt; getReadings()</div><div class="ttdef"><b>Definition:</b> Comm.cpp:42</div></div>
 <div class="ttc" id="aclassRegatron_1_1Comm_html"><div class="ttname"><a href="classRegatron_1_1Comm.html">Regatron::Comm</a></div><div class="ttdef"><b>Definition:</b> Comm.hpp:20</div></div>

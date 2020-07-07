@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.19"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>REGATRON_INTERFACE: /opt/cons-regatron-interface/src/regatron/Readings.hpp Source File</title>
+<title>REGATRON_INTERFACE: src/regatron/Readings.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -127,8 +127,8 @@ $(function() {
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">double</span>               m_SysPowerPhysNom;      <span class="comment">// [kW]</span></div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">double</span>               m_SysResistancePhysNom; <span class="comment">// [mOhm]</span></div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>         m_SysControlMode;       <span class="comment">// namespace ControlMode</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">struct </span><a class="code" href="structT__ErrorTree32.html">T_ErrorTree32</a> m_SysErrorTree32Mon;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">struct </span><a class="code" href="structT__ErrorTree32.html">T_ErrorTree32</a> m_SysWarningTree32Mon;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">struct </span>T_ErrorTree32 m_SysErrorTree32Mon;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keyword">struct </span>T_ErrorTree32 m_SysWarningTree32Mon;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>         m_SysState;</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">double</span>               m_SysActualOutVoltageMon;</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">double</span>               m_SysActualOutPowerMon;</div>
@@ -154,8 +154,8 @@ $(function() {
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">double</span>               m_ModPowerPhysNom;      <span class="comment">// [kW]</span></div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">double</span>               m_ModResistancePhysNom; <span class="comment">// [mOhm]</span></div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    uint32_t             m_ModControlMode;       <span class="comment">// namespace ControlMode</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">struct </span><a class="code" href="structT__ErrorTree32.html">T_ErrorTree32</a> m_ModErrorTree32Mon;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keyword">struct </span><a class="code" href="structT__ErrorTree32.html">T_ErrorTree32</a> m_ModWarningTree32Mon;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keyword">struct </span>T_ErrorTree32 m_ModErrorTree32Mon;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keyword">struct </span>T_ErrorTree32 m_ModWarningTree32Mon;</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>         m_ModState;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordtype">double</span>               m_ModActualOutVoltageMon;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">double</span>               m_ModActualOutPowerMon;</div>
@@ -187,7 +187,7 @@ $(function() {
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="comment">// Flash Error History</span></div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> m_FlashErrorHistoryMaxEntries;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    std::string  ErrorHistoryEntryToString(<a class="code" href="structT__ErrorHistoryEntry.html">T_ErrorHistoryEntry</a> *entry);</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry);</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="comment">// Slope</span></div>
@@ -416,20 +416,20 @@ $(function() {
 <div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> selectMod() { this-&gt;selectMod(MOD_VALUES); }</div>
 <div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160; </div>
 <div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> storeParameters() {</div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Generic.html#gaef4f7425095b32e53142462d983bb8f3">TC4StoreParameters</a>() != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;        <span class="keywordflow">if</span> (TC4StoreParameters() != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;            <span class="keywordflow">throw</span> CommException(<span class="stringliteral">&quot;failed to store parameters&quot;</span>);</div>
 <div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;        }</div>
 <div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    }</div>
 <div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160; </div>
 <div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> clearErrors() {</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Generic.html#gabc96553d25f7e534d2f631d0306b735c">TC4ClearError</a>() != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;        <span class="keywordflow">if</span> (TC4ClearError() != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;            <span class="keywordflow">throw</span> CommException(<span class="stringliteral">&quot;failed to clear erors&quot;</span>);</div>
 <div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;        }</div>
 <div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;    }</div>
 <div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160; </div>
 <div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> readModControlMode() {</div>
 <div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        selectMod();</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Generic.html#ga7498ae6762bc4e92fe2526799ea65a85">TC4GetControlMode</a>(&amp;m_ModControlMode) != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="keywordflow">if</span> (TC4GetControlMode(&amp;m_ModControlMode) != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;            <span class="keywordflow">throw</span> CommException(<span class="stringliteral">&quot;failed to read module control mode&quot;</span>);</div>
 <div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        }</div>
 <div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        <a class="code" href="classRegatron_1_1Readings.html#a39727710bd199b643c3d35b802b68c8e">selectSys</a>();</div>
@@ -437,13 +437,13 @@ $(function() {
 <div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160; </div>
 <div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> readSysControlMode() {</div>
 <div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;        <a class="code" href="classRegatron_1_1Readings.html#a39727710bd199b643c3d35b802b68c8e">selectSys</a>();</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Generic.html#ga7498ae6762bc4e92fe2526799ea65a85">TC4GetControlMode</a>(&amp;m_SysControlMode) != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;        <span class="keywordflow">if</span> (TC4GetControlMode(&amp;m_SysControlMode) != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;            <span class="keywordflow">throw</span> CommException(<span class="stringliteral">&quot;failed to read system control mode&quot;</span>);</div>
 <div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;        }</div>
 <div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;    }</div>
 <div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160; </div>
 <div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> readRemoteControlInput() {</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Generic.html#gaeb7bd84f61fe50c0310f6e84db6b997a">TC4GetRemoteControlInput</a>(&amp;m_RemoteCtrlInp) != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;        <span class="keywordflow">if</span> (TC4GetRemoteControlInput(&amp;m_RemoteCtrlInp) != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;            <span class="keywordflow">throw</span> CommException(<span class="stringliteral">&quot;failed to read remote control input&quot;</span>);</div>
 <div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;        }</div>
 <div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;    }</div>
@@ -464,7 +464,7 @@ $(function() {
 <div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;    }</div>
 <div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160; </div>
 <div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> selectMod(<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> module) {</div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;        <span class="keywordflow">if</span> (<a class="code" href="group__Mandatory.html#gad97daa41808bdbed9ce22b0658b3b2f4">TC4SetModuleSelector</a>(module) != DLL_SUCCESS) {</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;        <span class="keywordflow">if</span> (TC4SetModuleSelector(module) != DLL_SUCCESS) {</div>
 <div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;            <span class="keywordflow">throw</span> CommException(fmt::format(</div>
 <div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;                <span class="stringliteral">&quot;failed to set module selector to {} (code {})&quot;</span>,</div>
 <div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;                ((module == SYS_VALUES) ? <span class="stringliteral">&quot;system&quot;</span> : <span class="stringliteral">&quot;device&quot;</span>), module));</div>
@@ -494,12 +494,9 @@ $(function() {
 <div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;};</div>
 <div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;} <span class="comment">// namespace Regatron</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="agroup__Generic_html_gabc96553d25f7e534d2f631d0306b735c"><div class="ttname"><a href="group__Generic.html#gabc96553d25f7e534d2f631d0306b735c">TC4ClearError</a></div><div class="ttdeci">DLL_RESULT TC4ClearError()</div><div class="ttdoc">This function is used to clear all pending errors and warnings.</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a39727710bd199b643c3d35b802b68c8e"><div class="ttname"><a href="classRegatron_1_1Readings.html#a39727710bd199b643c3d35b802b68c8e">Regatron::Readings::selectSys</a></div><div class="ttdeci">void selectSys()</div><div class="ttdef"><b>Definition:</b> Readings.hpp:396</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a5db87d5653a67c46de951d4bf547c633"><div class="ttname"><a href="classRegatron_1_1Readings.html#a5db87d5653a67c46de951d4bf547c633">Regatron::Readings::readDCLinkVoltage</a></div><div class="ttdeci">void readDCLinkVoltage()</div><div class="ttdef"><b>Definition:</b> Readings.cpp:536</div></div>
-<div class="ttc" id="astructT__ErrorHistoryEntry_html"><div class="ttname"><a href="structT__ErrorHistoryEntry.html">T_ErrorHistoryEntry</a></div><div class="ttdef"><b>Definition:</b> serialiolib.h:271</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html"><div class="ttname"><a href="classRegatron_1_1Readings.html">Regatron::Readings</a></div><div class="ttdef"><b>Definition:</b> Readings.hpp:36</div></div>
-<div class="ttc" id="agroup__Mandatory_html_gad97daa41808bdbed9ce22b0658b3b2f4"><div class="ttname"><a href="group__Mandatory.html#gad97daa41808bdbed9ce22b0658b3b2f4">TC4SetModuleSelector</a></div><div class="ttdeci">DLL_RESULT TC4SetModuleSelector(unsigned int selector)</div><div class="ttdoc">Set the ModuleSelector to 64. This ensures that in multi-unit operation a TopCon Master will return s...</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a652f6edf7dff46c4ca5c92d5b730793a"><div class="ttname"><a href="classRegatron_1_1Readings.html#a652f6edf7dff46c4ca5c92d5b730793a">Regatron::Readings::setSysCurrentRef</a></div><div class="ttdeci">void setSysCurrentRef(double)</div><div class="ttdef"><b>Definition:</b> Readings.cpp:393</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a4db92acd30c1525147ec07f2d0597018"><div class="ttname"><a href="classRegatron_1_1Readings.html#a4db92acd30c1525147ec07f2d0597018">Regatron::Readings::readTemperature</a></div><div class="ttdeci">void readTemperature()</div><div class="ttdef"><b>Definition:</b> Readings.cpp:485</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a8cb8df8fe73e2ad94f222a664b6178ca"><div class="ttname"><a href="classRegatron_1_1Readings.html#a8cb8df8fe73e2ad94f222a664b6178ca">Regatron::Readings::GetSlopeCurrent</a></div><div class="ttdeci">std::string GetSlopeCurrent()</div><div class="ttdef"><b>Definition:</b> Readings.cpp:175</div></div>
@@ -509,11 +506,7 @@ $(function() {
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a2db871742f609f5353cb0f1c3cc14d2f"><div class="ttname"><a href="classRegatron_1_1Readings.html#a2db871742f609f5353cb0f1c3cc14d2f">Regatron::Readings::readSystem</a></div><div class="ttdeci">void readSystem()</div><div class="ttdef"><b>Definition:</b> Readings.cpp:237</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_ac40e99755316870a8239269791294759"><div class="ttname"><a href="classRegatron_1_1Readings.html#ac40e99755316870a8239269791294759">Regatron::Readings::readAdditionalPhys</a></div><div class="ttdeci">void readAdditionalPhys()</div><div class="ttdef"><b>Definition:</b> Readings.cpp:262</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_afe4751348d39a27141b14be5dff5d2a1"><div class="ttname"><a href="classRegatron_1_1Readings.html#afe4751348d39a27141b14be5dff5d2a1">Regatron::Readings::GetSlopeA</a></div><div class="ttdeci">double GetSlopeA(double fullScaleValue)</div><div class="ttdef"><b>Definition:</b> Readings.hpp:225</div></div>
-<div class="ttc" id="astructT__ErrorTree32_html"><div class="ttname"><a href="structT__ErrorTree32.html">T_ErrorTree32</a></div><div class="ttdef"><b>Definition:</b> serialiolib.h:188</div></div>
-<div class="ttc" id="agroup__Generic_html_gaeb7bd84f61fe50c0310f6e84db6b997a"><div class="ttname"><a href="group__Generic.html#gaeb7bd84f61fe50c0310f6e84db6b997a">TC4GetRemoteControlInput</a></div><div class="ttdeci">DLL_RESULT TC4GetRemoteControlInput(unsigned int *pRemoteInput)</div><div class="ttdoc">Reads the actual remote control input.</div></div>
 <div class="ttc" id="aclassRegatron_1_1Readings_html_a35d89ad3f780f2dbd3c214fe2e7c8a77"><div class="ttname"><a href="classRegatron_1_1Readings.html#a35d89ad3f780f2dbd3c214fe2e7c8a77">Regatron::Readings::readSystemErrorTree32</a></div><div class="ttdeci">void readSystemErrorTree32()</div><div class="ttdef"><b>Definition:</b> Readings.cpp:227</div></div>
-<div class="ttc" id="agroup__Generic_html_gaef4f7425095b32e53142462d983bb8f3"><div class="ttname"><a href="group__Generic.html#gaef4f7425095b32e53142462d983bb8f3">TC4StoreParameters</a></div><div class="ttdeci">DLL_RESULT TC4StoreParameters()</div><div class="ttdoc">Stores all settings in a non-volatile memory If TopCon Slaves are connected to the TopCon Master,...</div></div>
-<div class="ttc" id="agroup__Generic_html_ga7498ae6762bc4e92fe2526799ea65a85"><div class="ttname"><a href="group__Generic.html#ga7498ae6762bc4e92fe2526799ea65a85">TC4GetControlMode</a></div><div class="ttdeci">DLL_RESULT TC4GetControlMode(unsigned int *pControlMode)</div><div class="ttdoc">Reads the actual mode of the controller.  Reading controller mode on a TopCon Slave returns the actua...</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

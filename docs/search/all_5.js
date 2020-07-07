@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['handle_28',['handle',['../classRegatron_1_1Match.html#ae58ae3ee5cf77de1494f789cb5dae4ac',1,'Regatron::Match']]],
-  ['handler_29',['Handler',['../classNet_1_1Handler.html',1,'Net::Handler'],['../classRegatron_1_1Handler.html',1,'Regatron::Handler']]],
-  ['handleset_30',['handleSet',['../classRegatron_1_1Match.html#a5bcd179c205f85f9c8f63d455f21696f',1,'Regatron::Match']]]
+  ['ibc_12',['IBC',['../classRegatron_1_1IBC.html',1,'Regatron']]],
+  ['instrumentationsession_13',['InstrumentationSession',['../structutils_1_1InstrumentationSession.html',1,'utils']]],
+  ['instrumentationtimer_14',['InstrumentationTimer',['../classutils_1_1InstrumentationTimer.html',1,'utils']]],
+  ['instrumentor_15',['Instrumentor',['../classutils_1_1Instrumentor.html',1,'utils']]]
 ];
