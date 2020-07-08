@@ -1,5 +1,7 @@
 # Development
 
+This software was originally aimed for linux, due to limitations of the TCIO library in conjunction with the required software versions, Windows shall be used !
+
 cmake version 3.17.0<br>
 CMake suite maintained and supported by Kitware (kitware.com/cmake).<br>
 
@@ -27,7 +29,7 @@ LLVM (http://llvm.org/): <br>
 
 cmake-format 0.6.9<br>
 
-[Conan](https://conan.io/) version 1.23.0
+[Conan](https://conan.io/) version >= 1.23.0
 ```
 # It's a good practice to use a virtual environment
 $ python -m virtualenv venv
