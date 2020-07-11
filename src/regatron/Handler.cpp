@@ -44,11 +44,16 @@ namespace Regatron {
         return NACK;                                                           \
     }
 
+volatile static double debugValue{0.0};
+
 // @fixme: Do this in a way that does not require macros.
 Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
     : m_RegatronComm(regatronComm),
       m_Matchers({
           // clang-format off
+          Match{"getDebug", [this](){ return fmt::format("{}", debugValue); }},
+          Match{"setDebug", [this](double value){ debugValue = value; return ACK; }},
+
           Match{"cmdConnect", [this](){ return (this->m_RegatronComm->connect()) ? ACK : NACK; }},
           Match{"cmdDisconnect", [this](){ this->m_RegatronComm->disconnect(); return ACK;}},
           Match{"getCommStatus", [this](){ return fmt::format("{}", this->m_RegatronComm->getCommStatus()); }},
@@ -137,7 +142,6 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSlopeStartupCurrentSp",     GET_FORMAT(GetSlopeStartupCurrentSp())},
           Match{"getSlopeCurrentSp",            GET_FORMAT(GetSlopeCurrentSp())},
           // -------------------------------------------------------------------------------
-          //
           // clang-format on
       }) {}
 

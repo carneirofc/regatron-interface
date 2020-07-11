@@ -11,9 +11,9 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
-#include <optional>
 
 namespace Regatron {
 
@@ -21,34 +21,28 @@ class Comm {
     static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{15};
     static constexpr std::chrono::seconds DELAY_RS232{5};
 #if __linux__
-    static constexpr const char *         DEVICE_PREFIX = "/dev/ttyD";
+    static constexpr const char *DEVICE_PREFIX = "/dev/ttyD";
 #else
-    static constexpr const char *         DEVICE_PREFIX = "COM";
+    static constexpr const char *DEVICE_PREFIX = "COM";
 #endif
-    static constexpr int DLL_STATUS_OK = 0;
-    static constexpr int                  DLL_STATUS_COMMUNICATION_ERROR = -10;
-    static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR     = -100;
-    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER                = 10;
-    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER               = 10;
+    static constexpr int          DLL_STATUS_OK                      = 0;
+    static constexpr int          DLL_STATUS_COMMUNICATION_ERROR     = -10;
+    static constexpr int          DLL_STATUS_COMMAND_EXECUTION_ERROR = -100;
+    static constexpr unsigned int READ_TIMEOUT_MULTIPLIER            = 10;
+    static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER           = 10;
 
   private:
-    // Connection
-    int m_Port        = 0;
-    int m_PortNrFound = -1;
-
-    // Readings
-    std::shared_ptr<Regatron::Readings> m_readings;
-
-    // Increment (internal usage)
-    double incDevVoltage    = 0.0;
-    double incDevCurrent    = 0.0;
-    double incDevPower      = 0.0;
-    double incDevResistance = 0.0;
-    double incSysVoltage    = 0.0;
-    double incSysCurrent    = 0.0;
-    double incSysPower      = 0.0;
-    double incSysResistance = 0.0;
-
+    int                                 m_Port;        /** comm port */
+    int                                 m_PortNrFound; /** detected comm port */
+    std::shared_ptr<Regatron::Readings> m_readings;    /** Readings*/
+    double     incDevVoltage;    /** Increment (internal usage) */
+    double     incDevCurrent;    /** Increment (internal usage) */
+    double     incDevPower;      /** Increment (internal usage) */
+    double     incDevResistance; /** Increment (internal usage) */
+    double     incSysVoltage;    /** Increment (internal usage) */
+    double     incSysCurrent;    /** Increment (internal usage) */
+    double     incSysPower;      /** Increment (internal usage) */
+    double     incSysResistance; /** Increment (internal usage) */
     CommStatus m_CommStatus;
     bool       m_AutoReconnect;
     bool       m_Connected;
@@ -110,10 +104,10 @@ class Comm {
     void       autoConnect();
 
     /**
-    *   Regatron Readings
-    * This method will return the Redings object if the
-    * actual communication state is valid.
-    */
+     *   Regatron Readings
+     * This method will return the Redings object if the
+     * actual communication state is valid.
+     */
     std::optional<std::shared_ptr<Regatron::Readings>> getReadings();
 };
 

@@ -37,22 +37,22 @@ class Match {
     const std::function<std::string()>       m_GetHandleFunc;
     const std::function<std::string(double)> m_SetHandleFunc;
 
-    CommandType getCommandType(const std::string &message);
-    Match(const std::string commandString, const std::string setFormat,
-          std::function<std::string()>       getHandle,
-          std::function<std::string(double)> setHandle);
+    CommandType getCommandType(const std::string& message);
+    Match(std::string&& commandString, std::string&& setFormat,
+          std::function<std::string()>&&       getHandle,
+          std::function<std::string(double)>&& setHandle);
 
     template <class Container>
     void split(const std::string &str, Container &cont);
 
   public:
     /** @note: get only constructor */
-    Match(const std::string            commandString,
-          std::function<std::string()> getHandle);
+    Match(std::string&&            commandString,
+          std::function<std::string()>&& getHandle);
 
     /** @note: set only constructor */
-    Match(const std::string                  commandString,
-          std::function<std::string(double)> setHandle);
+    Match(std::string&&                  commandString,
+          std::function<std::string(double)>&& setHandle);
 
     std::string toString() const;
 

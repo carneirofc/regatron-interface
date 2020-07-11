@@ -2,16 +2,15 @@
 
 namespace Net {
 
-Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
+#if __linux__
+    Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
     : m_handler(std::move(handler)),
       m_IOContext(std::make_shared<asio::io_context>()),
       m_Socket(std::make_shared<asio::generic::stream_protocol::socket>(
           *m_IOContext)),
-#if __linux__
+
       m_UNIXAcceptor(nullptr),
-#endif
     m_TCPAcceptor(nullptr), m_Run{false} {
-#if __linux__
     if (std::filesystem::exists(unixEndpoint)) {
         LOG_WARN("File {} already exists... Trying to delete it ...",
                  unixEndpoint);
@@ -20,8 +19,9 @@ Server::Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint)
     m_UNIXAcceptor = std::make_shared<asio::local::stream_protocol::acceptor>(
         *m_IOContext, asio::local::stream_protocol::endpoint{unixEndpoint});
     LOG_INFO("UNIX Server at endpoint {}", unixEndpoint);
-#endif
 }
+#endif
+
 Server::Server(std::shared_ptr<Net::Handler> handler,
                const short unsigned int      tcpPort)
     : m_handler(std::move(handler)),
@@ -34,7 +34,8 @@ Server::Server(std::shared_ptr<Net::Handler> handler,
       m_TCPAcceptor(std::make_shared<asio::ip::tcp::acceptor>(
           *m_IOContext, asio::ip::tcp::endpoint{asio::ip::tcp::v4(), tcpPort})),
       m_Run{false} {
-    LOG_INFO("TCP Server at port \"{}\"", tcpPort);
+
+    LOG_INFO(R"(TCP Server at port "{}")", tcpPort);
 }
 
 Server::~Server() {

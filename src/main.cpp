@@ -14,8 +14,8 @@
 #include "regatron/Handler.hpp"
 #include "utils/Instrumentator.hpp"
 
-constexpr const char * VERSION_STRING = "CONS - Regatron Interface v1.0";
-constexpr const char * USAGE =
+constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0";
+constexpr const char *USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands. On windows, as to be expected, only TCP servers are available.
 Only one client is supported at time. Tries to connect to the device defined by the pattern /dev/ttyUSBxx or COMx,
@@ -42,17 +42,16 @@ When using TCP connections, the port will be 20000 + <regatron_port>.
 int main(const int argc, const char *argv[]) {
     std::map<std::string, docopt::value> args =
         docopt::docopt(USAGE, {argv + 1, argv + argc},
-                       true, // show help if requested
+                       true,            // show help if requested
                        VERSION_STRING); // version string
 
     Utils::Logger::Init();
 #if __linux__
-    bool tcp           = args.at("tcp").asBool();
+    bool tcp = args.at("tcp").asBool();
 #else
     bool tcp = true;
 #endif
-    int  regDevPort    = static_cast<int>(args.at("<regatron_port>").asLong());
-
+    int regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
@@ -80,7 +79,6 @@ int main(const int argc, const char *argv[]) {
     };
     signal(SIGINT, sighandler);
 
-
 #if __linux__
     if (!tcp) {
         const std::string unixEndpoint =
@@ -91,11 +89,11 @@ int main(const int argc, const char *argv[]) {
 #endif
 
     if (tcp) {
-        int  tcpServerPort = 20000 + regDevPort;
+        int tcpServerPort = 20000 + regDevPort;
         server = std::make_shared<Net::Server>(handler, tcpServerPort);
     }
-    INSTRUMENTATOR_PROFILE_BEGIN_SESSION("Listen",
-                                         "cons_regatron_interface_results.json");
+    INSTRUMENTATOR_PROFILE_BEGIN_SESSION(
+        "Listen", "cons_regatron_interface_results.json");
     server->listen();
     INSTRUMENTATOR_PROFILE_END_SESSION();
     return 0;
