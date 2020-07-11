@@ -6,7 +6,7 @@ namespace Regatron {
 
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
-      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(false),
+      m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(true),
       m_Connected(false), m_PortNrFound(-1),
       // Increment (internal usage)
       incDevVoltage(0.0), incDevCurrent(0.0), incDevPower(0.0),
