@@ -14,7 +14,7 @@
 #include "regatron/Handler.hpp"
 #include "utils/Instrumentator.hpp"
 
-constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0";
+constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0.1";
 constexpr const char *USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands. On windows, as to be expected, only TCP servers are available.
@@ -44,14 +44,14 @@ int main(const int argc, const char *argv[]) {
         docopt::docopt(USAGE, {argv + 1, argv + argc},
                        true,            // show help if requested
                        VERSION_STRING); // version string
-
-    Utils::Logger::Init();
 #if __linux__
     bool tcp = args.at("tcp").asBool();
 #else
     bool tcp = true;
 #endif
     int regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
+
+    Utils::Logger::Init(spdlog::level::level_enum::trace, fmt::format("RegatronCOM{:03}Log.txt", regDevPort).c_str());
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
