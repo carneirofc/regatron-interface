@@ -18,7 +18,6 @@
 namespace Regatron {
 
 class Comm {
-    static constexpr std::chrono::seconds AUTOCONNECT_INTERVAL{15};
     static constexpr std::chrono::seconds DELAY_RS232{5};
 #if __linux__
     static constexpr const char *DEVICE_PREFIX = "/dev/ttyD";
@@ -48,6 +47,7 @@ class Comm {
     bool       m_Connected;
     std::chrono::time_point<std::chrono::system_clock>
          m_AutoReconnectAttemptTime;
+    std::chrono::seconds m_AutoReconnectInterval;
     void InitializeDLL();
 
   public:
@@ -59,6 +59,8 @@ class Comm {
     bool connect(int fromPort, int toPort);
     void disconnect();
 
+    void SetAutoReconnectInterval(std::chrono::seconds&& seconds);
+    std::chrono::seconds GetAutoReconnectInterval() const;
     /**
      * This method will read and set the actual communication status
      * @return CommStatus
