@@ -12,7 +12,7 @@ class Logger {
     static std::shared_ptr<spdlog::logger> defaultLogger;
 
   public:
-    static void Init(spdlog::level::level_enum level = spdlog::level::trace);
+    static void Init(spdlog::level::level_enum level = spdlog::level::trace, const char* logFileName = "ConsRegIface.txt");
     inline static std::shared_ptr<spdlog::logger> &getLogger() {
         if (!defaultLogger) {
             Init();

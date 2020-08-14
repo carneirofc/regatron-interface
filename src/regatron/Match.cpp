@@ -42,14 +42,7 @@ std::optional<double> Match::handleSet(const char *message) const {
     int    r = std::sscanf(message, m_SetPattern.c_str(), &data);
     return r == 1 ? std::optional<double>{data} : std::nullopt;
 }
-/*
-template <class Container>
-void Match::split(const std::string &str, Container &cont) {
-    std::istringstream iss(str);
-    std::copy(std::istream_iterator<std::string>(iss),
-              std::istream_iterator<std::string>(), std::back_inserter(cont));
-}
-*/
+
 std::optional<std::string> Match::handle(const std::string &message) const {
     CommandType commandType;
 
