@@ -222,84 +222,76 @@ class Readings {
      * a=(SLOPE_MIN_RAW-SLOPE_MAX_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
      * b=(SLOPE_MAX_RAW*MIN_VOLT_MS-MAX_VOLT_MS*SLOPE_MIN_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
      */
-    double GetSlopeA(double fullScaleValue) {
+    double GetSlopeA(const double fullScaleValue) const {
         const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
-        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
-        const double a =
-            (SLOPE_MIN_RAW - SLOPE_MAX_RAW) / (MIN_VALUE_MS - MAX_VALUE_MS);
-        return a;
+        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;    
+        return      (SLOPE_MIN_RAW - SLOPE_MAX_RAW) / (MIN_VALUE_MS - MAX_VALUE_MS);
     }
 
-    double GetSlopeB(double fullScaleValue) {
+    double GetSlopeB(const double fullScaleValue) const {
         const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
         const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
-        const double b =
-            (SLOPE_MAX_RAW * MIN_VALUE_MS - MAX_VALUE_MS * SLOPE_MIN_RAW) /
+        return (SLOPE_MAX_RAW * MIN_VALUE_MS - MAX_VALUE_MS * SLOPE_MIN_RAW) /
             (MIN_VALUE_MS - MAX_VALUE_MS);
-        return b;
     }
 
-    unsigned int SlopeVmsToRaw(double voltms) {
-        unsigned int response = static_cast<unsigned int>(
+    unsigned int SlopeVmsToRaw(const double voltms) const {
+        return static_cast<unsigned int>(
             std::round(GetSlopeA(m_SysVoltagePhysMax) * voltms +
                        GetSlopeB(m_SysVoltagePhysMax)));
-        return response;
     }
 
-    unsigned int SlopeAmsToRaw(double currentms) {
-        unsigned int response = static_cast<unsigned int>(
+    unsigned int SlopeAmsToRaw(const double currentms) const {
+        return static_cast<unsigned int>(
             std::round(GetSlopeA(m_SysCurrentPhysMax) * currentms +
                        GetSlopeB(m_SysCurrentPhysMax)));
-        return response;
     }
 
-    double SlopeRawToVms(unsigned int raw) {
-        double response =
-            (static_cast<double>(raw) - GetSlopeB(m_SysVoltagePhysMax)) /
+    double SlopeRawToVms(const unsigned int raw) const {
+        return (static_cast<double>(raw) - GetSlopeB(m_SysVoltagePhysMax)) /
             GetSlopeA(m_SysVoltagePhysMax);
-        return response;
     }
 
-    double SlopeRawToAms(unsigned int raw) {
-        double response =
-            (static_cast<double>(raw) - GetSlopeB(m_SysCurrentPhysMax)) /
+    double SlopeRawToAms(const unsigned int raw) const {
+        return (static_cast<double>(raw) - GetSlopeB(m_SysCurrentPhysMax)) /
             GetSlopeA(m_SysCurrentPhysMax);
-        return response;
     }
 
     auto getModuleID() const { return m_moduleID; }
     auto getVersion() const { return m_Version; }
 
     // -------------- Slopes -------------------
-    bool SetSlopeStartupVoltMs(double valMs);
-    bool SetSlopeVoltMs(double valMs);
-    bool SetSlopeStartupVoltRaw(double valRaw);
-    bool SetSlopeVoltRaw(double valRaw);
+    bool SetSlopeStartupVoltMs(const double valMs);
+    bool SetSlopeVoltMs(const double valMs);
+    bool SetSlopeStartupVoltRaw(const double valRaw);
+    bool SetSlopeVoltRaw(const double valRaw);
 
-    bool SetSlopeStartupCurrentMs(double valMs);
-    bool SetSlopeCurrentMs(double valMs);
-    bool SetSlopeStartupCurrentRaw(double valRaw);
-    bool SetSlopeCurrentRaw(double valRaw);
+    bool SetSlopeStartupCurrentMs(const double valMs);
+    bool SetSlopeCurrentMs(const double valMs);
+    bool SetSlopeStartupCurrentRaw(const double valRaw);
+    bool SetSlopeCurrentRaw(const double valRaw);
 
-    inline double GetSlopeVoltSp() { return SlopeRawToVms(m_SlopeVolt); }
-    inline double GetSlopeStartupVoltSp() {
+    inline double GetSlopeVoltSp() const { return SlopeRawToVms(m_SlopeVolt); }
+    inline double GetSlopeStartupVoltSp() const {
         return SlopeRawToVms(m_SlopeStartupVolt);
     }
-    inline double GetSlopeVoltMin() {
+    inline double GetSlopeVoltMin() const {
         return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MIN_RAW));
     }
-    inline double GetSlopeVoltMax() {
+    inline double GetSlopeVoltMax() const {
         return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MAX_RAW));
     }
 
-    inline double GetSlopeCurrentSp() { return SlopeRawToAms(m_SlopeCurrent); }
-    inline double GetSlopeStartupCurrentSp() {
+    inline double GetSlopeCurrentSp() const {
+        return SlopeRawToAms(m_SlopeCurrent);
+    }
+    inline double GetSlopeStartupCurrentSp() const {
         return SlopeRawToAms(m_SlopeStartupCurrent);
     }
-    inline double GetSlopeCurrentMin() {
+    inline double GetSlopeCurrentMin() const {
         return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MIN_RAW));
     }
-    inline double GetSlopeCurrentMax() {
+    inline double GetSlopeCurrentMax() const {
         return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MAX_RAW));
     }
 
@@ -468,10 +460,10 @@ class Readings {
     int         getSysOutVoltEnable();
 
     /** Calling these functions on a TopCon Slave will have no effect. */
-    void setSysCurrentRef(double);
-    void setSysVoltageRef(double);
-    void setSysResistanceRef(double);
-    void setSysPowerRef(double);
-    void setSysOutVoltEnable(unsigned int);
+    void setSysCurrentRef(const double);
+    void setSysVoltageRef(const double);
+    void setSysResistanceRef(const double);
+    void setSysPowerRef(const double);
+    void setSysOutVoltEnable(const unsigned int);
 };
 } // namespace Regatron
