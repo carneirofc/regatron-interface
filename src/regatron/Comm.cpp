@@ -54,8 +54,8 @@ std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
 
 void Comm::autoConnect() {
     if (m_AutoReconnect && !m_Connected) {
-        auto now       = std::chrono::system_clock::now();
-        auto timeDelta = now - m_AutoReconnectAttemptTime;
+        const auto now       = std::chrono::system_clock::now();
+        const auto timeDelta = now - m_AutoReconnectAttemptTime;
 
         if (timeDelta < AUTOCONNECT_INTERVAL) {
             LOG_TRACE(
