@@ -5,8 +5,8 @@ static constexpr int HISTORY_MAX_ENTRIES = 300;
 static constexpr float HISTORY_NANO_MILLI_CTE = 0.05F;
 
 // ----------------------- Slope Voltage ---------------------------
-bool Readings::SetSlopeVoltRaw(double valRaw) {
-    auto rawVolt = static_cast<unsigned int>(valRaw);
+bool Readings::SetSlopeVoltRaw(const double valRaw) {
+    const auto rawVolt = static_cast<unsigned int>(valRaw);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set voltage slope, "{}" is out of range "{}"<=x<="{}.)",
@@ -17,8 +17,8 @@ bool Readings::SetSlopeVoltRaw(double valRaw) {
     return true;
 }
 
-bool Readings::SetSlopeStartupVoltRaw(double valRaw) {
-    auto rawVolt = static_cast<unsigned int>(valRaw);
+bool Readings::SetSlopeStartupVoltRaw(const double valRaw) {
+    const auto rawVolt = static_cast<unsigned int>(valRaw);
     if (rawVolt < SLOPE_MIN_RAW || rawVolt > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup voltage slope, "{}" is out of range "{}"<=x<="{}.)",
@@ -29,8 +29,8 @@ bool Readings::SetSlopeStartupVoltRaw(double valRaw) {
     return true;
 }
 
-bool Readings::SetSlopeVoltMs(double valMs) {
-    unsigned int rawVoltMs = SlopeVmsToRaw(valMs);
+bool Readings::SetSlopeVoltMs(const double valMs) {
+    const unsigned int rawVoltMs = SlopeVmsToRaw(valMs);
     if (rawVoltMs < SLOPE_MIN_RAW || rawVoltMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope V/ms to "{}", raw conversion is out of range "{}".)",
@@ -42,8 +42,8 @@ bool Readings::SetSlopeVoltMs(double valMs) {
     return true;
 }
 
-bool Readings::SetSlopeStartupVoltMs(double valMs) {
-    unsigned int rawVoltMs = SlopeVmsToRaw(valMs);
+bool Readings::SetSlopeStartupVoltMs(const double valMs) {
+    const unsigned int rawVoltMs = SlopeVmsToRaw(valMs);
     if (rawVoltMs < SLOPE_MIN_RAW || rawVoltMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup slope V/ms to "{}", raw conversion is out of range "{}".)",
@@ -92,8 +92,8 @@ std::string Readings::GetSlopeVolt() {
 }
 
 // ----------------------- Slope Current ---------------------------
-bool Readings::SetSlopeCurrentRaw(double valRaw) {
-    auto rawCurrent = static_cast<unsigned int>(valRaw);
+bool Readings::SetSlopeCurrentRaw(const double valRaw) {
+    const auto rawCurrent = static_cast<unsigned int>(valRaw);
     if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set current slope, "{}" is out of range "{}"<=x<="{}.)",
@@ -104,8 +104,8 @@ bool Readings::SetSlopeCurrentRaw(double valRaw) {
     return true;
 }
 
-bool Readings::SetSlopeStartupCurrentRaw(double valRaw) {
-    auto rawCurrent = static_cast<unsigned int>(valRaw);
+bool Readings::SetSlopeStartupCurrentRaw(const double valRaw) {
+    const auto rawCurrent = static_cast<unsigned int>(valRaw);
     if (rawCurrent < SLOPE_MIN_RAW || rawCurrent > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set current startup slope, "{}" is out of range "{}"<=x<="{}.)",
@@ -116,8 +116,8 @@ bool Readings::SetSlopeStartupCurrentRaw(double valRaw) {
     return true;
 }
 
-bool Readings::SetSlopeCurrentMs(double valMs) {
-    unsigned int rawCurrentMs = SlopeAmsToRaw(valMs);
+bool Readings::SetSlopeCurrentMs(const double valMs) {
+    const unsigned int rawCurrentMs = SlopeAmsToRaw(valMs);
     if (rawCurrentMs < SLOPE_MIN_RAW || rawCurrentMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set slope A/ms to "{}", raw conversion is out of range "{}".)",
@@ -129,8 +129,8 @@ bool Readings::SetSlopeCurrentMs(double valMs) {
     return true;
 }
 
-bool Readings::SetSlopeStartupCurrentMs(double valMs) {
-    unsigned int rawCurrentMs = SlopeAmsToRaw(valMs);
+bool Readings::SetSlopeStartupCurrentMs(const double valMs) {
+    const unsigned int rawCurrentMs = SlopeAmsToRaw(valMs);
     if (rawCurrentMs < SLOPE_MIN_RAW || rawCurrentMs > SLOPE_MAX_RAW) {
         LOG_CRITICAL(
             R"(Failed to set startup slope A/ms to "{}", raw conversion is out of range "{}".)",

@@ -7,13 +7,26 @@ namespace Regatron {
 Comm::Comm(int port)
     : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
       m_CommStatus{CommStatus::Disconncted}, m_AutoReconnect(true),
-      m_Connected(false) {}
+      m_Connected(false), m_PortNrFound(-1),
+      // Increment (internal usage)
+      incDevVoltage(0.0), incDevCurrent(0.0), incDevPower(0.0),
+      incDevResistance(0.0), incSysVoltage(0.0), incSysCurrent(0.0),
+      incSysPower(0.0), incSysResistance(0.0),
+      m_AutoReconnectAttemptTime(std::chrono::system_clock::now()),
+      m_AutoReconnectInterval(std::chrono::seconds{15}) {}
 
 Comm::Comm() : Comm(1) {}
 
 Comm::~Comm() {
     disconnect();
     LOG_DEBUG("Comm object destroyed!");
+}
+
+void Comm::SetAutoReconnectInterval(std::chrono::seconds&& seconds) {
+    m_AutoReconnectInterval = seconds;
+}
+std::chrono::seconds Comm::GetAutoReconnectInterval() const {
+    return m_AutoReconnectInterval;
 }
 
 void Comm::disconnect() {
@@ -50,14 +63,14 @@ std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
 
 void Comm::autoConnect() {
     if (m_AutoReconnect && !m_Connected) {
-        auto now       = std::chrono::system_clock::now();
-        auto timeDelta = now - m_AutoReconnectAttemptTime;
+        const auto now       = std::chrono::system_clock::now();
+        const auto timeDelta = now - m_AutoReconnectAttemptTime;
 
-        if (timeDelta < AUTOCONNECT_INTERVAL) {
+        if (timeDelta < m_AutoReconnectInterval) {
             LOG_TRACE(
                 R"(autoconnect: timeout is active for more "{} s", ignoring atempt.)",
                 (std::chrono::duration_cast<std::chrono::seconds>(
-                     AUTOCONNECT_INTERVAL - timeDelta))
+                     m_AutoReconnectInterval - timeDelta))
                     .count());
             return;
         }

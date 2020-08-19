@@ -17,7 +17,9 @@ class Server {
 
     Server(std::shared_ptr<Net::Handler> handler,
            const short unsigned int      tcpPort);
+#if __linux__
     Server(std::shared_ptr<Net::Handler> handler, const char *unixEndpoint);
+#endif
     void listen();
     void shutdown();
     void stop();

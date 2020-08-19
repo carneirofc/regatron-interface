@@ -2,27 +2,26 @@
 
 namespace Regatron {
 
-Match::Match(const std::string commandString, const std::string setFormat,
-             std::function<std::string()>       getHandle,
-             std::function<std::string(double)> setHandle)
-    : m_CommandString(commandString),
-      m_SetFormat(setFormat),
+Match::Match(std::string &&commandString, std::string &&setFormat,
+             std::function<std::string()> &&      getHandle,
+             std::function<std::string(double)> &&setHandle)
+    : m_CommandString(commandString), m_SetFormat(setFormat),
       m_GetPattern(fmt::format("{}\n", m_CommandString)),
       m_SetPattern(fmt::format("{} {}\n", m_CommandString, m_SetFormat)),
-      m_GetHandleFunc(std::move(getHandle)),
-      m_SetHandleFunc(std::move(setHandle)) {
+      m_GetHandleFunc(getHandle),
+      m_SetHandleFunc(setHandle) {
     LOG_TRACE(toString());
 }
 
 /** @note: get only constructor */
-Match::Match(const std::string            commandString,
-             std::function<std::string()> getHandle)
-    : Match(commandString, "%lf", std::move(getHandle), nullptr) {}
+Match::Match(std::string &&                 commandString,
+             std::function<std::string()> &&getHandle)
+    : Match(std::move(commandString), "%lf", std::move(getHandle), nullptr) {}
 
 /** @note: set only constructor */
-Match::Match(const std::string                  commandString,
-             std::function<std::string(double)> setHandle)
-    : Match(commandString, "%lf", nullptr, std::move(setHandle)) {}
+Match::Match(std::string &&                       commandString,
+             std::function<std::string(double)> &&setHandle)
+    : Match(std::move(commandString), "%lf", nullptr, std::move(setHandle)) {}
 
 std::string Match::toString() const {
     return fmt::format(R"([Match](m_CommandString"{}"))", m_CommandString);
@@ -44,13 +43,6 @@ std::optional<double> Match::handleSet(const char *message) const {
     return r == 1 ? std::optional<double>{data} : std::nullopt;
 }
 
-template <class Container>
-void Match::split(const std::string &str, Container &cont) {
-    std::istringstream iss(str);
-    std::copy(std::istream_iterator<std::string>(iss),
-              std::istream_iterator<std::string>(), std::back_inserter(cont));
-}
-
 std::optional<std::string> Match::handle(const std::string &message) const {
     CommandType commandType;
 
@@ -66,16 +58,17 @@ std::optional<std::string> Match::handle(const std::string &message) const {
         commandType = CommandType::invalidCommand;
     }
 
-    if(commandType == CommandType::invalidCommand){
+    if (commandType == CommandType::invalidCommand) {
         return {};
     }
 
-    //LOG_DEBUG(R"(command: "{}" message: "{}")", m_CommandString,  message);
+    // LOG_DEBUG(R"(command: "{}" message: "{}")", m_CommandString,  message);
     INSTRUMENTATOR_PROFILE_SCOPE(m_CommandString.c_str());
-    
+
     switch (commandType) {
     default:
-        LOG_CRITICAL(R"(Logic error ! Unknown commandType at "Match::handle".)");
+        LOG_CRITICAL(
+            R"(Logic error ! Unknown commandType at "Match::handle".)");
         return {};
 
     case CommandType::getCommand: {
@@ -89,4 +82,3 @@ std::optional<std::string> Match::handle(const std::string &message) const {
 }
 
 } // namespace Regatron
-
