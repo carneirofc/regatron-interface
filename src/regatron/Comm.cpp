@@ -22,14 +22,13 @@ Comm::~Comm() {
     LOG_DEBUG("Comm object destroyed!");
 }
 
-CommStatus Comm::ReadCommStatus() {
+void Comm::ReadCommStatus() {
 	int pState{-1};
 	int pErrorNo{0};
 
 	if (DllGetStatus(&pState, &pErrorNo) != DLL_SUCCESS) {
-		LOG_WARN("DLL: Failed to get DLL status.");
-		m_CommStatus = CommStatus::IOCCommmandFail;
-		return m_CommStatus;
+		LOG_WARN(R"(DLL: Failed to get DLL status. CommStatus set to "Disconnected")");
+		m_CommStatus = CommStatus::Disconncted;
 	}
 
 	switch (pState) {
@@ -49,11 +48,11 @@ CommStatus Comm::ReadCommStatus() {
 		m_CommStatus = CommStatus::DLLCommandExecutionFail;
 		break;
 	default:
+        // We should never get to this point...
 		LOG_WARN(R"(Unknown DLL Status. State="{}", ErrorNo="{}")", pState,
 				 pErrorNo);
-		m_CommStatus = CommStatus::IOCCommmandFail;
+		m_CommStatus = CommStatus::Disconncted;
 	}
-	return m_CommStatus;
 }
 
 void       Comm::SetAutoReconnectInterval(std::chrono::seconds &&seconds) {
@@ -88,7 +87,7 @@ void Comm::disconnect() {
 
 std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
     if (m_CommStatus != CommStatus::Ok) {
-        LOG_ERROR(R"(Invalid DC-Link communication status "{}")",
+        LOG_ERROR(R"(Invalid DLL communication status "{}")",
                   static_cast<int>(m_CommStatus));
         return {};
     }
@@ -98,7 +97,7 @@ std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
 void Comm::autoConnect() {
     if (m_Connected && m_CommStatus != CommStatus::Ok) {
         LOG_WARN(R"(Inconsistency detected, m_Connected is "true" but CommStatus is not "Ok",)"
-            " probably the power supply has been turned off. Communication will restart soon."
+            " probably the power supply has been turned off. Forcing a communication restart..."
         );
         disconnect();
     }
@@ -109,7 +108,7 @@ void Comm::autoConnect() {
 
         if (timeDelta < m_AutoReconnectInterval) {
             LOG_TRACE(
-                R"(autoconnect: timeout is active for more "{} s", ignoring atempt.)",
+                R"(autoconnect: timeout will be active for more "{} s", ignoring attempt.)",
                 (std::chrono::duration_cast<std::chrono::seconds>(
                      m_AutoReconnectInterval - timeDelta))
                     .count());
@@ -128,8 +127,14 @@ void Comm::autoConnect() {
     }
 }
 
-CommStatus Comm::getCommStatus() const { return m_CommStatus; }
-bool       Comm::getAutoReconnect() const { return m_AutoReconnect; }
+CommStatus Comm::getCommStatus() const {
+    return m_CommStatus;
+}
+
+bool       Comm::getAutoReconnect() const {
+    return m_AutoReconnect;
+}
+
 void       Comm::setAutoReconnect(bool autoReconnect) {
     m_AutoReconnect = autoReconnect;
     LOG_TRACE(R"(autoReconnect: "{}")", m_AutoReconnect);

@@ -42,9 +42,9 @@ class Comm {
     double     incSysCurrent;    /** Increment (internal usage) */
     double     incSysPower;      /** Increment (internal usage) */
     double     incSysResistance; /** Increment (internal usage) */
-    CommStatus m_CommStatus;
-    bool       m_AutoReconnect;
-    bool       m_Connected;
+    CommStatus m_CommStatus;     /** DLL communication details */
+    bool       m_AutoReconnect;  /** Auto reconnect to device */
+    bool       m_Connected;      /** Whether we are connected to the device */
     std::chrono::time_point<std::chrono::system_clock>
          m_AutoReconnectAttemptTime;
     std::chrono::seconds m_AutoReconnectInterval;
@@ -69,7 +69,7 @@ class Comm {
      * This method will read and set the actual communication status
      * @return CommStatus
      * */
-    CommStatus ReadCommStatus();
+    void ReadCommStatus();
 
     CommStatus getCommStatus() const;
     bool       getAutoReconnect() const;
