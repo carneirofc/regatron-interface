@@ -124,7 +124,7 @@ class Readings {
 
     // Flash Error History
     unsigned int m_FlashErrorHistoryMaxEntries;
-    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry);
+    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const;
 
   public:
     // Slope
@@ -379,10 +379,10 @@ class Readings {
     void readModuleErrorTree32();
 
     void   SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
-    double GetFlashErrorHistoryMaxEntries() {
+    double GetFlashErrorHistoryMaxEntries() const {
         return m_FlashErrorHistoryMaxEntries;
     }
-    std::string GetFlashErrorHistoryEntries();
+    std::string GetFlashErrorHistoryEntries() const;
 
     /** Set Module/System calls */
     inline void selectSys() { this->selectMod(SYS_VALUES); }

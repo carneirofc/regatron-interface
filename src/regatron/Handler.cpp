@@ -164,22 +164,19 @@ std::string Handler::handle(const std::string &message) {
         // Default not found message
         LOG_WARN(R"(No match for message "{}")", message);
         return NACK;
-    } catch (const CommException &e) {
 
-        // Try to identify if we should disconnect
+    } catch (const CommException &e) {
         LOG_CRITICAL(
             R"(CommException: Regatron communication exception "{}" when handling message "{}". Device TCIO will be closed.)",
             e.what(), message);
 
+        // Update the communication status for logging
         m_RegatronComm->ReadCommStatus();
 
-        // When the communication con no longer be used
-        if (m_RegatronComm->getCommStatus() != CommStatus::Ok &&
-            m_RegatronComm->getCommStatus() != CommStatus::Disconncted) {
+        LOG_CRITICAL(R"(Device TCIO will be closed, comm status "{}")", m_RegatronComm->getCommStatus());
 
-            LOG_CRITICAL(R"(Device TCIO will be closed)");
-            m_RegatronComm->disconnect();
-        }
+        // Reset communication and DLL
+        m_RegatronComm->disconnect();
 
     } catch (const std::invalid_argument &e) {
         LOG_CRITICAL(
