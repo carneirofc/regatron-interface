@@ -15,7 +15,7 @@
 #include "regatron/Handler.hpp"
 #include "utils/Instrumentator.hpp"
 
-constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0.2";
+constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0.3";
 constexpr const char *USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands. On Windows, as to be expected, only TCP servers are available.
@@ -38,7 +38,7 @@ When using TCP connections, the server welcome port will be 20000 + <regatron_po
     Options:
       -h --help                   Show this screen.
       --version                   Show version.
-      --reconnect_interval=<sec>  Interval in seconds between reconnect attempts [default: 15].
+      --reconnect_interval=<sec>  Interval in seconds between reconnect attempts [default: 60].
 
 )";
 
