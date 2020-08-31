@@ -22,7 +22,41 @@ Comm::~Comm() {
     LOG_DEBUG("Comm object destroyed!");
 }
 
-void Comm::SetAutoReconnectInterval(std::chrono::seconds&& seconds) {
+CommStatus Comm::ReadCommStatus() {
+	int pState{-1};
+	int pErrorNo{0};
+
+	if (DllGetStatus(&pState, &pErrorNo) != DLL_SUCCESS) {
+		LOG_WARN("DLL: Failed to get DLL status.");
+		m_CommStatus = CommStatus::IOCCommmandFail;
+		return m_CommStatus;
+	}
+
+	switch (pState) {
+	case DLL_STATUS_OK:
+		m_CommStatus = CommStatus::Ok;
+		break;
+
+	case DLL_STATUS_COMMUNICATION_ERROR:
+		LOG_WARN(R"(DLL Communication Error. State="{}", ErrorNo="{}")",
+				 pState, pErrorNo);
+		m_CommStatus = CommStatus::DLLCommunicationFail;
+		break;
+
+	case DLL_STATUS_COMMAND_EXECUTION_ERROR:
+		LOG_WARN(R"(DLL Command Execution Error. State="{}", ErrorNo="{}")",
+				 pState, pErrorNo);
+		m_CommStatus = CommStatus::DLLCommandExecutionFail;
+		break;
+	default:
+		LOG_WARN(R"(Unknown DLL Status. State="{}", ErrorNo="{}")", pState,
+				 pErrorNo);
+		m_CommStatus = CommStatus::IOCCommmandFail;
+	}
+	return m_CommStatus;
+}
+
+void       Comm::SetAutoReconnectInterval(std::chrono::seconds &&seconds) {
     m_AutoReconnectInterval = seconds;
 }
 std::chrono::seconds Comm::GetAutoReconnectInterval() const {
@@ -62,6 +96,13 @@ std::optional<std::shared_ptr<Regatron::Readings>> Comm::getReadings() {
 }
 
 void Comm::autoConnect() {
+    if (m_Connected && m_CommStatus != CommStatus::Ok) {
+        LOG_WARN(R"(Inconsistency detected, m_Connected is "true" but CommStatus is not "Ok",)"
+            " probably the power supply has been turned off. Communication will restart soon."
+        );
+        disconnect();
+    }
+
     if (m_AutoReconnect && !m_Connected) {
         const auto now       = std::chrono::system_clock::now();
         const auto timeDelta = now - m_AutoReconnectAttemptTime;
@@ -78,8 +119,8 @@ void Comm::autoConnect() {
         LOG_TRACE(R"(autoconnect: attempting to connect after "{} s".)",
                   std::chrono::duration_cast<std::chrono::seconds>(timeDelta)
                       .count());
+        m_AutoReconnectAttemptTime = now;
         try {
-            m_AutoReconnectAttemptTime = now;
             connect();
         } catch (const CommException &e) {
             LOG_ERROR(R"(autoconnect: Failed to connect "{}")", e.what());
@@ -146,7 +187,7 @@ bool Comm::connect(int fromPort, int toPort) {
     if (DllGetCommTimeouts(&readTout, &writeTout) != DLL_SUCCESS) {
         throw CommException(R"("Failed to get actual DLL comm timeouts.")");
     }
-    LOG_TRACE(R"(Timeoute after configuration: "read={}" "write={}".)",
+    LOG_TRACE(R"(Timeout after configuration: "read={}" "write={}".)",
               readTout, writeTout);
 
     // hack: while eth and rs232 at the same tc device: wait 2 sec

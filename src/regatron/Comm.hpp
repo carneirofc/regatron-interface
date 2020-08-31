@@ -57,6 +57,10 @@ class Comm {
     bool connect();
     bool connect(int port);
     bool connect(int fromPort, int toPort);
+
+    /** Will call DLLClose(), reset internal usage variables, set m_PortNrFound to -1,
+        set m_Connected to false and m_CommStatus to CommStatus::Disconnected.
+    */
     void disconnect();
 
     void SetAutoReconnectInterval(std::chrono::seconds&& seconds);
@@ -65,40 +69,7 @@ class Comm {
      * This method will read and set the actual communication status
      * @return CommStatus
      * */
-    CommStatus ReadCommStatus() {
-
-        int pState{-1};
-        int pErrorNo{0};
-
-        if (DllGetStatus(&pState, &pErrorNo) != DLL_SUCCESS) {
-            LOG_WARN("DLL: Failed to get DLL status.");
-            m_CommStatus = CommStatus::IOCCommmandFail;
-            return m_CommStatus;
-        }
-
-        switch (pState) {
-        case DLL_STATUS_OK:
-            m_CommStatus = CommStatus::Ok;
-            break;
-
-        case DLL_STATUS_COMMUNICATION_ERROR:
-            LOG_WARN(R"(DLL Communication Error. State="{}", ErrorNo="{}")",
-                     pState, pErrorNo);
-            m_CommStatus = CommStatus::DLLCommunicationFail;
-            break;
-
-        case DLL_STATUS_COMMAND_EXECUTION_ERROR:
-            LOG_WARN(R"(DLL Command Execution Error. State="{}", ErrorNo="{}")",
-                     pState, pErrorNo);
-            m_CommStatus = CommStatus::DLLCommandExecutionFail;
-            break;
-        default:
-            LOG_WARN(R"(Unknown DLL Status. State="{}", ErrorNo="{}")", pState,
-                     pErrorNo);
-            m_CommStatus = CommStatus::IOCCommmandFail;
-        }
-        return m_CommStatus;
-    }
+    CommStatus ReadCommStatus();
 
     CommStatus getCommStatus() const;
     bool       getAutoReconnect() const;
