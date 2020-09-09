@@ -48,6 +48,7 @@ class Comm {
     std::chrono::time_point<std::chrono::system_clock>
          m_AutoReconnectAttemptTime;
     std::chrono::seconds m_AutoReconnectInterval;
+    bool                 m_InitialConnection = true;
     void InitializeDLL();
 
   public:
