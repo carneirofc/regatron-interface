@@ -378,8 +378,8 @@ class Readings {
     void readSystemErrorTree32();
     void readModuleErrorTree32();
 
-    void   SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
-    double GetFlashErrorHistoryMaxEntries() const {
+    void            SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
+    unsigned int    GetFlashErrorHistoryMaxEntries() const {
         return m_FlashErrorHistoryMaxEntries;
     }
     std::string GetFlashErrorHistoryEntries() const;

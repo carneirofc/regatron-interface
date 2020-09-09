@@ -15,7 +15,7 @@
 #include "regatron/Handler.hpp"
 #include "utils/Instrumentator.hpp"
 
-constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0.3";
+constexpr const char *VERSION_STRING = "CONS - Regatron Interface v1.0.5";
 constexpr const char *USAGE =
     R"(Regatron Interface.
 Will start a TCP or an UNIX server and listen to commands. On Windows, as to be expected, only TCP servers are available.
