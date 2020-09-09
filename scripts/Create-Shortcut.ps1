@@ -3,9 +3,35 @@ $Version = "v1.0.5"
 $DistPath = "$Home\Documents\Regatron\v1.0.5"
 
 $Dipoles = @(
+    [pscustomobject]@{Port='101';Device='1A'}
+    [pscustomobject]@{Port='102';Device='1B'}
+    [pscustomobject]@{Port='103';Device='2A'}
+    [pscustomobject]@{Port='104';Device='2B'}
+    [pscustomobject]@{Port='105';Device='3A'}
+    [pscustomobject]@{Port='106';Device='3B'}
+    [pscustomobject]@{Port='107';Device='4A'}
+    [pscustomobject]@{Port='108';Device='4B'}
+    [pscustomobject]@{Port='109';Device='1A'}
+    [pscustomobject]@{Port='110';Device='1B'}
+    [pscustomobject]@{Port='111';Device='2A'}
+    [pscustomobject]@{Port='112';Device='2B'}
+    [pscustomobject]@{Port='113';Device='3A'}
+    [pscustomobject]@{Port='114';Device='3B'}
+    [pscustomobject]@{Port='115';Device='4A'}
+    [pscustomobject]@{Port='116';Device='4B'}
 )
 
 $Quadrupoles = @(
+    [pscustomobject]@{Port='117';Device='QFAP'}
+    [pscustomobject]@{Port='118';Device='QFB'}
+    [pscustomobject]@{Port='119';Device='QDAP'}
+    [pscustomobject]@{Port='120';Device='QDB'}
+    [pscustomobject]@{Port='121';Device='Q13A'}
+    [pscustomobject]@{Port='122';Device='Q13B'}
+    [pscustomobject]@{Port='123';Device='Q13C'}
+    [pscustomobject]@{Port='124';Device='Q24A'}
+    [pscustomobject]@{Port='125';Device='Q24B'}
+    [pscustomobject]@{Port='126';Device='Q24C'}
 )
 
 $Sextupoles = @(
@@ -23,7 +49,7 @@ $Sextupoles = @(
     [pscustomobject]@{Port='138';Device='SFB1'}
     [pscustomobject]@{Port='139';Device='SFP12'}
     [pscustomobject]@{Port='140';Device='SFB2'}
-    
+
 )
 
 function CreateShortcut {
@@ -41,11 +67,14 @@ function CreateShortcut {
 }
 
 ForEach($d in $Dipoles){
+    New-Item -ItemType Directory -Force -Path "$Home\Desktop\Dipoles"
     CreateShortcut $DistPath $($d.Port) "$Home\Desktop\Dipoles\COM$($d.Port) $Version - $($d.Device).lnk" "Dipoles $Version"
 }
 ForEach($d in $Quadrupoles){
+    New-Item -ItemType Directory -Force -Path "$Home\Desktop\Quadrupoles"
     CreateShortcut $DistPath $($d.Port) "$Home\Desktop\Quadrupoles\COM$($d.Port) $Version - $($d.Device).lnk" "Quadrupoles $Version"
 }
 ForEach($d in $Sextupoles){
+    New-Item -ItemType Directory -Force -Path "$Home\Desktop\Sextupoles"
     CreateShortcut $DistPath $($d.Port) "$Home\Desktop\Sextupoles\COM$($d.Port) $Version - $($d.Device).lnk" "Sextupoles $Version"
 }
