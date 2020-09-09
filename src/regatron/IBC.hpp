@@ -15,7 +15,7 @@ class IBC {
     static constexpr unsigned int IBC_STATE_INVALID  = 0x0001;
     static constexpr unsigned int IBC_STATE_POWER_UP = 0x0004;
     static constexpr unsigned int IBC_STATE_READY    = 0x0010;
-    static constexpr unsigned int IBC_STATE_RUNNING  = 0x010;
+    static constexpr unsigned int IBC_STATE_RUNNING  = 0x0010;
     static constexpr unsigned int IBC_STATE_WARNING  = 0x0400;
     static constexpr unsigned int IBC_STATE_ERROR    = 0x1000;
     static constexpr unsigned int IBC_STATE_STOPPED  = 0x4000;

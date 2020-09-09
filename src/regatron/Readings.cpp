@@ -550,7 +550,7 @@ void Readings::readPrimaryCurrent() {
     m_PrimaryCurrentMon = (static_cast<double>(primaryCurrent) * static_cast<double>(m_PrimaryCurrentPhysNom)) / NORM_MAX;
 }
 
-std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry){
+std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const {
     return fmt::format(R"(T_ErrorHistoryEntry(entryCounter={},day={},hour={},minute={},second={},counter50us={},group={},detail={},identifier={}))",
         entry->entryCounter, entry->day,  entry->hour,
         entry->minute, entry->second, entry->counter50us, 
@@ -570,7 +570,7 @@ void Readings::SetFlashErrorHistoryMaxEntries(unsigned int maxEntries) {
     m_FlashErrorHistoryMaxEntries = maxEntries;
 }
 
-std::string Readings::GetFlashErrorHistoryEntries() {
+std::string Readings::GetFlashErrorHistoryEntries() const {
 
     T_ErrorHistoryEntry entry{};
     unsigned int nEntries{0};
@@ -605,10 +605,7 @@ std::string Readings::GetFlashErrorHistoryEntries() {
 
         LOG_INFO("{}) {}", nEntry, ErrorHistoryEntryToString(&entry));
 
-        //if (((nEntry + 1) != nEntries) &&
-        //    ((nEntry + 1) != m_FlashErrorHistoryMaxEntries)) {
-            oss << ' ';
-        //}
+        oss << ' ';
     }
 
     oss << ']';

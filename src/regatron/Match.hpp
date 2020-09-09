@@ -42,9 +42,6 @@ class Match {
           std::function<std::string()>&&       getHandle,
           std::function<std::string(double)>&& setHandle);
 
-    template <class Container>
-    void split(const std::string &str, Container &cont);
-
   public:
     /** @note: get only constructor */
     Match(std::string&&            commandString,
