@@ -106,7 +106,7 @@ void Comm::autoConnect() {
         const auto now       = std::chrono::system_clock::now();
         const auto timeDelta = now - m_AutoReconnectAttemptTime;
 
-        if (timeDelta < m_AutoReconnectInterval) {
+        if ((timeDelta < m_AutoReconnectInterval) && !m_InitialConnection) {
             LOG_TRACE(
                 R"(autoconnect: timeout will be active for more "{} s", ignoring attempt.)",
                 (std::chrono::duration_cast<std::chrono::seconds>(
@@ -120,6 +120,7 @@ void Comm::autoConnect() {
                       .count());
         m_AutoReconnectAttemptTime = now;
         try {
+            m_InitialConnection = false;
             connect();
         } catch (const CommException &e) {
             LOG_ERROR(R"(autoconnect: Failed to connect "{}")", e.what());
