@@ -2,6 +2,12 @@
 $Version = "v1.0.5"
 $DistPath = "$Home\Documents\Regatron\v1.0.5"
 
+$Dipoles = @(
+)
+
+$Quadrupoles = @(
+)
+
 $Sextupoles = @(
     [pscustomobject]@{Port='127';Device='SDAP0'}
     [pscustomobject]@{Port='128';Device='SDB0'}
@@ -34,6 +40,12 @@ function CreateShortcut {
     $Shortcut.Save()
 }
 
+ForEach($d in $Dipoles){
+    CreateShortcut $DistPath $($d.Port) "$Home\Desktop\Dipoles\COM$($d.Port) $Version - $($d.Device).lnk" "Dipoles $Version"
+}
+ForEach($d in $Quadrupoles){
+    CreateShortcut $DistPath $($d.Port) "$Home\Desktop\Quadrupoles\COM$($d.Port) $Version - $($d.Device).lnk" "Quadrupoles $Version"
+}
 ForEach($d in $Sextupoles){
     CreateShortcut $DistPath $($d.Port) "$Home\Desktop\Sextupoles\COM$($d.Port) $Version - $($d.Device).lnk" "Sextupoles $Version"
 }
