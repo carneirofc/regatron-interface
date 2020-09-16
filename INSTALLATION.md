@@ -1,6 +1,24 @@
 Installation Guide
 ==================
 
+Usage
+-----------
+
+Download the latest release for your architecture.
+![Download](imgs/downloads.png)
+
+Extract the compressed file, we are interested at the contents of `bin` folder.
+![Files](imgs/arquivos.png)
+
+Create a desktop shortcut in order to simplify the usage. The command line can also be used.
+![Shortcut](imgs/atalho.png)
+
+Alter the "Destination"/"Destino" including the serial COM port number. In the example we are using COM5 so the number '5' was appended to the end of the string.
+![Parameter](imgs/parametro.png)
+
+Run the program
+![Program](imgs/programa.png)
+
 Centos OS 7
 -----------
 
