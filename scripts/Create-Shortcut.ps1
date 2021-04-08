@@ -3,22 +3,22 @@ $Version = "v1.0.5"
 $DistPath = "$Home\Documents\Regatron\v1.0.5"
 
 $Dipoles = @(
-    [pscustomobject]@{Port='101';Device='1A'}
-    [pscustomobject]@{Port='102';Device='1B'}
-    [pscustomobject]@{Port='103';Device='2A'}
-    [pscustomobject]@{Port='104';Device='2B'}
-    [pscustomobject]@{Port='105';Device='3A'}
-    [pscustomobject]@{Port='106';Device='3B'}
-    [pscustomobject]@{Port='107';Device='4A'}
-    [pscustomobject]@{Port='108';Device='4B'}
-    [pscustomobject]@{Port='109';Device='1A'}
-    [pscustomobject]@{Port='110';Device='1B'}
-    [pscustomobject]@{Port='111';Device='2A'}
-    [pscustomobject]@{Port='112';Device='2B'}
-    [pscustomobject]@{Port='113';Device='3A'}
-    [pscustomobject]@{Port='114';Device='3B'}
-    [pscustomobject]@{Port='115';Device='4A'}
-    [pscustomobject]@{Port='116';Device='4B'}
+    [pscustomobject]@{Port='101';Device='D1 1A'}
+    [pscustomobject]@{Port='102';Device='D1 1B'}
+    [pscustomobject]@{Port='103';Device='D3 2A'}
+    [pscustomobject]@{Port='104';Device='D3 2B'}
+    [pscustomobject]@{Port='105';Device='D1 3A'}
+    [pscustomobject]@{Port='106';Device='D1 3B'}
+    [pscustomobject]@{Port='107';Device='D3 4A'}
+    [pscustomobject]@{Port='108';Device='D3 4B'}
+    [pscustomobject]@{Port='109';Device='D5 1A'}
+    [pscustomobject]@{Port='110';Device='D5 1B'}
+    [pscustomobject]@{Port='111';Device='D7 2A'}
+    [pscustomobject]@{Port='112';Device='D7 2B'}
+    [pscustomobject]@{Port='113';Device='D5 3A'}
+    [pscustomobject]@{Port='114';Device='D5 3B'}
+    [pscustomobject]@{Port='115';Device='D7 4A'}
+    [pscustomobject]@{Port='116';Device='D7 4B'}
 )
 
 $Quadrupoles = @(
