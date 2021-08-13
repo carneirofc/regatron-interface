@@ -45,7 +45,7 @@ if(ENABLE_PCH)
 endif()
 
 # Set up some extra Conan dependencies based on our needs before loading Conan
-set(CONAN_EXTRA_REQUIRES "asio/1.16.1@")
+set(CONAN_EXTRA_REQUIRES "asio/1.19.2")
 set(CONAN_EXTRA_OPTIONS "")
 
 include(cmake/Conan.cmake)
