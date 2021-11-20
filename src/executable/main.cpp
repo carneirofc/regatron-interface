@@ -1,12 +1,12 @@
 //
 // Created by carneirofc on 05/12/2019.
 //
+#include <chrono>
 #include <csignal>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <stdexcept>
-#include <chrono>
 
 #include "docopt/docopt.h"
 #include "log/Logger.hpp"
@@ -54,7 +54,9 @@ int main(const int argc, const char *argv[]) {
 #endif
     int regDevPort = static_cast<int>(args.at("<regatron_port>").asLong());
 
-    Utils::Logger::Init(spdlog::level::level_enum::trace, fmt::format("RegatronCOM{:03}Log.txt", regDevPort).c_str());
+    Utils::Logger::Init(
+        spdlog::level::level_enum::trace,
+        fmt::format("RegatronCOM{:03}Log.txt", regDevPort).c_str());
 
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(regDevPort);
@@ -72,7 +74,7 @@ int main(const int argc, const char *argv[]) {
         } catch (const std::runtime_error &e) {
         }
         LOG_INFO(R"(Regatron reconnect interval at "{} seconds")",
-            regatron->GetAutoReconnectInterval().count());
+                 regatron->GetAutoReconnectInterval().count());
     }
 
     auto sighandler = +[](int signum) -> void {

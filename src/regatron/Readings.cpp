@@ -1,7 +1,8 @@
 #include "Readings.hpp"
+#include "serialiolib.h" // NOLINT
 
 namespace Regatron {
-static constexpr int HISTORY_MAX_ENTRIES = 300;
+static constexpr int   HISTORY_MAX_ENTRIES    = 300;
 static constexpr float HISTORY_NANO_MILLI_CTE = 0.05F;
 
 // ----------------------- Slope Voltage ---------------------------
@@ -59,9 +60,8 @@ bool Readings::WriteSlopeVolt() {
     if (m_SlopeVolt < SLOPE_MIN_RAW || m_SlopeVolt > SLOPE_MAX_RAW ||
         m_SlopeStartupVolt < SLOPE_MIN_RAW ||
         m_SlopeStartupVolt > SLOPE_MAX_RAW) {
-        LOG_CRITICAL(
-            R"(setVoltageRamp: Parameters must be >= {} and <={}.)",
-            SLOPE_MIN_RAW, SLOPE_MAX_RAW);
+        LOG_CRITICAL(R"(setVoltageRamp: Parameters must be >= {} and <={}.)",
+                     SLOPE_MIN_RAW, SLOPE_MAX_RAW);
         return false;
     }
     LOG_TRACE(R"(Configuring voltage slope to ({},{}) aka ({},{})V/ms)",
@@ -73,7 +73,8 @@ bool Readings::WriteSlopeVolt() {
         DLL_SUCCESS) {
         throw CommException("Failed to set voltage slopes");
     }
-    LOG_TRACE(R"(Voltage slope results are: "{}" "{}".)", m_SlopeStartupVolt, m_SlopeVolt);
+    LOG_TRACE(R"(Voltage slope results are: "{}" "{}".)", m_SlopeStartupVolt,
+              m_SlopeVolt);
     return true;
 }
 
@@ -185,79 +186,24 @@ std::string Readings::GetSlopeCurrent() {
 // -----------------------------------------------------------------------
 
 void Readings::readModuleID() {
-    if (TC4GetModuleID(&(this->m_moduleID)) != DLL_SUCCESS) {
+    if (TC4GetModuleID(&(this->m_ModuleID)) != DLL_SUCCESS) {
         throw CommException("failed to get module ID.");
     }
 }
 
-void Readings::readModuleErrorTree32() {
-    selectMod();
-    if (TC4ReadErrorTree32(&m_ModErrorTree32Mon) != DLL_SUCCESS) {
-        throw CommException("failed to get module error tree");
-    }
-    if (TC4ReadWarningTree32(&m_ModWarningTree32Mon) != DLL_SUCCESS) {
-        throw CommException("failed to get module warn tree");
-    }
-}
-
-void Readings::readModule() {
-
-    selectMod();
-    if (TC4GetVoltageAct(&m_ModActualOutVoltageMon) != DLL_SUCCESS) {
-        throw CommException("failed to get module actual output voltage");
-    }
-
-    if (TC4GetPowerAct(&m_ModActualOutPowerMon) != DLL_SUCCESS) {
-        throw CommException("failed to get module actual output power");
-    }
-
-    if (TC4GetCurrentAct(&m_ModActualOutCurrentMon) != DLL_SUCCESS) {
-        throw CommException("failed to get module actual output current");
-    }
-
-    if (TC4GetResistanceAct(&m_ModActualResMon) != DLL_SUCCESS) {
-        throw CommException("failed to get module actual resistence");
-    }
-
-    if (TC4StateActSystem(&m_ModState) != DLL_SUCCESS) {
-        throw CommException("failed to get module state");
-    }
-}
-
 void Readings::readSystemErrorTree32() {
-    selectSys();
-    if (TC4ReadErrorTree32(&m_SysErrorTree32Mon) != DLL_SUCCESS) {
-        throw CommException("failed to get system error tree");
-    }
-    if (TC4ReadWarningTree32(&m_SysWarningTree32Mon) != DLL_SUCCESS) {
-        throw CommException("failed to get system warn tree");
-    }
+    m_SysStatusReadings.ReadErrorTree32();
 }
 
-void Readings::readSystem() {
-    selectSys();
-    if (TC4GetVoltageAct(&m_SysActualOutVoltageMon) != DLL_SUCCESS) {
-        throw CommException("failed to get system actual output voltage");
-    }
-
-    if (TC4GetPowerAct(&m_SysActualOutPowerMon) != DLL_SUCCESS) {
-        throw CommException("failed to get system actual output power");
-    }
-
-    if (TC4GetCurrentAct(&m_SysActualOutCurrentMon) != DLL_SUCCESS) {
-        throw CommException("failed to get system actual output current");
-    }
-
-    if (TC4GetResistanceAct(&m_SysActualResMon) != DLL_SUCCESS) {
-        throw CommException("failed to get system actual resistence");
-    }
-
-    if (TC4StateActSystem(&m_SysState) != DLL_SUCCESS) {
-        throw CommException("failed to get system state");
-    }
+void Readings::readModuleErrorTree32() {
+    m_ModStatusReadings.ReadErrorTree32();
 }
 
-bool Readings::isMaster() const { return (m_moduleID == 0); }
+void Readings::readModule() { m_ModStatusReadings.Read(); }
+
+void Readings::readSystem() { m_SysStatusReadings.Read(); }
+
+bool Readings::isMaster() const { return (m_ModuleID == 0); }
 
 void Readings::readAdditionalPhys() {
     if (TC4GetAdditionalPhysicalValues(&m_DCLinkPhysNom,
@@ -267,127 +213,41 @@ void Readings::readAdditionalPhys() {
     }
 }
 
-void Readings::readModulePhys() {
-    if (TC4GetModulePhysicalLimitMax(&m_ModVoltagePhysMax, &m_ModCurrentPhysMax,
-                                     &m_ModPowerPhysMax,
-                                     &m_ModResistancePhysMax) != DLL_SUCCESS) {
-        throw CommException(
-            "failed to get module physical max limit values.");
-    }
+void Readings::readModulePhys() { m_ModStatusReadings.ReadPhys(); }
 
-    if (TC4GetModulePhysicalLimitMin(&m_ModVoltagePhysMin, &m_ModCurrentPhysMin,
-                                     &m_ModPowerPhysMin,
-                                     &m_ModResistancePhysMin) != DLL_SUCCESS) {
-        throw CommException(
-            "failed to get module physical min limit values.");
-    }
-
-    if (TC4GetModulePhysicalLimitNom(&m_ModVoltagePhysNom, &m_ModCurrentPhysNom,
-                                     &m_ModPowerPhysNom,
-                                     &m_ModResistancePhysNom) != DLL_SUCCESS) {
-        throw CommException(
-            "failed to get module physical nominal values.");
-    }
-}
-
-void Readings::readSystemPhys() {
-
-    if (TC4GetSystemPhysicalLimitMax(&m_SysVoltagePhysMax, &m_SysCurrentPhysMax,
-                                     &m_SysPowerPhysMax,
-                                     &m_SysResistancePhysMax) != DLL_SUCCESS) {
-        throw CommException(
-            "failed to get system physical max limit values.");
-    }
-
-    if (TC4GetSystemPhysicalLimitMin(&m_SysVoltagePhysMin, &m_SysCurrentPhysMin,
-                                     &m_SysPowerPhysMin,
-                                     &m_SysResistancePhysMin) != DLL_SUCCESS) {
-        throw CommException(
-            "failed to get system physical min limit values.");
-    }
-
-    if (TC4GetSystemPhysicalLimitNom(&m_SysVoltagePhysNom, &m_SysCurrentPhysNom,
-                                     &m_SysPowerPhysNom,
-                                     &m_SysResistancePhysNom) != DLL_SUCCESS) {
-        throw CommException(
-            "failed to get system physical nominal values.");
-    }
-}
+void Readings::readSystemPhys() { m_SysStatusReadings.ReadPhys(); }
 
 std::string Readings::getSysMinMaxNom() {
-    return fmt::format(
-        R"([{},{},{},{},{},{},{},{},{},{},{},{}])", m_SysVoltagePhysMin,
-        m_SysCurrentPhysMin, m_SysPowerPhysMin, m_SysResistancePhysMin,
-        m_SysVoltagePhysMax, m_SysCurrentPhysMax, m_SysPowerPhysMax,
-        m_SysResistancePhysMax, m_SysVoltagePhysNom, m_SysCurrentPhysNom,
-        m_SysPowerPhysNom, m_SysResistancePhysNom);
+    return m_SysStatusReadings.GetMinMaxNomString();
 }
-
 std::string Readings::getModMinMaxNom() {
-    return fmt::format(
-        R"([{},{},{},{},{},{},{},{},{},{},{},{}])", m_ModVoltagePhysMin,
-        m_ModCurrentPhysMin, m_ModPowerPhysMin, m_ModResistancePhysMin,
-        m_ModVoltagePhysMax, m_ModCurrentPhysMax, m_ModPowerPhysMax,
-        m_ModResistancePhysMax, m_ModVoltagePhysNom, m_ModCurrentPhysNom,
-        m_ModPowerPhysNom, m_ModResistancePhysNom);
+    return m_ModStatusReadings.GetMinMaxNomString();
 }
 
 double Readings::getModCurrentRef() {
-    selectMod();
-    if (TC4GetCurrentRef(&m_ModCurrentRef) != DLL_SUCCESS) {
-        throw CommException("failed to read module current referece");
-    }
-    return m_ModCurrentRef;
+    return m_ModStatusReadings.GetCurrentRef();
 }
 double Readings::getModVoltageRef() {
-    selectMod();
-    if (TC4GetVoltageRef(&m_ModVoltageRef) != DLL_SUCCESS) {
-        throw CommException("failed to read module voltage referece");
-    }
-    return m_ModVoltageRef;
+    return m_ModStatusReadings.GetVoltageRef();
 }
 double Readings::getModResistanceRef() {
-    selectMod();
-    if (TC4GetResistanceRef(&m_ModResRef) != DLL_SUCCESS) {
-        throw CommException("failed to read module resitance referece");
-    }
-    return m_ModResRef;
+    return m_ModStatusReadings.GetResistanceRef();
 }
 double Readings::getModPowerRef() {
-    selectMod();
-    if (TC4GetPowerRef(&m_ModPowerRef) != DLL_SUCCESS) {
-        throw CommException("failed to read module voltage referece");
-    }
-    return m_ModPowerRef;
+    return m_ModStatusReadings.GetPowerRef();
 }
 
 double Readings::getSysCurrentRef() {
-    selectSys();
-    if (TC4GetCurrentRef(&m_SysCurrentRef) != DLL_SUCCESS) {
-        throw CommException("failed to read system current referece");
-    }
-    return m_SysCurrentRef;
+    return m_SysStatusReadings.GetCurrentRef();
 }
 double Readings::getSysVoltageRef() {
-    selectSys();
-    if (TC4GetVoltageRef(&m_SysVoltageRef) != DLL_SUCCESS) {
-        throw CommException("failed to read system voltage referece");
-    }
-    return m_SysVoltageRef;
+    return m_SysStatusReadings.GetVoltageRef();
 }
 double Readings::getSysResistanceRef() {
-    selectSys();
-    if (TC4GetResistanceRef(&m_SysResRef) != DLL_SUCCESS) {
-        throw CommException("failed to read system resitance referece");
-    }
-    return m_SysResRef;
+    return m_SysStatusReadings.GetResistanceRef();
 }
 double Readings::getSysPowerRef() {
-    selectSys();
-    if (TC4GetPowerRef(&m_SysPowerRef) != DLL_SUCCESS) {
-        throw CommException("failed to read system voltage referece");
-    }
-    return m_SysPowerRef;
+    return m_SysStatusReadings.GetPowerRef();
 }
 
 void Readings::setSysCurrentRef(double value /* [A] */) {
@@ -416,53 +276,11 @@ void Readings::setSysResistanceRef(double value /* [mOhm] */) {
 }
 
 std::string Readings::getModTree() {
-    std::ostringstream oss;
-    readModuleErrorTree32();
-
-    // Error
-    oss << '[' << m_ModErrorTree32Mon.group << ',';
-    for (const auto &error : m_ModErrorTree32Mon.error) {
-        oss << error;
-        oss << ',';
-    }
-
-    // Warning
-    int idx{0};
-    oss << m_ModWarningTree32Mon.group << ',';
-    for (const auto &error : m_ModWarningTree32Mon.error) {
-        oss << error;
-        idx++;
-        if (idx < errorTree32Len) {
-            oss << ',';
-        }
-    }
-    oss << ']';
-    return oss.str();
+    return m_ModStatusReadings.GetErrorTreeString();
 }
 
 std::string Readings::getSysTree() {
-    std::ostringstream oss;
-    readSystemErrorTree32();
-
-    // Error
-    oss << '[' << m_SysErrorTree32Mon.group << ',';
-    for (const auto &error : m_SysErrorTree32Mon.error) {
-        oss << error;
-        oss << ',';
-    }
-
-    // Warning
-    int idx{0};
-    oss << m_SysWarningTree32Mon.group << ',';
-    for (const auto &error : m_SysWarningTree32Mon.error) {
-        oss << error;
-        idx++;
-        if (idx < errorTree32Len) {
-            oss << ',';
-        }
-    }
-    oss << ']';
-    return oss.str();
+    return m_SysStatusReadings.GetErrorTreeString();
 }
 
 void Readings::setSysOutVoltEnable(unsigned int state) {
@@ -496,8 +314,12 @@ void Readings::readTemperature() {
         throw CommException(
             "failed to read IBC Inverter heatsink temperature.");
     }*/
-    m_IGBTTempMon      = (static_cast<double>(igbtTemp) * static_cast<double>(m_TemperaturePhysNom)) / NORM_MAX;
-    m_RectifierTempMon = (static_cast<double>(rectTemp) * static_cast<double>(m_TemperaturePhysNom)) / NORM_MAX;
+    m_IGBTTempMon = (static_cast<double>(igbtTemp) *
+                     static_cast<double>(m_TemperaturePhysNom)) /
+                    NORM_MAX;
+    m_RectifierTempMon = (static_cast<double>(rectTemp) *
+                          static_cast<double>(m_TemperaturePhysNom)) /
+                         NORM_MAX;
 }
 
 /**
@@ -516,17 +338,11 @@ std::string Readings::getTemperatures() {
 }
 
 std::string Readings::getModReadings() {
-    readModule();
-    return fmt::format(R"([{},{},{},{},{}])", m_ModActualOutVoltageMon,
-                       m_ModActualOutCurrentMon, m_ModActualOutPowerMon,
-                       m_ModActualResMon, m_ModState);
+    return m_ModStatusReadings.GetReadingsString();
 }
 
 std::string Readings::getSysReadings() {
-    readSystem();
-    return fmt::format(R"([{},{},{},{},{}])", m_SysActualOutVoltageMon,
-                       m_SysActualOutCurrentMon, m_SysActualOutPowerMon,
-                       m_SysActualResMon, m_SysState);
+    return m_SysStatusReadings.GetReadingsString();
 }
 
 /**
@@ -539,7 +355,9 @@ void Readings::readDCLinkVoltage() {
     if (TC4GetDCLinkDigital(&DCLinkVoltStd) != DLL_SUCCESS) {
         throw CommException("failed to read DCLink digital voltage.");
     }
-    m_DCLinkVoltageMon = (static_cast<double>(DCLinkVoltStd) * static_cast<double>(m_DCLinkPhysNom)) / NORM_MAX;
+    m_DCLinkVoltageMon = (static_cast<double>(DCLinkVoltStd) *
+                          static_cast<double>(m_DCLinkPhysNom)) /
+                         NORM_MAX;
 }
 
 void Readings::readPrimaryCurrent() {
@@ -547,14 +365,18 @@ void Readings::readPrimaryCurrent() {
     if (TC4GetIPrimDigital(&primaryCurrent) != DLL_SUCCESS) {
         throw CommException("failed to read transformer primary current.");
     }
-    m_PrimaryCurrentMon = (static_cast<double>(primaryCurrent) * static_cast<double>(m_PrimaryCurrentPhysNom)) / NORM_MAX;
+    m_PrimaryCurrentMon = (static_cast<double>(primaryCurrent) *
+                           static_cast<double>(m_PrimaryCurrentPhysNom)) /
+                          NORM_MAX;
 }
 
-std::string Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const {
-    return fmt::format(R"(T_ErrorHistoryEntry(entryCounter={},day={},hour={},minute={},second={},counter50us={},group={},detail={},identifier={}))",
-        entry->entryCounter, entry->day,  entry->hour,
-        entry->minute, entry->second, entry->counter50us, 
-        entry->group, entry->detail, entry->identifier);
+std::string
+Readings::ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const {
+    return fmt::format(
+        R"(T_ErrorHistoryEntry(entryCounter={},day={},hour={},minute={},second={},counter50us={},group={},detail={},identifier={}))",
+        entry->entryCounter, entry->day, entry->hour, entry->minute,
+        entry->second, entry->counter50us, entry->group, entry->detail,
+        entry->identifier);
 }
 
 void Readings::SetFlashErrorHistoryMaxEntries(unsigned int maxEntries) {
@@ -573,8 +395,8 @@ void Readings::SetFlashErrorHistoryMaxEntries(unsigned int maxEntries) {
 std::string Readings::GetFlashErrorHistoryEntries() const {
 
     T_ErrorHistoryEntry entry{};
-    unsigned int nEntries{0};
-    signed int error{0};
+    unsigned int        nEntries{0};
+    signed int          error{0};
 
     std::ostringstream oss;
     oss << '[';
@@ -588,12 +410,14 @@ std::string Readings::GetFlashErrorHistoryEntries() const {
     for (unsigned int nEntry = 0;
          ((nEntry < nEntries) && (nEntry < m_FlashErrorHistoryMaxEntries));
          nEntry++) {
-        if(nEntry == 0){
-            if (TC4GetFlashErrorHistoryFirstEntry(&entry, &error) != DLL_SUCCESS) {
+        if (nEntry == 0) {
+            if (TC4GetFlashErrorHistoryFirstEntry(&entry, &error) !=
+                DLL_SUCCESS) {
                 throw CommException("failed to read entry.");
             }
-        }else{
-            if (TC4GetFlashErrorHistoryNextEntry(&entry, &error) != DLL_SUCCESS) {
+        } else {
+            if (TC4GetFlashErrorHistoryNextEntry(&entry, &error) !=
+                DLL_SUCCESS) {
                 throw CommException("failed to read entry.");
             }
         }
@@ -630,5 +454,4 @@ unsigned long Readings::GetPowerupTimeSeconds() {
     }
     return m_PowerupTimeSeconds;
 }
-
 } // namespace Regatron
