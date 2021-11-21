@@ -105,42 +105,41 @@ Handler::Handler(std::shared_ptr<Regatron::Comm> regatronComm)
           Match{"getSysVoltageRef",             GET_FORMAT(getSysVoltageRef())},
           Match{"getSysResistanceRef",          GET_FORMAT(getSysResistanceRef())},
           Match{"getSysPowerRef",               GET_FORMAT(getSysPowerRef())},
-          Match{"getSysOutVoltEnable",          GET_FORMAT(getSysOutVoltEnable())},
+          Match{"getSysOutVoltEnable",          GET_FORMAT(GetSystemStatus().GetOutVoltEnable())},
 
-          Match{"setSysCurrentRef",             SET_FUNC_DOUBLE(setSysCurrentRef)},
-          Match{"setSysVoltageRef",             SET_FUNC_DOUBLE(setSysVoltageRef)},
-          Match{"setSysResistanceRef",          SET_FUNC_DOUBLE(setSysResistanceRef)},
-          Match{"setSysPowerRef",               SET_FUNC_DOUBLE(setSysPowerRef)},
-          Match{"setSysOutVoltEnable",          SET_FUNC_UINT(setSysOutVoltEnable)},
+          Match{"setSysCurrentRef",             SET_FUNC_DOUBLE(GetSystemStatus().SetCurrentRef)},
+          Match{"setSysVoltageRef",             SET_FUNC_DOUBLE(GetSystemStatus().SetVoltageRef)},
+          Match{"setSysResistanceRef",          SET_FUNC_DOUBLE(GetSystemStatus().SetResistanceRef)},
+          Match{"setSysPowerRef",               SET_FUNC_DOUBLE(GetSystemStatus().SetPowerRef)},
+          Match{"setSysOutVoltEnable",          SET_FUNC_UINT(GetSystemStatus().SetOutVoltEnable)},
 
           /*** Calling this on slaves will have no effect */
           // Slopes Voltage
-          Match{"setSlopeVoltMs",               SET_FUNC_DOUBLE(SetSlopeVoltMs)},
-          Match{"setSlopeStartupVoltMs",        SET_FUNC_DOUBLE(SetSlopeStartupVoltMs)},
+          Match{"setSlopeVoltMs",               SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeVoltMs)},
+          Match{"setSlopeStartupVoltMs",        SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeStartupVoltMs)},
+          Match{"setSlopeVoltRaw",              SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeVoltRaw)},
+          Match{"setSlopeStartupVoltRaw",       SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeStartupVoltRaw)},
 
-          Match{"setSlopeVoltRaw",              SET_FUNC_DOUBLE(SetSlopeVoltRaw)},
-          Match{"setSlopeStartupVoltRaw",       SET_FUNC_DOUBLE(SetSlopeStartupVoltRaw)},
-
-          Match{"cmdSlopeVoltWrite",            CMD_API(WriteSlopeVolt)},
-          Match{"getSlopeVolt",                 GET_FUNC(GetSlopeVolt())},
-          Match{"getSlopeVoltMin",              GET_FORMAT(GetSlopeVoltMin())},
-          Match{"getSlopeVoltMax",              GET_FORMAT(GetSlopeVoltMax())},
-          Match{"getSlopeStartupVoltSp",        GET_FORMAT(GetSlopeStartupVoltSp())},
-          Match{"getSlopeVoltSp",               GET_FORMAT(GetSlopeVoltSp())},
+          Match{"cmdSlopeVoltWrite",            CMD_API(GetControllerSettings().WriteSlopeVolt)},
+          Match{"getSlopeVolt",                 GET_FUNC(GetControllerSettings().GetSlopeVolt())},
+          Match{"getSlopeVoltMin",              GET_FORMAT(GetControllerSettings().GetSlopeVoltMin())},
+          Match{"getSlopeVoltMax",              GET_FORMAT(GetControllerSettings().GetSlopeVoltMax())},
+          Match{"getSlopeStartupVoltSp",        GET_FORMAT(GetControllerSettings().GetSlopeStartupVoltSp())},
+          Match{"getSlopeVoltSp",               GET_FORMAT(GetControllerSettings().GetSlopeVoltSp())},
 
           // Slopes Current
-          Match{"setSlopeCurrentMs",            SET_FUNC_DOUBLE(SetSlopeCurrentMs)},
-          Match{"setSlopeStartupCurrentMs",     SET_FUNC_DOUBLE(SetSlopeStartupCurrentMs)},
+          Match{"setSlopeCurrentMs",            SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeCurrentMs)},
+          Match{"setSlopeStartupCurrentMs",     SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeStartupCurrentMs)},
 
-          Match{"setSlopeCurrentRaw",           SET_FUNC_DOUBLE(SetSlopeCurrentRaw)},
-          Match{"setSlopeStartupCurrentRaw",    SET_FUNC_DOUBLE(SetSlopeStartupCurrentRaw)},
+          Match{"setSlopeCurrentRaw",           SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeCurrentRaw)},
+          Match{"setSlopeStartupCurrentRaw",    SET_FUNC_DOUBLE(GetControllerSettings().SetSlopeStartupCurrentRaw)},
 
-          Match{"cmdSlopeCurrentWrite",         CMD_API(WriteSlopeCurrent)},
-          Match{"getSlopeCurrent",              GET_FUNC(GetSlopeCurrent())},
-          Match{"getSlopeCurrentMin",           GET_FORMAT(GetSlopeCurrentMin())},
-          Match{"getSlopeCurrentMax",           GET_FORMAT(GetSlopeCurrentMax())},
-          Match{"getSlopeStartupCurrentSp",     GET_FORMAT(GetSlopeStartupCurrentSp())},
-          Match{"getSlopeCurrentSp",            GET_FORMAT(GetSlopeCurrentSp())},
+          Match{"cmdSlopeCurrentWrite",         CMD_API(GetControllerSettings().WriteSlopeCurrent)},
+          Match{"getSlopeCurrent",              GET_FUNC(GetControllerSettings().GetSlopeCurrent())},
+          Match{"getSlopeCurrentMin",           GET_FORMAT(GetControllerSettings().GetSlopeCurrentMin())},
+          Match{"getSlopeCurrentMax",           GET_FORMAT(GetControllerSettings().GetSlopeCurrentMax())},
+          Match{"getSlopeStartupCurrentSp",     GET_FORMAT(GetControllerSettings().GetSlopeStartupCurrentSp())},
+          Match{"getSlopeCurrentSp",            GET_FORMAT(GetControllerSettings().GetSlopeCurrentSp())},
           // -------------------------------------------------------------------------------
           // clang-format on
       }) {}

@@ -43,4 +43,46 @@ void SystemStatusReadings::ReadPhys() {
             "failed to get system physical nominal values.", Name()));
     }
 }
+
+void SystemStatusReadings::SetCurrentRef(double value /* [A] */) {
+    Select();
+    if (TC4SetCurrentRef(value) != DLL_SUCCESS) {
+        throw CommException("failed to set system current referece");
+    }
+}
+
+void SystemStatusReadings::SetVoltageRef(double value /* [V] */) {
+    Select();
+    if (TC4SetVoltageRef(value) != DLL_SUCCESS) {
+        throw CommException("failed to set system voltage referece");
+    }
+}
+
+void SystemStatusReadings::SetPowerRef(double value /* [kW] */) {
+    Select();
+    if (TC4SetPowerRef(value) != DLL_SUCCESS) {
+        throw CommException("failed to set system power referece");
+    }
+}
+
+void SystemStatusReadings::SetResistanceRef(double value /* [mOhm] */) {
+    Select();
+    if (TC4SetResistanceRef(value) != DLL_SUCCESS) {
+        throw CommException("failed to set system resistance referece");
+    }
+}
+
+void SystemStatusReadings::SetOutVoltEnable(uint32_t state) {
+    if (TC4SetControlIn(state) != DLL_SUCCESS) {
+        throw CommException("failed to set system output voltage state");
+    }
+}
+
+int SystemStatusReadings::GetOutVoltEnable() {
+    if (TC4GetControlIn(&m_OutVoltEnable) != DLL_SUCCESS) {
+        throw CommException("failed to get system output voltage state");
+    }
+    return static_cast<int>(m_OutVoltEnable);
+}
+
 } // namespace Regatron

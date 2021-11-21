@@ -1,10 +1,11 @@
 #include "DeviceAccessControl.hpp"
 
-#include <fmt/format.h>
+#include "fmt/format.h"
 #include "serialiolib.h" // NOLINT
-#include <regatron/Regatron.hpp>
+#include "regatron/Regatron.hpp"
 
-namespace Regatron::DeviceAccessControl {
+namespace Regatron{
+namespace DeviceAccessControl {
 
 void SelectModuleByID(unsigned int module) {
     if (TC4SetModuleSelector(module) != DLL_SUCCESS) {
@@ -21,4 +22,5 @@ void SelectSys() {
 void SelectMod() {
     SelectModuleByID(MOD_VALUES);
 }
-}
+
+}}

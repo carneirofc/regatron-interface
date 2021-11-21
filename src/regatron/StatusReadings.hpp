@@ -36,13 +36,12 @@ class StatusReadings {
     double       GetVoltageRef();
     double       GetResistanceRef();
     double       GetPowerRef();
-
     virtual const char * Name() const  = 0;
+
   protected:
-
     virtual void         ReadControlMode()     = 0;
-
     virtual void         Select()              = 0;
+
     double               m_ActualOutCurrentMon = 0;
     double               m_ActualOutPowerMon   = 0;
     double               m_ActualOutVoltageMon = 0;

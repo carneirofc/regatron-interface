@@ -1,3 +1,4 @@
 build/
 venv/
 .vs/
+compile_commands.json

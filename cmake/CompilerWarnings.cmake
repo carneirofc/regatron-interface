@@ -1,5 +1,6 @@
 function(set_project_warnings project_name)
   option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+  option(FATAL_ERRORS "Stop compilation on erros" ON)
 
   set(MSVC_WARNINGS
       /W4 # Baseline reasonable warnings
@@ -18,7 +19,7 @@ function(set_project_warnings project_name)
       /w14547 # 'operator': operator before comma has no effect; expected operator with side-effect
       /w14549 # 'operator': operator before comma has no effect; did you intend 'operator'?
       /w14555 # expression has no effect; expected expression with side- effect
-      /w14619 # pragma warning: there is no warning number 'number'
+#     /w14619 # pragma warning: there is no warning number 'number'
       /w14640 # Enable warning on thread un-safe static member initialization
       /w14826 # Conversion from 'type1' to 'type_2' is sign-extended. This may cause unexpected runtime behavior.
       /w14905 # wide string literal cast to 'LPSTR'
@@ -49,6 +50,10 @@ function(set_project_warnings project_name)
   if(WARNINGS_AS_ERRORS)
     set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
     set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
+  endif()
+
+  if(FATAL_ERRORS)
+      set(CLANG_WARNINGS ${CLANG_WARNING} -Wfatal-errors)
   endif()
 
   set(GCC_WARNINGS

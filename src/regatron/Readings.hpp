@@ -9,6 +9,7 @@
 #include "ModuleStatusReadings.hpp"
 #include "SystemStatusReadings.hpp"
 #include "DeviceAccessControl.hpp"
+#include "ControllerSettings.hpp"
 
 #include "Version.hpp"
 #include "log/Logger.hpp"
@@ -44,12 +45,12 @@ class Readings {
         : m_Version({}),
             m_SysStatusReadings(SystemStatusReadings()),
             m_ModStatusReadings(ModuleStatusReadings()),
+            m_ControllerSettings(m_SysStatusReadings),
+
             m_IBCInvHeatsinkTemp(0),
             m_DCLinkPhysNom(0),
             m_PrimaryCurrentPhysNom(0),
             m_TemperaturePhysNom(0),
-
-            m_SysOutVoltEnable(0),
 
             m_RemoteCtrlInp(0),
             m_DCLinkVoltageMon(0),
@@ -58,20 +59,25 @@ class Readings {
             m_RectifierTempMon(0),
             m_PCBTempMon(0),
 
-            m_SlopeStartupVolt(0),
-            m_SlopeStartupCurrent(0),
-            m_SlopeVolt(0),
-            m_SlopeCurrent(0),
-
             m_ModuleID(0),
             m_OperatingSeconds(0),
             m_PowerupTimeSeconds(0),
             m_FlashErrorHistoryMaxEntries(30)
     {}
-  private:
-    /** One time readings */
 
-    // Software version
+    inline ControllerSettings &GetControllerSettings() {
+        return m_ControllerSettings;
+    }
+
+    inline SystemStatusReadings &GetSystemStatus() {
+        return m_SysStatusReadings;
+    }
+
+  private:
+    Version m_Version;
+    SystemStatusReadings m_SysStatusReadings;
+    ModuleStatusReadings m_ModStatusReadings;
+    ControllerSettings m_ControllerSettings;
 
     constexpr static double NORM_MAX       = 4000.;
 
@@ -82,11 +88,7 @@ class Readings {
     int m_PrimaryCurrentPhysNom; // [A]
     int m_TemperaturePhysNom;    // [°C]
 
-    Version m_Version;
-    SystemStatusReadings m_SysStatusReadings;
-    ModuleStatusReadings m_ModStatusReadings;
 
-    unsigned int m_SysOutVoltEnable;
     // -- Module
 
     // Generic ...
@@ -96,12 +98,6 @@ class Readings {
     double       m_IGBTTempMon;       // [°C] heat sink of IGBT
     double       m_RectifierTempMon;  // [°C] heat sink of rectifier
     double       m_PCBTempMon;        // [°C] PCB Controller board temperature
-
-    // Master only ...
-    unsigned int m_SlopeStartupVolt;
-    unsigned int m_SlopeStartupCurrent;
-    unsigned int m_SlopeVolt;
-    unsigned int m_SlopeCurrent;
 
     // Regatron
     unsigned int  m_ModuleID;
@@ -123,11 +119,6 @@ class Readings {
         DeviceAccessControl::SelectMod();
     }
 
-    // Slope
-    static constexpr double SLOPE_MIN_TIME_MS = 0.05;
-    static constexpr double SLOPE_MAX_TIME_MS = 1600.;
-    static constexpr double SLOPE_MIN_RAW     = 1.;
-    static constexpr double SLOPE_MAX_RAW     = 32000.;
     // clang-format off
     // clang-format on
     unsigned long GetOperatingSeconds();
@@ -135,97 +126,10 @@ class Readings {
     double        GetSysVoltagePhysMax() const {
         return m_SysStatusReadings.GetVoltagePhysMax();
     }
-    /**
-     * 1:     slowest set value ramp: (Min V/ms) 0-100% (full scale) in 1.6s
-     * 32000: fastest set value ramp: (Max V/ms) 0-100% (full scale) in 50us
-     *
-     * SLOPE_MIN_RAW = a*MIN_VOLT_MS + b
-     * SLOPE_MAX_RAW = a*MAX_VOLT_MS + b
-     *
-     * a=(SLOPE_MIN_RAW-SLOPE_MAX_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
-     * b=(SLOPE_MAX_RAW*MIN_VOLT_MS-MAX_VOLT_MS*SLOPE_MIN_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
-     */
-    double GetSlopeA(const double fullScaleValue) const {
-        const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
-        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
-        return (SLOPE_MIN_RAW - SLOPE_MAX_RAW) / (MIN_VALUE_MS - MAX_VALUE_MS);
-    }
-
-    double GetSlopeB(const double fullScaleValue) const {
-        const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
-        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
-        return (SLOPE_MAX_RAW * MIN_VALUE_MS - MAX_VALUE_MS * SLOPE_MIN_RAW) /
-               (MIN_VALUE_MS - MAX_VALUE_MS);
-    }
-
-    uint32_t SlopeVmsToRaw(const double voltms) const {
-        return static_cast<uint32_t>(
-            std::round(GetSlopeA(m_SysStatusReadings.GetVoltagePhysMax()) * voltms +
-                       GetSlopeB(m_SysStatusReadings.GetVoltagePhysMax())));
-    }
-
-    unsigned int SlopeAmsToRaw(const double currentms) const {
-        return static_cast<unsigned int>(
-            std::round(GetSlopeA(m_SysStatusReadings.GetCurrentPhysMax()) * currentms +
-                       GetSlopeB(m_SysStatusReadings.GetCurrentPhysMax())));
-    }
-
-    double SlopeRawToVms(const unsigned int raw) const {
-        return (static_cast<double>(raw) - GetSlopeB(m_SysStatusReadings.GetVoltagePhysMax()) /
-               GetSlopeA(m_SysStatusReadings.GetVoltagePhysMax()));
-    }
-
-    double SlopeRawToAms(const unsigned int raw) const {
-        return (static_cast<double>(raw) - GetSlopeB(m_SysStatusReadings.GetCurrentPhysMax()) /
-               GetSlopeA(m_SysStatusReadings.GetCurrentPhysMax()));
-    }
-
     auto getModuleID() const { return m_ModuleID; }
     auto& getVersion() { return m_Version; }
 
-    // -------------- Slopes -------------------
-    bool SetSlopeStartupVoltMs(const double valMs);
-    bool SetSlopeVoltMs(const double valMs);
-    bool SetSlopeStartupVoltRaw(const double valRaw);
-    bool SetSlopeVoltRaw(const double valRaw);
-
-    bool SetSlopeStartupCurrentMs(const double valMs);
-    bool SetSlopeCurrentMs(const double valMs);
-    bool SetSlopeStartupCurrentRaw(const double valRaw);
-    bool SetSlopeCurrentRaw(const double valRaw);
-
-    inline double GetSlopeVoltSp() const { return SlopeRawToVms(m_SlopeVolt); }
-    inline double GetSlopeStartupVoltSp() const {
-        return SlopeRawToVms(m_SlopeStartupVolt);
-    }
-    inline double GetSlopeVoltMin() const {
-        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MIN_RAW));
-    }
-    inline double GetSlopeVoltMax() const {
-        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MAX_RAW));
-    }
-
-    inline double GetSlopeCurrentSp() const {
-        return SlopeRawToAms(m_SlopeCurrent);
-    }
-    inline double GetSlopeStartupCurrentSp() const {
-        return SlopeRawToAms(m_SlopeStartupCurrent);
-    }
-    inline double GetSlopeCurrentMin() const {
-        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MIN_RAW));
-    }
-    inline double GetSlopeCurrentMax() const {
-        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MAX_RAW));
-    }
-
-    bool WriteSlopeVolt();
-    bool WriteSlopeCurrent();
-
     // -----------------------------------------
-
-    std::string GetSlopeVolt();
-    std::string GetSlopeCurrent();
-
     std::string getModTree();
     std::string getSysTree();
 
@@ -350,13 +254,6 @@ class Readings {
     double      getSysResistanceRef();
     double      getSysPowerRef();
     std::string getSysMinMaxNom();
-    int         getSysOutVoltEnable();
 
-    /** Calling these functions on a TopCon Slave will have no effect. */
-    void setSysCurrentRef(const double);
-    void setSysVoltageRef(const double);
-    void setSysResistanceRef(const double);
-    void setSysPowerRef(const double);
-    void setSysOutVoltEnable(const unsigned int);
 };
 } // namespace Regatron
