@@ -73,6 +73,10 @@ class Readings {
         return m_SysStatusReadings;
     }
 
+    inline ModuleStatusReadings &GetModuleStatus() {
+        return m_ModStatusReadings;
+    }
+
   private:
     Version m_Version;
     SystemStatusReadings m_SysStatusReadings;
@@ -123,23 +127,12 @@ class Readings {
     // clang-format on
     unsigned long GetOperatingSeconds();
     unsigned long GetPowerupTimeSeconds();
-    double        GetSysVoltagePhysMax() const {
-        return m_SysStatusReadings.GetVoltagePhysMax();
-    }
     auto getModuleID() const { return m_ModuleID; }
     auto& getVersion() { return m_Version; }
 
     // -----------------------------------------
     std::string getModTree();
     std::string getSysTree();
-
-    /***
-     * @return: string formatted as:
-     * [m_...ActualOutVoltageMon,m_...ActualOutCurrentMon,
-     * m_...ActualOutPowerMon, m_...ActualResMon, m_...State];
-     */
-    std::string getModReadings();
-    std::string getSysReadings();
 
     /**
      * Read and convert to physical value DCLinkVoltage
@@ -228,32 +221,11 @@ class Readings {
         }
     }
 
-    inline auto getSysControlMode() {
-       return  m_SysStatusReadings.GetControlModeString();
-    }
-
-    inline auto getModControlMode() {
-        return m_ModStatusReadings.GetControlModeString();
-    }
 
     inline auto getRemoteControlInput() {
         readRemoteControlInput();
         return fmt::format("{}", m_RemoteCtrlInp);
     }
-
-    // @todo: Check if this returns different values depending on module/system
-    // (0, 64)
-    double      getModCurrentRef();
-    double      getModVoltageRef();
-    double      getModResistanceRef();
-    double      getModPowerRef();
-    std::string getModMinMaxNom();
-
-    double      getSysCurrentRef();
-    double      getSysVoltageRef();
-    double      getSysResistanceRef();
-    double      getSysPowerRef();
-    std::string getSysMinMaxNom();
 
 };
 } // namespace Regatron

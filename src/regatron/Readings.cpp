@@ -38,39 +38,6 @@ void Readings::readModulePhys() { m_ModStatusReadings.ReadPhys(); }
 
 void Readings::readSystemPhys() { m_SysStatusReadings.ReadPhys(); }
 
-std::string Readings::getSysMinMaxNom() {
-    return m_SysStatusReadings.GetMinMaxNomString();
-}
-std::string Readings::getModMinMaxNom() {
-    return m_ModStatusReadings.GetMinMaxNomString();
-}
-
-double Readings::getModCurrentRef() {
-    return m_ModStatusReadings.GetCurrentRef();
-}
-double Readings::getModVoltageRef() {
-    return m_ModStatusReadings.GetVoltageRef();
-}
-double Readings::getModResistanceRef() {
-    return m_ModStatusReadings.GetResistanceRef();
-}
-double Readings::getModPowerRef() {
-    return m_ModStatusReadings.GetPowerRef();
-}
-
-double Readings::getSysCurrentRef() {
-    return m_SysStatusReadings.GetCurrentRef();
-}
-double Readings::getSysVoltageRef() {
-    return m_SysStatusReadings.GetVoltageRef();
-}
-double Readings::getSysResistanceRef() {
-    return m_SysStatusReadings.GetResistanceRef();
-}
-double Readings::getSysPowerRef() {
-    return m_SysStatusReadings.GetPowerRef();
-}
-
 std::string Readings::getModTree() {
     return m_ModStatusReadings.GetErrorTreeString();
 }
@@ -120,13 +87,6 @@ std::string Readings::getTemperatures() {
     return oss.str();
 }
 
-std::string Readings::getModReadings() {
-    return m_ModStatusReadings.GetReadingsString();
-}
-
-std::string Readings::getSysReadings() {
-    return m_SysStatusReadings.GetReadingsString();
-}
 
 /**
  * Read and convert to physical value DCLinkVoltage
