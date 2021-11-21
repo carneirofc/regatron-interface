@@ -6,9 +6,7 @@ class ModuleStatusReadings : public StatusReadings {
   public:
     void ReadControlMode() override;
     void ReadPhys() override;
-
     const char *Name() const override;
-  protected:
     void Select() override;
  
 };

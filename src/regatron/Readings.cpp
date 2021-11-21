@@ -12,6 +12,30 @@ void Readings::readModuleID() {
     }
 }
 
+void Readings::Initialize() {
+    // init lib
+    if (TC4GetPhysicalValuesIncrement(
+            &incDevVoltage, &incDevCurrent, &incDevPower, &incDevResistance,
+            &incSysVoltage, &incSysCurrent, &incSysPower,
+            &incSysResistance) != DLL_SUCCESS) {
+        throw CommException("failed to get physical values increment.");
+    }
+
+    readModuleID();
+
+    // One time readings... update on every new connection
+    readAdditionalPhys();
+    if (isMaster()) {
+        readSystemPhys();
+    }
+    readModulePhys();
+
+    getVersion().ReadDSPVersion();
+
+    // Default is to keep system selected !
+    GetSystemStatus().Select();
+}
+
 void Readings::readSystemErrorTree32() {
     m_SysStatusReadings.ReadErrorTree32();
 }

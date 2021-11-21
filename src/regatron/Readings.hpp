@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <sstream>
-#include <stdint.h>
 
 #include "StatusReadings.hpp"
 #include "ModuleStatusReadings.hpp"
@@ -19,7 +19,7 @@ namespace Regatron {
 
 namespace ControlMode {
 /**
-0: no controller selected (output voltage is disabled)
+0: no controller
 1: constant voltage
 2: constant current
 4: constant power
@@ -37,33 +37,24 @@ constexpr unsigned int CONST_POWER        = 0;
    32767: no active interface will be selected
 */
 
-
+constexpr int DEFAULT_FLASH_ERROR_HISTORY_MAX_ENTRIES = 30;
 
 class Readings {
   public:
     Readings()
-        : m_Version({}),
-            m_SysStatusReadings(SystemStatusReadings()),
-            m_ModStatusReadings(ModuleStatusReadings()),
-            m_ControllerSettings(m_SysStatusReadings),
+        : m_SysStatusReadings(SystemStatusReadings()),
+          m_ModStatusReadings(ModuleStatusReadings()),
+          m_ControllerSettings(m_SysStatusReadings),
 
-            m_IBCInvHeatsinkTemp(0),
-            m_DCLinkPhysNom(0),
-            m_PrimaryCurrentPhysNom(0),
-            m_TemperaturePhysNom(0),
+          m_IBCInvHeatsinkTemp(0), m_DCLinkPhysNom(0),
+          m_PrimaryCurrentPhysNom(0), m_TemperaturePhysNom(0),
 
-            m_RemoteCtrlInp(0),
-            m_DCLinkVoltageMon(0),
-            m_PrimaryCurrentMon(0),
-            m_IGBTTempMon(0),
-            m_RectifierTempMon(0),
-            m_PCBTempMon(0),
+          m_RemoteCtrlInp(0), m_DCLinkVoltageMon(0), m_PrimaryCurrentMon(0),
+          m_IGBTTempMon(0), m_RectifierTempMon(0), m_PCBTempMon(0),
 
-            m_ModuleID(0),
-            m_OperatingSeconds(0),
-            m_PowerupTimeSeconds(0),
-            m_FlashErrorHistoryMaxEntries(30)
-    {}
+          m_ModuleID(0), m_OperatingSeconds(0), m_PowerupTimeSeconds(0),
+          m_FlashErrorHistoryMaxEntries(
+              DEFAULT_FLASH_ERROR_HISTORY_MAX_ENTRIES) {}
 
     inline ControllerSettings &GetControllerSettings() {
         return m_ControllerSettings;
@@ -77,60 +68,26 @@ class Readings {
         return m_ModStatusReadings;
     }
 
-  private:
-    Version m_Version;
-    SystemStatusReadings m_SysStatusReadings;
-    ModuleStatusReadings m_ModStatusReadings;
-    ControllerSettings m_ControllerSettings;
+    void Initialize();
 
-    constexpr static double NORM_MAX       = 4000.;
+    inline void Reset() {
 
-    // IBC
-    float m_IBCInvHeatsinkTemp; // [°C]
-    // Additional
-    int m_DCLinkPhysNom;         // [V]
-    int m_PrimaryCurrentPhysNom; // [A]
-    int m_TemperaturePhysNom;    // [°C]
-
-
-    // -- Module
-
-    // Generic ...
-    unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
-    double       m_DCLinkVoltageMon;  // [V]
-    double       m_PrimaryCurrentMon; // [A] Tranformer primary current
-    double       m_IGBTTempMon;       // [°C] heat sink of IGBT
-    double       m_RectifierTempMon;  // [°C] heat sink of rectifier
-    double       m_PCBTempMon;        // [°C] PCB Controller board temperature
-
-    // Regatron
-    unsigned int  m_ModuleID;
-    unsigned long m_OperatingSeconds;
-    unsigned long m_PowerupTimeSeconds;
-
-    // Flash Error History
-    unsigned int m_FlashErrorHistoryMaxEntries;
-    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const;
-
-  public:
-
-    /** Set Module/System calls */
-    void selectSys() {
-        DeviceAccessControl::SelectSys();
+        // Increment (internal usage)
+        incDevVoltage    = 0.0;
+        incDevCurrent    = 0.0;
+        incDevPower      = 0.0;
+        incDevResistance = 0.0;
+        incSysVoltage    = 0.0;
+        incSysCurrent    = 0.0;
+        incSysPower      = 0.0;
+        incSysResistance = 0.0;
     }
 
-    void selectMod() {
-        DeviceAccessControl::SelectMod();
-    }
+    [[nodiscard]] unsigned long GetOperatingSeconds();
+    [[nodiscard]] unsigned long GetPowerupTimeSeconds();
+    [[nodiscard]] auto          getModuleID() const { return m_ModuleID; }
+    [[nodiscard]] auto &        getVersion() { return m_Version; }
 
-    // clang-format off
-    // clang-format on
-    unsigned long GetOperatingSeconds();
-    unsigned long GetPowerupTimeSeconds();
-    auto getModuleID() const { return m_ModuleID; }
-    auto& getVersion() { return m_Version; }
-
-    // -----------------------------------------
     std::string getModTree();
     std::string getSysTree();
 
@@ -221,11 +178,53 @@ class Readings {
         }
     }
 
-
     inline auto getRemoteControlInput() {
         readRemoteControlInput();
         return fmt::format("{}", m_RemoteCtrlInp);
     }
 
+  private:
+    Version m_Version;
+    SystemStatusReadings m_SysStatusReadings;
+    ModuleStatusReadings m_ModStatusReadings;
+    ControllerSettings m_ControllerSettings;
+
+    constexpr static double NORM_MAX       = 4000.;
+
+    // IBC
+    float m_IBCInvHeatsinkTemp; // [°C]
+    // Additional
+    int m_DCLinkPhysNom;         // [V]
+    int m_PrimaryCurrentPhysNom; // [A]
+    int m_TemperaturePhysNom;    // [°C]
+
+
+    // -- Module
+
+    // Generic ...
+    unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
+    double       m_DCLinkVoltageMon;  // [V]
+    double       m_PrimaryCurrentMon; // [A] Tranformer primary current
+    double       m_IGBTTempMon;       // [°C] heat sink of IGBT
+    double       m_RectifierTempMon;  // [°C] heat sink of rectifier
+    double       m_PCBTempMon;        // [°C] PCB Controller board temperature
+
+    // Regatron
+    unsigned int  m_ModuleID;
+    unsigned long m_OperatingSeconds;
+    unsigned long m_PowerupTimeSeconds;
+
+    // Flash Error History
+    unsigned int m_FlashErrorHistoryMaxEntries;
+    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const;
+
+    double incDevVoltage;    /** Increment (internal usage) */
+    double incDevCurrent;    /** Increment (internal usage) */
+    double incDevPower;      /** Increment (internal usage) */
+    double incDevResistance; /** Increment (internal usage) */
+    double incSysVoltage;    /** Increment (internal usage) */
+    double incSysCurrent;    /** Increment (internal usage) */
+    double incSysPower;      /** Increment (internal usage) */
+    double incSysResistance; /** Increment (internal usage) */
 };
 } // namespace Regatron

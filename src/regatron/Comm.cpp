@@ -5,20 +5,9 @@
 namespace Regatron {
 
 Comm::Comm(int port)
-    : m_Port(port), m_readings(std::make_shared<Regatron::Readings>()),
-      m_CommStatus{CommStatus::Disconncted},
+    : m_Port(port), m_PortNrFound(-1), m_CommStatus{CommStatus::Disconncted},
+      m_readings(std::make_shared<Regatron::Readings>()), m_Connected(false),
       m_AutoReconnect(true),
-      m_Connected(false),
-      m_PortNrFound(-1),
-      // Increment (internal usage)
-      incDevVoltage(0.0),
-      incDevCurrent(0.0),
-      incDevPower(0.0),
-      incDevResistance(0.0),
-      incSysVoltage(0.0),
-      incSysCurrent(0.0),
-      incSysPower(0.0),
-      incSysResistance(0.0),
       m_AutoReconnectAttemptTime(std::chrono::system_clock::now()),
       m_AutoReconnectInterval(std::chrono::seconds{15}) {}
 
@@ -77,15 +66,8 @@ void Comm::disconnect() {
     /** Reset DLL Variables */
     // Connection
     m_PortNrFound = -1;
-    // Increment (internal usage)
-    incDevVoltage    = 0.0;
-    incDevCurrent    = 0.0;
-    incDevPower      = 0.0;
-    incDevResistance = 0.0;
-    incSysVoltage    = 0.0;
-    incSysCurrent    = 0.0;
-    incSysPower      = 0.0;
-    incSysResistance = 0.0;
+
+    m_readings->Reset();
 
     LOG_WARN(
         R"(Dllclose: Driver/Objects used by the TCIO are closed, released memory (code "{}"))",
@@ -240,32 +222,13 @@ bool Comm::connect(int fromPort, int toPort) {
     }
     LOG_TRACE("Remote control set to RS232.");
 
-    // init lib
-    if (TC4GetPhysicalValuesIncrement(
-            &incDevVoltage, &incDevCurrent, &incDevPower, &incDevResistance,
-            &incSysVoltage, &incSysCurrent, &incSysPower,
-            &incSysResistance) != DLL_SUCCESS) {
-        throw CommException("failed to get physical values increment.");
-    }
-
-    m_readings->readModuleID();
-
-    // One time readings... update on every new connection
-    m_readings->readAdditionalPhys();
-    if (m_readings->isMaster()) {
-        m_readings->readSystemPhys();
-    }
-    m_readings->readModulePhys();
-
-    m_readings->getVersion().ReadDSPVersion();
-
-    // Default is to keep system selected !
-    m_readings->selectSys();
+    m_readings->Initialize();
 
     LOG_INFO(
         R"(Regatron device connected at port "{}", configured as "{}" with module ID "{}".)",
         m_PortNrFound, ((m_readings->isMaster()) ? "master" : "slave"),
         m_readings->getModuleID());
+
     m_CommStatus = CommStatus::Ok;
     return true;
 }

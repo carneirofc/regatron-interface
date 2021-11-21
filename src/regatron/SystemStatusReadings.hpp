@@ -18,12 +18,11 @@ class SystemStatusReadings : public StatusReadings {
     void SetPowerRef(const double);
     void SetOutVoltEnable(const uint32_t);
     int         GetOutVoltEnable();
+    void        Select() override;
 
   private:
     uint32_t m_OutVoltEnable;
 
-  protected:
-    void        Select() override;
 };
 
 } // namespace Regatron

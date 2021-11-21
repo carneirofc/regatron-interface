@@ -74,10 +74,13 @@ int main(const int argc, const char *argv[]) {
     Utils::Logger::Init(
         spdlog::level::level_enum::trace,
         fmt::format("RegatronCOM{:03}Log.txt", options.regDevPort).c_str());
+
     static std::shared_ptr<Regatron::Comm> regatron =
         std::make_shared<Regatron::Comm>(options.regDevPort);
+
     static std::shared_ptr<Regatron::Handler> handler =
         std::make_shared<Regatron::Handler>(regatron);
+
     static std::shared_ptr<Net::Server> server = nullptr;
 
     regatron->SetAutoReconnectInterval(
