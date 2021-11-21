@@ -8,8 +8,7 @@
 // Instrumentor::Get().BeginSession("Session Name");        // Begin session
 // {
 //     InstrumentationTimer timer("Profiled Scope Name");   // Place code like
-//     this in scopes you'd like to include in profiling
-//     // Code
+//     this in scopes you'd like to include in profiling Code
 // }
 // Instrumentor::Get().EndSession();                        // End Session
 
@@ -17,8 +16,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <fmt/format.h>
-#include <fmt/printf.h>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -73,13 +70,6 @@ class Instrumentor {
 
         std::string name = result.Name;
         std::replace(name.begin(), name.end(), '"', '\'');
-        // auto message = fmt::format(
-        //    R"({"cat":"function","dur":{},"name":{},"ph":"X","pid":{},"tid":{},"ts":{}})",
-        //    (result.End - result.Start), name, result.PID, result.ThreadID,
-        //    result.Start);
-        // std::cout<< message <<'\n';
-
-        //        m_OutputStream <<message;
 
         m_OutputStream << "{";
         m_OutputStream << "\"cat\":\"function\",";

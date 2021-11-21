@@ -1,19 +1,25 @@
 #pragma once
 
+#include <cmath>
+#include <cstdint>
+#include <memory>
+#include <sstream>
+
+#include "StatusReadings.hpp"
+#include "ModuleStatusReadings.hpp"
+#include "SystemStatusReadings.hpp"
+#include "DeviceAccessControl.hpp"
+#include "ControllerSettings.hpp"
+
 #include "Version.hpp"
 #include "log/Logger.hpp"
-#include "serialiolib.h" // NOLINT
-#include <cmath>
-#include <sstream>
 
 namespace Regatron {
 
-constexpr unsigned int SYS_VALUES = 64;
-constexpr unsigned int MOD_VALUES = 0;
 
 namespace ControlMode {
 /**
-0: no controller selected (output voltage is disabled)
+0: no controller
 1: constant voltage
 2: constant current
 4: constant power
@@ -24,295 +30,66 @@ constexpr unsigned int CONST_CURRENT      = 0;
 constexpr unsigned int CONST_POWER        = 0;
 } // namespace ControlMode
 
-namespace RemoteCtrlInp {
-/*
+/* Remote Control Input
    0: set active interface to analog
    1: set active interface to HMI/HME
    2: set active interface to RS232 (this API)
    32767: no active interface will be selected
 */
 
-}
+constexpr int DEFAULT_FLASH_ERROR_HISTORY_MAX_ENTRIES = 30;
+
 class Readings {
-  private:
-    /** One time readings */
-
-    // Software version
-    std::shared_ptr<Regatron::Version> m_Version;
-
-    constexpr static int    errorTree32Len = 32;
-    constexpr static double NORM_MAX       = 4000.;
-
-    // IBC
-    float m_IBCInvHeatsinkTemp; // [°C]
-    // Additional
-    int m_DCLinkPhysNom;         // [V]
-    int m_PrimaryCurrentPhysNom; // [A]
-    int m_TemperaturePhysNom;    // [°C]
-
-    // System
-    double               m_SysVoltagePhysMax;    // [V]
-    double               m_SysCurrentPhysMax;    // [A]
-    double               m_SysPowerPhysMax;      // [kW]
-    double               m_SysResistancePhysMax; // [mOhm]
-    double               m_SysVoltagePhysMin;    // [V]
-    double               m_SysCurrentPhysMin;    // [A]
-    double               m_SysPowerPhysMin;      // [kW]
-    double               m_SysResistancePhysMin; // [mOhm]
-    double               m_SysVoltagePhysNom;    // [V]
-    double               m_SysCurrentPhysNom;    // [A]
-    double               m_SysPowerPhysNom;      // [kW]
-    double               m_SysResistancePhysNom; // [mOhm]
-    unsigned int         m_SysControlMode;       // namespace ControlMode
-    struct T_ErrorTree32 m_SysErrorTree32Mon;
-    struct T_ErrorTree32 m_SysWarningTree32Mon;
-    unsigned int         m_SysState;
-    double               m_SysActualOutVoltageMon;
-    double               m_SysActualOutPowerMon;
-    double               m_SysActualOutCurrentMon;
-    double               m_SysActualResMon;
-    double               m_SysVoltageRef;
-    double               m_SysCurrentRef;
-    double               m_SysPowerRef;
-    double               m_SysResRef;
-    unsigned int         m_SysOutVoltEnable;
-
-    // -- Module
-    double               m_ModVoltagePhysMax;    // [V]
-    double               m_ModCurrentPhysMax;    // [A]
-    double               m_ModPowerPhysMax;      // [kW]
-    double               m_ModResistancePhysMax; // [mOhm]
-    double               m_ModVoltagePhysMin;    // [V]
-    double               m_ModCurrentPhysMin;    // [A]
-    double               m_ModPowerPhysMin;      // [kW]
-    double               m_ModResistancePhysMin; // [mOhm]
-    double               m_ModVoltagePhysNom;    // [V]
-    double               m_ModCurrentPhysNom;    // [A]
-    double               m_ModPowerPhysNom;      // [kW]
-    double               m_ModResistancePhysNom; // [mOhm]
-    uint32_t             m_ModControlMode;       // namespace ControlMode
-    struct T_ErrorTree32 m_ModErrorTree32Mon;
-    struct T_ErrorTree32 m_ModWarningTree32Mon;
-    unsigned int         m_ModState;
-    double               m_ModActualOutVoltageMon;
-    double               m_ModActualOutPowerMon;
-    double               m_ModActualOutCurrentMon;
-    double               m_ModActualResMon;
-    double               m_ModVoltageRef;
-    double               m_ModCurrentRef;
-    double               m_ModPowerRef;
-    double               m_ModResRef;
-
-    // Generic ...
-    unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
-    double       m_DCLinkVoltageMon;  // [V]
-    double       m_PrimaryCurrentMon; // [A] Tranformer primary current
-    double       m_IGBTTempMon;       // [°C] heat sink of IGBT
-    double       m_RectifierTempMon;  // [°C] heat sink of rectifier
-    double       m_PCBTempMon;        // [°C] PCB Controller board temperature
-
-    // Master only ...
-    unsigned int m_SlopeStartupVolt;
-    unsigned int m_SlopeStartupCurrent;
-    unsigned int m_SlopeVolt;
-    unsigned int m_SlopeCurrent;
-
-    // Regatron
-    unsigned int  m_moduleID;
-    unsigned long m_OperatingSeconds;
-    unsigned long m_PowerupTimeSeconds;
-
-    // Flash Error History
-    unsigned int m_FlashErrorHistoryMaxEntries;
-    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const;
-
   public:
-    // Slope
-    static constexpr double SLOPE_MIN_TIME_MS = 0.05;
-    static constexpr double SLOPE_MAX_TIME_MS = 1600.;
-    static constexpr double SLOPE_MIN_RAW     = 1.;
-    static constexpr double SLOPE_MAX_RAW     = 32000.;
-    // clang-format off
     Readings()
-        : m_Version(std::make_shared<Regatron::Version>()),
-            m_IBCInvHeatsinkTemp(0),
-            m_DCLinkPhysNom(0),
-            m_PrimaryCurrentPhysNom(0),
-            m_TemperaturePhysNom(0),
+        : m_SysStatusReadings(SystemStatusReadings()),
+          m_ModStatusReadings(ModuleStatusReadings()),
+          m_ControllerSettings(m_SysStatusReadings),
 
-            m_SysVoltagePhysMax(0),
-            m_SysCurrentPhysMax(0),
-            m_SysPowerPhysMax(0),
-            m_SysResistancePhysMax(0),
-            m_SysVoltagePhysMin(0),
-            m_SysCurrentPhysMin(0),
-            m_SysPowerPhysMin(0),
-            m_SysResistancePhysMin(0),
-            m_SysVoltagePhysNom(0),
-            m_SysCurrentPhysNom(0),
-            m_SysPowerPhysNom(0),
-            m_SysResistancePhysNom(0),
-            m_SysControlMode(0),
-            m_SysErrorTree32Mon({}),
-            m_SysWarningTree32Mon({}),
-            m_SysState(0),
-            m_SysActualOutVoltageMon(0),
-            m_SysActualOutPowerMon(0),
-            m_SysActualOutCurrentMon(0),
-            m_SysActualResMon(0),
-            m_SysVoltageRef(0),
-            m_SysCurrentRef(0),
-            m_SysPowerRef(0),
-            m_SysResRef(0),
-            m_SysOutVoltEnable(0),
+          m_IBCInvHeatsinkTemp(0), m_DCLinkPhysNom(0),
+          m_PrimaryCurrentPhysNom(0), m_TemperaturePhysNom(0),
 
-            m_ModVoltagePhysMax(0),
-            m_ModCurrentPhysMax(0),
-            m_ModPowerPhysMax(0),
-            m_ModResistancePhysMax(0),
-            m_ModVoltagePhysMin(0),
-            m_ModCurrentPhysMin(0),
-            m_ModPowerPhysMin(0),
-            m_ModResistancePhysMin(0),
-            m_ModVoltagePhysNom(0),
-            m_ModCurrentPhysNom(0),
-            m_ModPowerPhysNom(0),
-            m_ModResistancePhysNom(0),
-            m_ModControlMode(0),
-            m_ModErrorTree32Mon({}),
-            m_ModWarningTree32Mon({}),
-            m_ModState(0),
-            m_ModActualOutVoltageMon(0),
-            m_ModActualOutPowerMon(0),
-            m_ModActualOutCurrentMon(0),
-            m_ModActualResMon(0),
-            m_ModVoltageRef(0),
-            m_ModCurrentRef(0),
-            m_ModPowerRef(0),
-            m_ModResRef(0),
+          m_RemoteCtrlInp(0), m_DCLinkVoltageMon(0), m_PrimaryCurrentMon(0),
+          m_IGBTTempMon(0), m_RectifierTempMon(0), m_PCBTempMon(0),
 
-            m_RemoteCtrlInp(0),
-            m_DCLinkVoltageMon(0),
-            m_PrimaryCurrentMon(0),
-            m_IGBTTempMon(0),
-            m_RectifierTempMon(0),
-            m_PCBTempMon(0),
+          m_ModuleID(0), m_OperatingSeconds(0), m_PowerupTimeSeconds(0),
+          m_FlashErrorHistoryMaxEntries(
+              DEFAULT_FLASH_ERROR_HISTORY_MAX_ENTRIES) {}
 
-            m_SlopeStartupVolt(0),
-            m_SlopeStartupCurrent(0),
-            m_SlopeVolt(0),
-            m_SlopeCurrent(0),
-
-            m_moduleID(0),
-            m_OperatingSeconds(0),
-            m_PowerupTimeSeconds(0),
-            m_FlashErrorHistoryMaxEntries(30)
-    {}
-    // clang-format on
-    unsigned long GetOperatingSeconds();
-    unsigned long GetPowerupTimeSeconds();
-    double        GetSysVoltagePhysMax() const { return m_SysVoltagePhysMax; }
-    /**
-     * 1:     slowest set value ramp: (Min V/ms) 0-100% (full scale) in 1.6s
-     * 32000: fastest set value ramp: (Max V/ms) 0-100% (full scale) in 50us
-     *
-     * SLOPE_MIN_RAW = a*MIN_VOLT_MS + b
-     * SLOPE_MAX_RAW = a*MAX_VOLT_MS + b
-     *
-     * a=(SLOPE_MIN_RAW-SLOPE_MAX_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
-     * b=(SLOPE_MAX_RAW*MIN_VOLT_MS-MAX_VOLT_MS*SLOPE_MIN_RAW)/(MIN_VOLT_MS-MAX_VOLT_MS)
-     */
-    double GetSlopeA(const double fullScaleValue) const {
-        const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
-        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;    
-        return      (SLOPE_MIN_RAW - SLOPE_MAX_RAW) / (MIN_VALUE_MS - MAX_VALUE_MS);
+    inline ControllerSettings &GetControllerSettings() {
+        return m_ControllerSettings;
     }
 
-    double GetSlopeB(const double fullScaleValue) const {
-        const double MIN_VALUE_MS = fullScaleValue / SLOPE_MAX_TIME_MS;
-        const double MAX_VALUE_MS = fullScaleValue / SLOPE_MIN_TIME_MS;
-        return (SLOPE_MAX_RAW * MIN_VALUE_MS - MAX_VALUE_MS * SLOPE_MIN_RAW) /
-            (MIN_VALUE_MS - MAX_VALUE_MS);
+    inline SystemStatusReadings &GetSystemStatus() {
+        return m_SysStatusReadings;
     }
 
-    unsigned int SlopeVmsToRaw(const double voltms) const {
-        return static_cast<unsigned int>(
-            std::round(GetSlopeA(m_SysVoltagePhysMax) * voltms +
-                       GetSlopeB(m_SysVoltagePhysMax)));
+    inline ModuleStatusReadings &GetModuleStatus() {
+        return m_ModStatusReadings;
     }
 
-    unsigned int SlopeAmsToRaw(const double currentms) const {
-        return static_cast<unsigned int>(
-            std::round(GetSlopeA(m_SysCurrentPhysMax) * currentms +
-                       GetSlopeB(m_SysCurrentPhysMax)));
+    void Initialize();
+
+    inline void Reset() {
+
+        // Increment (internal usage)
+        incDevVoltage    = 0.0;
+        incDevCurrent    = 0.0;
+        incDevPower      = 0.0;
+        incDevResistance = 0.0;
+        incSysVoltage    = 0.0;
+        incSysCurrent    = 0.0;
+        incSysPower      = 0.0;
+        incSysResistance = 0.0;
     }
 
-    double SlopeRawToVms(const unsigned int raw) const {
-        return (static_cast<double>(raw) - GetSlopeB(m_SysVoltagePhysMax)) /
-            GetSlopeA(m_SysVoltagePhysMax);
-    }
-
-    double SlopeRawToAms(const unsigned int raw) const {
-        return (static_cast<double>(raw) - GetSlopeB(m_SysCurrentPhysMax)) /
-            GetSlopeA(m_SysCurrentPhysMax);
-    }
-
-    auto getModuleID() const { return m_moduleID; }
-    auto getVersion() const { return m_Version; }
-
-    // -------------- Slopes -------------------
-    bool SetSlopeStartupVoltMs(const double valMs);
-    bool SetSlopeVoltMs(const double valMs);
-    bool SetSlopeStartupVoltRaw(const double valRaw);
-    bool SetSlopeVoltRaw(const double valRaw);
-
-    bool SetSlopeStartupCurrentMs(const double valMs);
-    bool SetSlopeCurrentMs(const double valMs);
-    bool SetSlopeStartupCurrentRaw(const double valRaw);
-    bool SetSlopeCurrentRaw(const double valRaw);
-
-    inline double GetSlopeVoltSp() const { return SlopeRawToVms(m_SlopeVolt); }
-    inline double GetSlopeStartupVoltSp() const {
-        return SlopeRawToVms(m_SlopeStartupVolt);
-    }
-    inline double GetSlopeVoltMin() const {
-        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MIN_RAW));
-    }
-    inline double GetSlopeVoltMax() const {
-        return SlopeRawToVms(static_cast<unsigned int>(SLOPE_MAX_RAW));
-    }
-
-    inline double GetSlopeCurrentSp() const {
-        return SlopeRawToAms(m_SlopeCurrent);
-    }
-    inline double GetSlopeStartupCurrentSp() const {
-        return SlopeRawToAms(m_SlopeStartupCurrent);
-    }
-    inline double GetSlopeCurrentMin() const {
-        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MIN_RAW));
-    }
-    inline double GetSlopeCurrentMax() const {
-        return SlopeRawToAms(static_cast<unsigned int>(SLOPE_MAX_RAW));
-    }
-
-    bool WriteSlopeVolt();
-    bool WriteSlopeCurrent();
-
-    // -----------------------------------------
-
-    std::string GetSlopeVolt();
-    std::string GetSlopeCurrent();
+    [[nodiscard]] unsigned long GetOperatingSeconds();
+    [[nodiscard]] unsigned long GetPowerupTimeSeconds();
+    [[nodiscard]] auto          getModuleID() const { return m_ModuleID; }
+    [[nodiscard]] auto &        getVersion() { return m_Version; }
 
     std::string getModTree();
     std::string getSysTree();
-
-    /***
-     * @return: string formatted as:
-     * [m_...ActualOutVoltageMon,m_...ActualOutCurrentMon,
-     * m_...ActualOutPowerMon, m_...ActualResMon, m_...State];
-     */
-    std::string getModReadings();
-    std::string getSysReadings();
 
     /**
      * Read and convert to physical value DCLinkVoltage
@@ -378,16 +155,11 @@ class Readings {
     void readSystemErrorTree32();
     void readModuleErrorTree32();
 
-    void            SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
-    unsigned int    GetFlashErrorHistoryMaxEntries() const {
+    void         SetFlashErrorHistoryMaxEntries(unsigned int maxEntries);
+    unsigned int GetFlashErrorHistoryMaxEntries() const {
         return m_FlashErrorHistoryMaxEntries;
     }
     std::string GetFlashErrorHistoryEntries() const;
-
-    /** Set Module/System calls */
-    inline void selectSys() { this->selectMod(SYS_VALUES); }
-    inline void selectMod() { this->selectMod(MOD_VALUES); }
-
     inline void storeParameters() {
         if (TC4StoreParameters() != DLL_SUCCESS) {
             throw CommException("failed to store parameters");
@@ -400,35 +172,10 @@ class Readings {
         }
     }
 
-    inline void readModControlMode() {
-        selectMod();
-        if (TC4GetControlMode(&m_ModControlMode) != DLL_SUCCESS) {
-            throw CommException("failed to read module control mode");
-        }
-        selectSys();
-    }
-
-    inline void readSysControlMode() {
-        selectSys();
-        if (TC4GetControlMode(&m_SysControlMode) != DLL_SUCCESS) {
-            throw CommException("failed to read system control mode");
-        }
-    }
-
     inline void readRemoteControlInput() {
         if (TC4GetRemoteControlInput(&m_RemoteCtrlInp) != DLL_SUCCESS) {
             throw CommException("failed to read remote control input");
         }
-    }
-
-    inline auto getSysControlMode() {
-        readSysControlMode();
-        return fmt::format("{}", m_SysControlMode);
-    }
-
-    inline auto getModControlMode() {
-        readModControlMode();
-        return fmt::format("{}", m_ModControlMode);
     }
 
     inline auto getRemoteControlInput() {
@@ -436,34 +183,48 @@ class Readings {
         return fmt::format("{}", m_RemoteCtrlInp);
     }
 
-    inline void selectMod(unsigned int module) {
-        if (TC4SetModuleSelector(module) != DLL_SUCCESS) {
-            throw CommException(fmt::format(
-                "failed to set module selector to {} (code {})",
-                ((module == SYS_VALUES) ? "system" : "device"), module));
-        }
-    }
+  private:
+    Version m_Version;
+    SystemStatusReadings m_SysStatusReadings;
+    ModuleStatusReadings m_ModStatusReadings;
+    ControllerSettings m_ControllerSettings;
 
-    // @todo: Check if this returns different values depending on module/system
-    // (0, 64)
-    double      getModCurrentRef();
-    double      getModVoltageRef();
-    double      getModResistanceRef();
-    double      getModPowerRef();
-    std::string getModMinMaxNom();
+    constexpr static double NORM_MAX       = 4000.;
 
-    double      getSysCurrentRef();
-    double      getSysVoltageRef();
-    double      getSysResistanceRef();
-    double      getSysPowerRef();
-    std::string getSysMinMaxNom();
-    int         getSysOutVoltEnable();
+    // IBC
+    float m_IBCInvHeatsinkTemp; // [°C]
+    // Additional
+    int m_DCLinkPhysNom;         // [V]
+    int m_PrimaryCurrentPhysNom; // [A]
+    int m_TemperaturePhysNom;    // [°C]
 
-    /** Calling these functions on a TopCon Slave will have no effect. */
-    void setSysCurrentRef(const double);
-    void setSysVoltageRef(const double);
-    void setSysResistanceRef(const double);
-    void setSysPowerRef(const double);
-    void setSysOutVoltEnable(const unsigned int);
+
+    // -- Module
+
+    // Generic ...
+    unsigned int m_RemoteCtrlInp;     // namespace Remote Ctrl Inp
+    double       m_DCLinkVoltageMon;  // [V]
+    double       m_PrimaryCurrentMon; // [A] Tranformer primary current
+    double       m_IGBTTempMon;       // [°C] heat sink of IGBT
+    double       m_RectifierTempMon;  // [°C] heat sink of rectifier
+    double       m_PCBTempMon;        // [°C] PCB Controller board temperature
+
+    // Regatron
+    unsigned int  m_ModuleID;
+    unsigned long m_OperatingSeconds;
+    unsigned long m_PowerupTimeSeconds;
+
+    // Flash Error History
+    unsigned int m_FlashErrorHistoryMaxEntries;
+    std::string  ErrorHistoryEntryToString(T_ErrorHistoryEntry *entry) const;
+
+    double incDevVoltage;    /** Increment (internal usage) */
+    double incDevCurrent;    /** Increment (internal usage) */
+    double incDevPower;      /** Increment (internal usage) */
+    double incDevResistance; /** Increment (internal usage) */
+    double incSysVoltage;    /** Increment (internal usage) */
+    double incSysCurrent;    /** Increment (internal usage) */
+    double incSysPower;      /** Increment (internal usage) */
+    double incSysResistance; /** Increment (internal usage) */
 };
 } // namespace Regatron

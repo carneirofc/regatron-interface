@@ -1,11 +1,5 @@
 #pragma once
 
-#include "Readings.hpp"
-#include "Regatron.hpp"
-#include "Version.hpp"
-
-#include "fmt/format.h"
-#include "serialiolib.h" // NOLINT
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -14,6 +8,13 @@
 #include <optional>
 #include <string>
 #include <thread>
+
+#include "fmt/format.h"
+#include "serialiolib.h" // NOLINT
+
+#include "Readings.hpp"
+#include "Regatron.hpp"
+#include "Version.hpp"
 
 namespace Regatron {
 
@@ -30,26 +31,6 @@ class Comm {
     static constexpr unsigned int READ_TIMEOUT_MULTIPLIER            = 10;
     static constexpr unsigned int WRITE_TIMEOUT_MULTIPLIER           = 10;
 
-  private:
-    int                                 m_Port;        /** comm port */
-    int                                 m_PortNrFound; /** detected comm port */
-    std::shared_ptr<Regatron::Readings> m_readings;    /** Readings*/
-    double     incDevVoltage;    /** Increment (internal usage) */
-    double     incDevCurrent;    /** Increment (internal usage) */
-    double     incDevPower;      /** Increment (internal usage) */
-    double     incDevResistance; /** Increment (internal usage) */
-    double     incSysVoltage;    /** Increment (internal usage) */
-    double     incSysCurrent;    /** Increment (internal usage) */
-    double     incSysPower;      /** Increment (internal usage) */
-    double     incSysResistance; /** Increment (internal usage) */
-    CommStatus m_CommStatus;     /** DLL communication details */
-    bool       m_AutoReconnect;  /** Auto reconnect to device */
-    bool       m_Connected;      /** Whether we are connected to the device */
-    std::chrono::time_point<std::chrono::system_clock>
-         m_AutoReconnectAttemptTime;
-    std::chrono::seconds m_AutoReconnectInterval;
-    bool                 m_InitialConnection = true;
-    void InitializeDLL();
 
   public:
     explicit Comm(int port);
@@ -65,7 +46,8 @@ class Comm {
     void disconnect();
 
     void SetAutoReconnectInterval(std::chrono::seconds&& seconds);
-    std::chrono::seconds GetAutoReconnectInterval() const;
+    [[nodiscard]] std::chrono::seconds GetAutoReconnectInterval() const;
+
     /**
      * This method will read and set the actual communication status
      * @return CommStatus
@@ -73,7 +55,7 @@ class Comm {
     void ReadCommStatus();
 
     CommStatus getCommStatus() const;
-    bool       getAutoReconnect() const;
+    [[nodiscard]] bool getAutoReconnect() const;
     void       setAutoReconnect(bool autoReconnect);
     void       autoConnect();
 
@@ -83,6 +65,19 @@ class Comm {
      * actual communication state is valid.
      */
     std::optional<std::shared_ptr<Regatron::Readings>> getReadings();
+
+  private:
+    int                                 m_Port;        /** comm port */
+    int                                 m_PortNrFound; /** detected comm port */
+    CommStatus m_CommStatus; /** DLL communication details */
+    std::shared_ptr<Regatron::Readings> m_readings;    /** Readings*/
+    bool       m_Connected;     /** Whether we are connected to the device */
+    bool       m_AutoReconnect; /** Auto reconnect to device */
+    std::chrono::time_point<std::chrono::system_clock>
+                         m_AutoReconnectAttemptTime;
+    std::chrono::seconds m_AutoReconnectInterval;
+    bool                 m_InitialConnection = true;
+    void                 InitializeDLL();
 };
 
 } // namespace Regatron

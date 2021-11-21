@@ -4,6 +4,15 @@
 Regatron interface using sockets and Regatron's TCIO API
 Use the service `cons-regatron-interface@.service` to start the interface.
 
+## Build Instructions
+
+Create a build directory
+```
+mkdir build
+cd build
+cmake ..
+```
+
 ## [Dependencies](DEPENDENCIES.md)
 Software dependencies
 
