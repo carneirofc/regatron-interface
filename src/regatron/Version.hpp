@@ -31,5 +31,12 @@ class Version {
 
     void ReadDllVersion();
     void ReadDSPVersion();
+
+  private:
+    void ReadDSPChip();
+    void ReadDSPFirmware();
+    void ReadDSPBootloader();
+    void ReadPLDFirmware();
+    void ReadIBCFirmware();
 };
 } // namespace Regatron
