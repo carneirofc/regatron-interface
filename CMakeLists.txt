@@ -66,27 +66,6 @@ if(ENABLE_TESTING)
   add_subdirectory(tests)
 endif()
 
-if(MSVC)
-    SET(REGATRON_LIBRARIES
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.lib"
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.lib"
-    )
-    SET(REGATRON_TCIO_DLL
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release/tcio.dll"        
-    )
-    SET(REGATRON_TCIO_STDCALL_DLL
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/Windows/x86_x64/Release_Stdcall/tcio_stdcall.dll"    )
-    
-    SET(REGATRON_INCLUDE
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.88.00 28042020/include"
-    )
-else()
-    SET(REGATRON_LIBRARIES
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/Linux/x64/libtcio.so"
-    )
-    SET(REGATRON_INCLUDE
-        "${REGATRON_INTERFACE_SOURCE_DIR}/vendor/Regatron/V3.80.00 30072014 (Linux)/include"
-    )
-endif()
+include(vendor/CMakeLists.txt)
 
 add_subdirectory(src)
