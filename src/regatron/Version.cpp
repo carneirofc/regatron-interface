@@ -14,8 +14,7 @@ void Version::ReadDllVersion() {
     LOG_INFO("DLL version: {}, {}", m_DLLVersionString, m_DLLString);
 }
 
-void Version::ReadDSPVersion() {
-    // ------------- DSP Chip ------------
+void Version::ReadDSPChip() {
     unsigned int pChipID{0};
     unsigned int pChipRev{0};
     unsigned int pChipSubID{0};
@@ -27,8 +26,9 @@ void Version::ReadDSPVersion() {
     m_DeviceDSPID = fmt::format("ChipID: {} ChipRev: {} ChipSubID: {}", pChipID,
             pChipRev, pChipSubID);
     LOG_INFO(m_DeviceDSPID);
+}
 
-    // ------------- DSP Firwmare ------------
+void Version::ReadDSPFirmware() {
     unsigned int vDSPMain{0};
     unsigned int vDSPSub{0};
     unsigned int vDSPRevision{0};
@@ -41,8 +41,9 @@ void Version::ReadDSPVersion() {
     m_DSPVersionString =
         fmt::format("V{}.{}.{}", vDSPMain, vDSPSub, vDSPRevision);
     LOG_INFO("DSP Version (Main): {}", m_DSPVersionString);
+}
 
-    // ------------- Bootloader ----------
+void Version::ReadDSPBootloader() {
     /** 
      * According to the official support, this function is not compatible with version 4.20.
      * Bootloader version still match the proprietary software and It seems that this is the only way to read it.
@@ -57,8 +58,9 @@ void Version::ReadDSPVersion() {
     m_BootloaderVersionString = 
         fmt::format("V{:0.2f}", static_cast<float>(pVersionBootloader) / 100.f);
     LOG_INFO("Bootloader Version (Main): {}", m_BootloaderVersionString);
+}
 
-    // ------------- PLD Firmware Version ------------
+void Version::ReadPLDFirmware() {
     unsigned short pVersionPLD{0};
     if (TC42GetFirmwareVersionPLD(&pVersionPLD) != DLL_SUCCESS) {
         throw CommException("Failed to read FirmwareVersionPLD");
@@ -67,8 +69,9 @@ void Version::ReadDSPVersion() {
         fmt::format("V{:0.2f}", static_cast<float>(pVersionPLD) / 100.f);
 
     LOG_INFO("Firmware Version PLD: {}", m_PLDVersionString);
+}
 
-    // ------------- IBC Firmware Version ------------
+void Version::ReadIBCFirmware() {
     unsigned short pVersion;
     if (TC42GetFirmwareVersionIBC(&pVersion) != DLL_SUCCESS) {
         throw CommException("Failed to read IBC Firmware Version.");
@@ -80,5 +83,13 @@ void Version::ReadDSPVersion() {
         m_IBCVersionString = "not_available";
     }
     LOG_INFO("Firmware Version IBC: {}", m_IBCVersionString);
+}
+
+void Version::ReadDSPVersion() {
+    ReadDSPChip();
+    ReadDSPFirmware();
+    ReadDSPBootloader();
+    ReadPLDFirmware();
+    ReadIBCFirmware();
 }
 } // namespace Regatron
